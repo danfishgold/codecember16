@@ -1,2 +1,2 @@
 # codecember16
-Mini projects during December 2016
+Mini projects I plan on making during December 2016.

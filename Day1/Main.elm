@@ -37,9 +37,9 @@ init =
       , color3 = Color.red
       , lineColor = Color.gray
       , shift = ( 0, 0 )
-      , width = 200
+      , width = 0.15
       , aspectRatio = 1.5
-      , window = WindowSize 0 0
+      , window = WindowSize 750 500
       }
     , Cmd.batch
         [ Task.perform WindowResize Window.size
@@ -111,7 +111,7 @@ randomModelParameters =
                 Random.Color.hsl
 
         width =
-            Random.int 100 300 |> Random.map toFloat
+            Random.float 0.08 0.2
 
         aspectRatio =
             Random.float 1.2 1.7
@@ -130,8 +130,8 @@ randomModelParameters =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Window.resizes WindowResize
-        , Keyboard.ups KeyPressed
+        [ Keyboard.ups KeyPressed
+        , Window.resizes WindowResize
         ]
 
 
@@ -174,13 +174,16 @@ colorToString color =
 
 
 translation : Model -> Int -> Int -> Svg.Attribute Msg
-translation { width, aspectRatio, shift } i j =
+translation { width, aspectRatio, shift, window } i j =
     let
+        wd =
+            width * window.width
+
         dx =
-            -width * (Tuple.first shift) + (toFloat j - toFloat (i % 2) / 2) * width
+            -wd * (Tuple.first shift) + (toFloat j - toFloat (i % 2) / 2) * wd
 
         dy =
-            -width * (Tuple.second shift) + toFloat (i - 1) * width * aspectRatio / 2
+            -wd * (Tuple.second shift) + toFloat (i - 1) * wd * aspectRatio / 2
     in
         "translate("
             ++ toString dx
@@ -191,17 +194,20 @@ translation { width, aspectRatio, shift } i j =
 
 
 parallelogram : Model -> Int -> Int -> Svg Msg
-parallelogram ({ width, aspectRatio } as model) i j =
+parallelogram ({ width, aspectRatio, window } as model) i j =
     let
         color =
             parallelogramColor model i j
                 |> colorToString
 
+        wd =
+            width * window.width
+
         pts =
-            [ ( width / 2, 0 )
-            , ( width, width / 2 * aspectRatio )
-            , ( width / 2, width * aspectRatio )
-            , ( 0, width / 2 * aspectRatio )
+            [ ( wd / 2, 0 )
+            , ( wd, wd / 2 * aspectRatio )
+            , ( wd / 2, wd * aspectRatio )
+            , ( 0, wd / 2 * aspectRatio )
             ]
                 |> List.map (\( x, y ) -> toString x ++ "," ++ toString y)
                 |> String.join " "
@@ -215,8 +221,11 @@ parallelogram ({ width, aspectRatio } as model) i j =
 
 
 lineGroup : Model -> Int -> Int -> Svg Msg
-lineGroup ({ width, aspectRatio, lineColor } as model) i j =
+lineGroup ({ width, aspectRatio, lineColor, window } as model) i j =
     let
+        ( wd, ht ) =
+            ( window.width * width / 4, window.width * width * aspectRatio / 4 )
+
         lineProps =
             [ stroke <| colorToString lineColor
             , strokeWidth "1.5"
@@ -237,9 +246,6 @@ lineGroup ({ width, aspectRatio, lineColor } as model) i j =
             , x2 <| toString wd
             , y2 <| toString (3 * ht)
             ]
-
-        ( wd, ht ) =
-            ( width / 4, width * aspectRatio / 4 )
     in
         g []
             [ Svg.line (lineProps ++ pts1) []
@@ -263,9 +269,9 @@ repeat model shape =
 
 
 counts : Model -> ( Int, Int )
-counts ({ window, width, aspectRatio } as model) =
-    ( ceiling (window.width / width) + 2
-    , ceiling (window.height / (width * aspectRatio / 2)) + 2
+counts ({ width, aspectRatio } as model) =
+    ( ceiling (1 / width) + 2
+    , ceiling (1 / (width * aspectRatio / 2)) + 2
     )
 
 

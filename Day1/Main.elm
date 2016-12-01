@@ -278,8 +278,8 @@ counts ({ width, aspectRatio } as model) =
 view : Model -> Svg Msg
 view ({ window, width, aspectRatio } as model) =
     svg
-        [ Svg.Attributes.width <| toString <| window.width
-        , Svg.Attributes.height <| toString <| window.height
+        [ Svg.Attributes.width <| toString <| window.width - 5
+        , Svg.Attributes.height <| toString <| window.height - 5
         ]
         [ g []
             [ repeat model parallelogram

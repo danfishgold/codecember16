@@ -15,7 +15,7 @@ hue =
 -}
 ryb1 : Float -> Float -> Generator Color
 ryb1 s l =
-    hue |> map (\h -> ryb (degrees h) s l)
+    hue |> map (\h -> ryb h s l)
 
 
 {-|

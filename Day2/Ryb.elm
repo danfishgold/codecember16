@@ -38,16 +38,16 @@ toRgba : Ryba -> Rgba
 toRgba { red, yellow, blue, alpha } =
     let
         r =
-            toFloat red
+            toFloat red / 255
 
         y =
-            toFloat yellow
+            toFloat yellow / 255
 
         b =
-            toFloat blue
+            toFloat blue / 255
     in
-        { red = floor <| -2.10688196847366e-6 * b * r * y + 0.00132156862745098 * b * r - 0.00063921568627451 * b * y - 0.837 * b + 255.0
-        , green = floor <| -1.06574394463668e-5 * b * r * y + 0.00245882352941176 * b * r + 0.00112549019607843 * b * y - 0.627 * b + 0.00196078431372549 * r * y - 1.0 * r + 255.0
-        , blue = floor <| -1.69165705497885e-5 * b * r * y + 0.00352941176470588 * b * r + 0.00235294117647059 * b * y - 0.4 * b + 0.00392156862745098 * r * y - 1.0 * r - 1.0 * y + 255.0
+        { red = floor <| -34.935 * b * r * y + 85.935 * b * r - 41.565 * b * y - 213.435 * b + 255.0
+        , green = floor <| -176.715 * b * r * y + 159.885 * b * r + 73.185 * b * y - 159.885 * b + 127.5 * r * y - 255.0 * r + 255.0
+        , blue = floor <| -280.5 * b * r * y + 229.5 * b * r + 153.0 * b * y - 102.0 * b + 255.0 * r * y - 255.0 * r - 255.0 * y + 255.0
         , alpha = alpha
         }

@@ -32,11 +32,11 @@ C0 = 255 * array([[[c000, c001], [c010, c011]], [[c100, c101], [c110, c111]]])
 
 def weight(t, C, func):
     '''
-    t: a number between 0 (for C[0]) and 255 (for C[1])
+    t: a number between 0 (for C[0]) and 1 (for C[1])
     C: two values to interpolate between
     func: the interpolation function. func(0) = 0, func(1) = 1
     '''
-    return C[0] + (C[1] - C[0]) * func(t/255)
+    return C[0] + (C[1] - C[0]) * func(t)
 
 def ryb_to_rgb(r, y, b, func=lambda t: t):
     '''

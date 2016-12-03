@@ -62,31 +62,38 @@ subscriptions model =
 --
 
 
-randomColor : Generator Color
-randomColor =
-    ryb1 1 0.35
-
-
-randomNeighbor : ( Int, Int ) -> Generator ( Int, Int )
-randomNeighbor ( x, y ) =
+randomNeighbor : Point -> Generator Point
+randomNeighbor ( x0, y0, _ ) =
     let
-        forward =
-            Random.Extra.sample [ ( x + 1, y ), ( x, y + 1 ) ]
+        neighbor ( x, y ) =
+            let
+                up =
+                    Random.Extra.constant ( x, y + 1 )
 
-        backward =
-            Random.Extra.sample [ ( x - 1, y ), ( x, y - 1 ) ]
+                down =
+                    Random.Extra.constant ( x, y - 1 )
+
+                left =
+                    Random.Extra.constant ( x - 1, y )
+
+                right =
+                    Random.Extra.constant ( x + 1, y )
+            in
+                Random.Extra.frequency
+                    [ ( 0.4, up )
+                    , ( 0.3, down )
+                    , ( 0.3, left )
+                    , ( 0.5, right )
+                    ]
+
+        color =
+            ryb1 1 0.35
     in
-        Random.Extra.frequency [ ( 0.65, forward ), ( 0.35, backward ) ]
-            |> Random.map (Maybe.withDefault ( x, y ))
+        Random.map2 (\( x1, y1 ) c -> ( x1, y1, c ))
+            (neighbor ( x0, y0 ))
+            (color)
 
 
-randomPoint : Model -> Generator ( Int, Int, Color )
-randomPoint { current } =
-    current
-        |> \( x0, y0, _ ) ->
-            Random.map2 (\( x1, y1 ) c -> ( x1, y1, c ))
-                (randomNeighbor ( x0, y0 ))
-                (randomColor)
 
 
 
@@ -111,7 +118,7 @@ update msg model =
                 )
 
         Tick _ ->
-            ( model, generate Add (randomPoint model) )
+            ( model, generate Add (randomNeighbor model.current) )
 
         Key 32 ->
             ( { model | paused = not model.paused }, Cmd.none )

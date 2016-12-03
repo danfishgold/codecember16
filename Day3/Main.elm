@@ -8,11 +8,13 @@ import Random.Extra
 import Keyboard exposing (KeyCode)
 import Svg exposing (Svg, svg, rect, g)
 import Svg.Attributes exposing (x, y, width, height, fill)
+import Svg.Keyed exposing (node)
 import Color.Convert exposing (colorToCssRgb)
 
 
 type alias Model =
-    { points : List ( Int, Int, Color )
+    { previous : List ( Int, Int, Color )
+    , current : ( Int, Int, Color )
     , side : Int
     , res : Float
     , symmetry : Symmetry
@@ -22,11 +24,18 @@ type alias Model =
 
 init : Model
 init =
-    { points = [], side = 100, res = 5, symmetry = Mirror, paused = False }
+    { previous = []
+    , current = ( 0, 0, Color.white )
+    , side = 100
+    , res = 5
+    , symmetry = Mirror
+    , paused = False
+    }
 
 
 type Msg
-    = Tick Time
+    = ResetPoints
+    | Tick Time
     | Add ( Int, Int, Color )
     | Key KeyCode
 
@@ -79,15 +88,12 @@ randomNeighbor ( x, y ) =
 
 
 randomPoint : Model -> Generator ( Int, Int, Color )
-randomPoint model =
-    case model.points of
-        ( x, y, _ ) :: _ ->
-            Random.map2 (\( x, y ) c -> ( x, y, c ))
-                (randomNeighbor ( x, y ))
+randomPoint { current } =
+    current
+        |> \( x0, y0, _ ) ->
+            Random.map2 (\( x1, y1 ) c -> ( x1, y1, c ))
+                (randomNeighbor ( x0, y0 ))
                 (randomColor)
-
-        [] ->
-            randomColor |> Random.map (\c -> ( 0, 0, c ))
 
 
 
@@ -97,11 +103,19 @@ randomPoint model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        ResetPoints ->
+            ( { model | current = ( 0, 0, Color.white ), previous = [] }, Cmd.none )
+
         Add (( x, y, _ ) as pt) ->
             if abs x > model.side // 2 || abs y > model.side // 2 then
-                ( { model | points = [] }, Cmd.none )
+                update ResetPoints model
             else
-                ( { model | points = pt :: model.points }, Cmd.none )
+                ( { model
+                    | previous = model.previous ++ [ model.current ]
+                    , current = pt
+                  }
+                , Cmd.none
+                )
 
         Tick _ ->
             ( model, generate Add (randomPoint model) )
@@ -110,10 +124,10 @@ update msg model =
             ( { model | paused = not model.paused }, Cmd.none )
 
         Key 49 ->
-            ( { model | symmetry = Mirror, points = [] }, Cmd.none )
+            update ResetPoints { model | symmetry = Mirror }
 
         Key 50 ->
-            ( { model | symmetry = Rotation, points = [] }, Cmd.none )
+            update ResetPoints { model | symmetry = Rotation }
 
         Key _ ->
             ( model, Cmd.none )
@@ -124,7 +138,7 @@ update msg model =
 
 
 view : Model -> Svg Msg
-view { side, points, res, symmetry } =
+view { side, current, previous, res, symmetry } =
     let
         bg =
             rect
@@ -137,9 +151,9 @@ view { side, points, res, symmetry } =
                 []
 
         pts =
-            points
-                |> List.map mirroredPoint
-                |> List.reverse
+            (previous ++ [ current ])
+                |> List.indexedMap (\i pt -> ( toString i, mirroredPoint pt ))
+                |> node "g" []
 
         mirroredPoint ( x, y, c ) =
             case symmetry of
@@ -159,8 +173,11 @@ view { side, points, res, symmetry } =
                 ]
                 []
     in
-        svg [ width <| toString <| side * ceiling res, height <| toString <| side * ceiling res ]
-            (bg :: pts)
+        svg
+            [ width <| toString <| side * ceiling res
+            , height <| toString <| side * ceiling res
+            ]
+            [ bg, pts ]
 
 
 

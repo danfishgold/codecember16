@@ -1,8 +1,6 @@
 module Anatoly exposing (..)
 
 import Html exposing (Html, program)
-import Collage exposing (..)
-import Element
 import Time exposing (second, every, Time)
 import Color exposing (Color)
 import Random exposing (Generator, generate)
@@ -125,40 +123,11 @@ update msg model =
 --
 
 
-view : Model -> Html Msg
+view : Model -> Svg Msg
 view { side, points, res, symmetry } =
     let
         bg =
-            Collage.rect (toFloat side * res) (toFloat side * res) |> filled Color.black
-
-        pts =
-            points
-                |> List.map mirroredPoint
-                |> List.reverse
-
-        mirroredPoint ( x, y, c ) =
-            case symmetry of
-                Rotation ->
-                    group [ point ( x, y, c ), point ( -y, x, c ), point ( y, -x, c ), point ( -x, -y, c ) ]
-
-                Mirror ->
-                    group [ point ( x, y, c ), point ( -x, y, c ), point ( x, -y, c ), point ( -x, -y, c ) ]
-
-        point ( x, y, c ) =
-            Collage.rect res res |> filled c |> move ( toFloat x * res, toFloat y * res )
-    in
-        collage
-            (side * ceiling res)
-            (side * ceiling res)
-            (bg :: pts)
-            |> Element.toHtml
-
-
-svgView : Model -> Svg Msg
-svgView { side, points, res, symmetry } =
-    let
-        bg =
-            Svg.rect
+            rect
                 [ x "0"
                 , y "0"
                 , width <| toString <| toFloat side * res
@@ -181,7 +150,7 @@ svgView { side, points, res, symmetry } =
                     g [] [ point ( x, y, c ), point ( -x, y, c ), point ( x, -y, c ), point ( -x, -y, c ) ]
 
         point ( x0, y0, c ) =
-            Svg.rect
+            rect
                 [ x <| toString <| toFloat (x0 + side // 2) * res
                 , y <| toString <| toFloat (y0 + side // 2) * res
                 , width <| toString res
@@ -203,6 +172,6 @@ main =
     program
         { init = ( init, Cmd.none )
         , update = update
-        , view = svgView
+        , view = view
         , subscriptions = subscriptions
         }

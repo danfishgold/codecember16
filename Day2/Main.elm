@@ -1,4 +1,4 @@
-module Main exposing (..)
+module Palette exposing (..)
 
 import Html exposing (program)
 import Html exposing (Html, div, button, text)

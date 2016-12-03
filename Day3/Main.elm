@@ -1,4 +1,4 @@
-module Day3.Anatoly exposing (..)
+module Anatoly exposing (..)
 
 import Html exposing (Html, program)
 import Collage exposing (..)

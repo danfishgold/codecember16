@@ -1,37 +1,59 @@
 module Anatoly exposing (..)
 
 import Html exposing (Html, program)
-import Collage exposing (..)
-import Element
 import Time exposing (second, every, Time)
 import Color exposing (Color)
 import Random exposing (Generator, generate)
 import Random.Extra
 import Keyboard exposing (KeyCode)
+import Svg exposing (Svg, svg, rect, g)
+import Svg.Attributes exposing (x, y, width, height, fill)
+import Svg.Keyed exposing (node)
+import Color.Convert exposing (colorToCssRgb)
+import Day2.Random exposing (ryb1)
 
 
 type alias Model =
-    { points : List ( Int, Int, Color )
+    { previous : List Point
+    , current : Point
     , side : Int
     , res : Float
-    , symmetry : Symmetry
+    , paused : Bool
     }
+
+
+type alias Point =
+    ( Int, Int, Color )
 
 
 init : Model
 init =
-    { points = [], side = 100, res = 5, symmetry = Mirror }
+    { previous = []
+    , current = ( 0, 0, Color.white )
+    , side = 100
+    , res = 5
+    , paused = False
+    }
+
+
+initWithShape : Int -> Float -> ( Model, Cmd Msg )
+initWithShape side res =
+    ( { previous = []
+      , current = ( 0, 0, Color.white )
+      , side = side
+      , res = res
+      , paused = True
+      }
+    , generate SetShape (randomShape side)
+    )
 
 
 type Msg
-    = Tick Time
-    | Add ( Int, Int, Color )
+    = ResetPoints
+    | Tick Time
+    | Add Point
+    | SetShape (List Point)
     | Key KeyCode
-
-
-type Symmetry
-    = Mirror
-    | Rotation
 
 
 
@@ -39,9 +61,12 @@ type Symmetry
 
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
+subscriptions model =
     Sub.batch
-        [ every (0.0001 * second) Tick
+        [ if model.paused then
+            Sub.none
+          else
+            every (0.0001 * second) Tick
         , Keyboard.ups Key
         ]
 
@@ -50,38 +75,49 @@ subscriptions _ =
 --
 
 
-randomColor : Generator Color
-randomColor =
+randomNeighbor : Point -> Generator Point
+randomNeighbor ( x0, y0, _ ) =
     let
-        colors =
-            [ Color.white
-            , Color.red
-            , Color.blue
-            , Color.green
-            , Color.yellow
-            , Color.purple
-            ]
+        neighbor ( x, y ) =
+            let
+                up =
+                    Random.Extra.constant ( x, y + 1 )
+
+                down =
+                    Random.Extra.constant ( x, y - 1 )
+
+                left =
+                    Random.Extra.constant ( x - 1, y )
+
+                right =
+                    Random.Extra.constant ( x + 1, y )
+            in
+                Random.Extra.frequency
+                    [ ( 0.4, up )
+                    , ( 0.3, down )
+                    , ( 0.3, left )
+                    , ( 0.5, right )
+                    ]
+
+        color =
+            ryb1 1 0.35
     in
-        Random.Extra.sample colors
-            |> Random.map (Maybe.withDefault Color.white)
+        Random.map2 (\( x1, y1 ) c -> ( x1, y1, c ))
+            (neighbor ( x0, y0 ))
+            (color)
 
 
-randomNeighbor : ( Int, Int ) -> Generator ( Int, Int )
-randomNeighbor ( x, y ) =
-    Random.Extra.sample [ ( x + 1, y ), ( x - 1, y ), ( x, y + 1 ), ( x, y - 1 ) ]
-        |> Random.map (Maybe.withDefault ( x, y ))
-
-
-randomPoint : Model -> Generator ( Int, Int, Color )
-randomPoint model =
-    case model.points of
-        ( x, y, _ ) :: _ ->
-            Random.map2 (\( x, y ) c -> ( x, y, c ))
-                (randomNeighbor ( x, y ))
-                (randomColor)
-
-        [] ->
-            randomColor |> Random.map (\c -> ( 0, 0, c ))
+randomShape : Int -> Generator (List Point)
+randomShape side =
+    let
+        process previous (( x, y, _ ) as pt) =
+            if abs x > side || abs y > side then
+                Random.Extra.constant previous
+            else
+                randomNeighbor pt
+                    |> Random.andThen (process (pt :: previous))
+    in
+        process [] ( 0, 0, Color.white )
 
 
 
@@ -91,59 +127,94 @@ randomPoint model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        ResetPoints ->
+            ( { model | current = ( 0, 0, Color.white ), previous = [] }, Cmd.none )
+
         Add (( x, y, _ ) as pt) ->
             if abs x > model.side // 2 || abs y > model.side // 2 then
-                ( { model | points = [] }, Cmd.none )
+                update ResetPoints model
             else
-                ( { model | points = pt :: model.points }, Cmd.none )
+                ( { model
+                    | previous = model.previous ++ [ model.current ]
+                    , current = pt
+                  }
+                , Cmd.none
+                )
 
         Tick _ ->
-            ( model, generate Add (randomPoint model) )
+            ( model, generate Add (randomNeighbor model.current) )
 
         Key 32 ->
-            ( { model | points = [] }, Cmd.none )
+            ( { model | paused = not model.paused }, Cmd.none )
 
-        Key 49 ->
-            ( { model | symmetry = Mirror, points = [] }, Cmd.none )
-
-        Key 50 ->
-            ( { model | symmetry = Rotation, points = [] }, Cmd.none )
+        Key 13 ->
+            update ResetPoints { model | paused = False }
 
         Key _ ->
             ( model, Cmd.none )
+
+        SetShape [] ->
+            update ResetPoints model
+
+        SetShape (current :: previous) ->
+            ( { model
+                | current = current
+                , previous = previous
+                , paused = True
+              }
+            , Cmd.none
+            )
 
 
 
 --
 
 
-view : Model -> Html Msg
-view { side, points, res, symmetry } =
+view : Model -> Svg Msg
+view { side, current, previous, res } =
     let
         bg =
-            rect (toFloat side * res) (toFloat side * res) |> filled Color.black
+            rect
+                [ x "0"
+                , y "0"
+                , width <| toString <| toFloat side * res
+                , height <| toString <| toFloat side * res
+                , fill <| colorToCssRgb Color.black
+                ]
+                []
 
         pts =
-            points
-                |> List.map mirroredPoint
-                |> List.reverse
+            (previous ++ [ current ])
+                |> List.indexedMap (\i pt -> ( toString i, mirroredPoint pt ))
+                |> node "g" []
 
         mirroredPoint ( x, y, c ) =
-            case symmetry of
-                Rotation ->
-                    group [ point ( x, y, c ), point ( -y, x, c ), point ( y, -x, c ), point ( -x, -y, c ) ]
+            g []
+                [ point ( x, y, c )
+                , point ( y, x, c )
+                , point ( -x, y, c )
+                , point ( -y, x, c )
+                , point ( x, -y, c )
+                , point ( y, -x, c )
+                , point ( -x, -y, c )
+                , point ( -y, -x, c )
+                ]
 
-                Mirror ->
-                    group [ point ( x, y, c ), point ( -x, y, c ), point ( x, -y, c ), point ( -x, -y, c ) ]
-
-        point ( x, y, c ) =
-            rect res res |> filled c |> move ( toFloat x * res, toFloat y * res )
+        point ( x0, y0, c ) =
+            rect
+                [ x <| toString <| toFloat (x0 + side // 2) * res
+                , y <| toString <| toFloat (y0 + side // 2) * res
+                , width <| toString res
+                , height <| toString res
+                , fill <| colorToCssRgb c
+                ]
+                []
     in
-        collage
-            (side * ceiling res)
-            (side * ceiling res)
-            (bg :: pts)
-            |> Element.toHtml
+        svg
+            [ width <| toString <| side * ceiling res
+            , height <| toString <| side * ceiling res
+            ]
+            [ bg, pts ]
 
 
 

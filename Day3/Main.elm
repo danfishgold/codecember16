@@ -14,12 +14,16 @@ import Day2.Random exposing (ryb1)
 
 
 type alias Model =
-    { previous : List ( Int, Int, Color )
-    , current : ( Int, Int, Color )
+    { previous : List Point
+    , current : Point
     , side : Int
     , res : Float
     , paused : Bool
     }
+
+
+type alias Point =
+    ( Int, Int, Color )
 
 
 init : Model
@@ -35,7 +39,7 @@ init =
 type Msg
     = ResetPoints
     | Tick Time
-    | Add ( Int, Int, Color )
+    | Add Point
     | Key KeyCode
 
 

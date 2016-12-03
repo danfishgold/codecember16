@@ -18,7 +18,6 @@ type alias Model =
     , current : ( Int, Int, Color )
     , side : Int
     , res : Float
-    , symmetry : Symmetry
     , paused : Bool
     }
 
@@ -29,7 +28,6 @@ init =
     , current = ( 0, 0, Color.white )
     , side = 100
     , res = 5
-    , symmetry = Mirror
     , paused = False
     }
 
@@ -39,11 +37,6 @@ type Msg
     | Tick Time
     | Add ( Int, Int, Color )
     | Key KeyCode
-
-
-type Symmetry
-    = Mirror
-    | Rotation
 
 
 
@@ -119,11 +112,8 @@ update msg model =
         Key 32 ->
             ( { model | paused = not model.paused }, Cmd.none )
 
-        Key 49 ->
-            update ResetPoints { model | symmetry = Mirror }
-
-        Key 50 ->
-            update ResetPoints { model | symmetry = Rotation }
+        Key 13 ->
+            update ResetPoints { model | paused = False }
 
         Key _ ->
             ( model, Cmd.none )
@@ -134,7 +124,7 @@ update msg model =
 
 
 view : Model -> Svg Msg
-view { side, current, previous, res, symmetry } =
+view { side, current, previous, res } =
     let
         bg =
             rect
@@ -152,21 +142,16 @@ view { side, current, previous, res, symmetry } =
                 |> node "g" []
 
         mirroredPoint ( x, y, c ) =
-            case symmetry of
-                Rotation ->
-                    g [] [ point ( x, y, c ), point ( -y, x, c ), point ( y, -x, c ), point ( -x, -y, c ) ]
-
-                Mirror ->
-                    g []
-                        [ point ( x, y, c )
-                        , point ( y, x, c )
-                        , point ( -x, y, c )
-                        , point ( -y, x, c )
-                        , point ( x, -y, c )
-                        , point ( y, -x, c )
-                        , point ( -x, -y, c )
-                        , point ( -y, -x, c )
-                        ]
+            g []
+                [ point ( x, y, c )
+                , point ( y, x, c )
+                , point ( -x, y, c )
+                , point ( -y, x, c )
+                , point ( x, -y, c )
+                , point ( y, -x, c )
+                , point ( -x, -y, c )
+                , point ( -y, -x, c )
+                ]
 
         point ( x0, y0, c ) =
             rect

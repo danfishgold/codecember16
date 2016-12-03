@@ -128,8 +128,8 @@ update msg model =
             ( { model | current = ( 0, 0, Color.white ), previous = [] }, Cmd.none )
 
         Add (( x, y, _ ) as pt) ->
-            if abs x > model.side // 2 || abs y > model.side // 2 then
-                update ResetPoints model
+            if abs x > model.side // 3 || abs y > model.side // 3 then
+                ( { model | paused = True }, Cmd.none )
             else
                 ( { model
                     | previous = model.previous ++ [ model.current ]

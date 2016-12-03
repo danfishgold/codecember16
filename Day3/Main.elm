@@ -34,8 +34,8 @@ init =
     }
 
 
-initWithShape : Int -> Float -> ( Model, Cmd Msg )
-initWithShape side res =
+initWithShape : Int -> ( Model, Cmd Msg )
+initWithShape side =
     ( { previous = []
       , current = ( 0, 0, Color.white )
       , side = side
@@ -43,6 +43,20 @@ initWithShape side res =
       }
     , generate SetShape (randomShape side)
     )
+
+
+shape : Int -> Int -> Model
+shape seed side =
+    seed
+        |> Random.initialSeed
+        |> Random.step (randomShape side)
+        |> Tuple.first
+        |> \pts ->
+            { previous = List.drop 1 pts
+            , current = List.head pts |> Maybe.withDefault ( 0, 0, Color.white )
+            , side = side
+            , paused = True
+            }
 
 
 type Msg

@@ -10362,36 +10362,138 @@ var _user$project$Day2_Random$ryb2v2 = F3(
 		};
 		return A2(_elm_lang$core$Random$map, colors, _user$project$Day2_Random$hue);
 	});
-var _user$project$Anatoly$view = function (_p0) {
-	var _p1 = _p0;
-	var _p10 = _p1.side;
-	var _p9 = _p1.res;
-	var point = function (_p2) {
-		var _p3 = _p2;
-		return A2(
+var _user$project$Anatoly$view = F2(
+	function (res, _p0) {
+		var _p1 = _p0;
+		var _p9 = _p1.side;
+		var point = function (_p2) {
+			var _p3 = _p2;
+			return A2(
+				_elm_lang$svg$Svg$rect,
+				{
+					ctor: '::',
+					_0: _elm_lang$svg$Svg_Attributes$x(
+						_elm_lang$core$Basics$toString(
+							_elm_lang$core$Basics$toFloat(_p3._0 + ((_p9 / 2) | 0)) * res)),
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$svg$Svg_Attributes$y(
+							_elm_lang$core$Basics$toString(
+								_elm_lang$core$Basics$toFloat(_p3._1 + ((_p9 / 2) | 0)) * res)),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$svg$Svg_Attributes$width(
+								_elm_lang$core$Basics$toString(res)),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$svg$Svg_Attributes$height(
+									_elm_lang$core$Basics$toString(res)),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$svg$Svg_Attributes$fill(
+										_eskimoblood$elm_color_extra$Color_Convert$colorToCssRgb(_p3._2)),
+									_1: {ctor: '[]'}
+								}
+							}
+						}
+					}
+				},
+				{ctor: '[]'});
+		};
+		var mirroredPoint = function (_p4) {
+			var _p5 = _p4;
+			var _p8 = _p5._1;
+			var _p7 = _p5._0;
+			var _p6 = _p5._2;
+			return A2(
+				_elm_lang$svg$Svg$g,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: point(
+						{ctor: '_Tuple3', _0: _p7, _1: _p8, _2: _p6}),
+					_1: {
+						ctor: '::',
+						_0: point(
+							{ctor: '_Tuple3', _0: _p8, _1: _p7, _2: _p6}),
+						_1: {
+							ctor: '::',
+							_0: point(
+								{ctor: '_Tuple3', _0: 0 - _p7, _1: _p8, _2: _p6}),
+							_1: {
+								ctor: '::',
+								_0: point(
+									{ctor: '_Tuple3', _0: 0 - _p8, _1: _p7, _2: _p6}),
+								_1: {
+									ctor: '::',
+									_0: point(
+										{ctor: '_Tuple3', _0: _p7, _1: 0 - _p8, _2: _p6}),
+									_1: {
+										ctor: '::',
+										_0: point(
+											{ctor: '_Tuple3', _0: _p8, _1: 0 - _p7, _2: _p6}),
+										_1: {
+											ctor: '::',
+											_0: point(
+												{ctor: '_Tuple3', _0: 0 - _p7, _1: 0 - _p8, _2: _p6}),
+											_1: {
+												ctor: '::',
+												_0: point(
+													{ctor: '_Tuple3', _0: 0 - _p8, _1: 0 - _p7, _2: _p6}),
+												_1: {ctor: '[]'}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				});
+		};
+		var pts = A3(
+			_elm_lang$svg$Svg_Keyed$node,
+			'g',
+			{ctor: '[]'},
+			A2(
+				_elm_lang$core$List$indexedMap,
+				F2(
+					function (i, pt) {
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Basics$toString(i),
+							_1: mirroredPoint(pt)
+						};
+					}),
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					_p1.previous,
+					{
+						ctor: '::',
+						_0: _p1.current,
+						_1: {ctor: '[]'}
+					})));
+		var bg = A2(
 			_elm_lang$svg$Svg$rect,
 			{
 				ctor: '::',
-				_0: _elm_lang$svg$Svg_Attributes$x(
-					_elm_lang$core$Basics$toString(
-						_elm_lang$core$Basics$toFloat(_p3._0 + ((_p10 / 2) | 0)) * _p9)),
+				_0: _elm_lang$svg$Svg_Attributes$x('0'),
 				_1: {
 					ctor: '::',
-					_0: _elm_lang$svg$Svg_Attributes$y(
-						_elm_lang$core$Basics$toString(
-							_elm_lang$core$Basics$toFloat(_p3._1 + ((_p10 / 2) | 0)) * _p9)),
+					_0: _elm_lang$svg$Svg_Attributes$y('0'),
 					_1: {
 						ctor: '::',
 						_0: _elm_lang$svg$Svg_Attributes$width(
-							_elm_lang$core$Basics$toString(_p9)),
+							_elm_lang$core$Basics$toString(
+								_elm_lang$core$Basics$toFloat(_p9) * res)),
 						_1: {
 							ctor: '::',
 							_0: _elm_lang$svg$Svg_Attributes$height(
-								_elm_lang$core$Basics$toString(_p9)),
+								_elm_lang$core$Basics$toString(
+									_elm_lang$core$Basics$toFloat(_p9) * res)),
 							_1: {
 								ctor: '::',
 								_0: _elm_lang$svg$Svg_Attributes$fill(
-									_eskimoblood$elm_color_extra$Color_Convert$colorToCssRgb(_p3._2)),
+									_eskimoblood$elm_color_extra$Color_Convert$colorToCssRgb(_elm_lang$core$Color$black)),
 								_1: {ctor: '[]'}
 							}
 						}
@@ -10399,148 +10501,46 @@ var _user$project$Anatoly$view = function (_p0) {
 				}
 			},
 			{ctor: '[]'});
-	};
-	var mirroredPoint = function (_p4) {
-		var _p5 = _p4;
-		var _p8 = _p5._1;
-		var _p7 = _p5._0;
-		var _p6 = _p5._2;
 		return A2(
-			_elm_lang$svg$Svg$g,
-			{ctor: '[]'},
+			_elm_lang$svg$Svg$svg,
 			{
 				ctor: '::',
-				_0: point(
-					{ctor: '_Tuple3', _0: _p7, _1: _p8, _2: _p6}),
+				_0: _elm_lang$svg$Svg_Attributes$width(
+					_elm_lang$core$Basics$toString(
+						_p9 * _elm_lang$core$Basics$ceiling(res))),
 				_1: {
 					ctor: '::',
-					_0: point(
-						{ctor: '_Tuple3', _0: _p8, _1: _p7, _2: _p6}),
-					_1: {
-						ctor: '::',
-						_0: point(
-							{ctor: '_Tuple3', _0: 0 - _p7, _1: _p8, _2: _p6}),
-						_1: {
-							ctor: '::',
-							_0: point(
-								{ctor: '_Tuple3', _0: 0 - _p8, _1: _p7, _2: _p6}),
-							_1: {
-								ctor: '::',
-								_0: point(
-									{ctor: '_Tuple3', _0: _p7, _1: 0 - _p8, _2: _p6}),
-								_1: {
-									ctor: '::',
-									_0: point(
-										{ctor: '_Tuple3', _0: _p8, _1: 0 - _p7, _2: _p6}),
-									_1: {
-										ctor: '::',
-										_0: point(
-											{ctor: '_Tuple3', _0: 0 - _p7, _1: 0 - _p8, _2: _p6}),
-										_1: {
-											ctor: '::',
-											_0: point(
-												{ctor: '_Tuple3', _0: 0 - _p8, _1: 0 - _p7, _2: _p6}),
-											_1: {ctor: '[]'}
-										}
-									}
-								}
-							}
-						}
-					}
+					_0: _elm_lang$svg$Svg_Attributes$height(
+						_elm_lang$core$Basics$toString(
+							_p9 * _elm_lang$core$Basics$ceiling(res))),
+					_1: {ctor: '[]'}
+				}
+			},
+			{
+				ctor: '::',
+				_0: bg,
+				_1: {
+					ctor: '::',
+					_0: pts,
+					_1: {ctor: '[]'}
 				}
 			});
-	};
-	var pts = A3(
-		_elm_lang$svg$Svg_Keyed$node,
-		'g',
-		{ctor: '[]'},
-		A2(
-			_elm_lang$core$List$indexedMap,
-			F2(
-				function (i, pt) {
-					return {
-						ctor: '_Tuple2',
-						_0: _elm_lang$core$Basics$toString(i),
-						_1: mirroredPoint(pt)
-					};
-				}),
-			A2(
-				_elm_lang$core$Basics_ops['++'],
-				_p1.previous,
-				{
-					ctor: '::',
-					_0: _p1.current,
-					_1: {ctor: '[]'}
-				})));
-	var bg = A2(
-		_elm_lang$svg$Svg$rect,
-		{
-			ctor: '::',
-			_0: _elm_lang$svg$Svg_Attributes$x('0'),
-			_1: {
-				ctor: '::',
-				_0: _elm_lang$svg$Svg_Attributes$y('0'),
-				_1: {
-					ctor: '::',
-					_0: _elm_lang$svg$Svg_Attributes$width(
-						_elm_lang$core$Basics$toString(
-							_elm_lang$core$Basics$toFloat(_p10) * _p9)),
-					_1: {
-						ctor: '::',
-						_0: _elm_lang$svg$Svg_Attributes$height(
-							_elm_lang$core$Basics$toString(
-								_elm_lang$core$Basics$toFloat(_p10) * _p9)),
-						_1: {
-							ctor: '::',
-							_0: _elm_lang$svg$Svg_Attributes$fill(
-								_eskimoblood$elm_color_extra$Color_Convert$colorToCssRgb(_elm_lang$core$Color$black)),
-							_1: {ctor: '[]'}
-						}
-					}
-				}
-			}
-		},
-		{ctor: '[]'});
-	return A2(
-		_elm_lang$svg$Svg$svg,
-		{
-			ctor: '::',
-			_0: _elm_lang$svg$Svg_Attributes$width(
-				_elm_lang$core$Basics$toString(
-					_p10 * _elm_lang$core$Basics$ceiling(_p9))),
-			_1: {
-				ctor: '::',
-				_0: _elm_lang$svg$Svg_Attributes$height(
-					_elm_lang$core$Basics$toString(
-						_p10 * _elm_lang$core$Basics$ceiling(_p9))),
-				_1: {ctor: '[]'}
-			}
-		},
-		{
-			ctor: '::',
-			_0: bg,
-			_1: {
-				ctor: '::',
-				_0: pts,
-				_1: {ctor: '[]'}
-			}
-		});
-};
-var _user$project$Anatoly$randomNeighbor = function (_p11) {
-	var _p12 = _p11;
+	});
+var _user$project$Anatoly$randomNeighbor = function (_p10) {
+	var _p11 = _p10;
 	var color = A2(_user$project$Day2_Random$ryb1, 1, 0.35);
-	var neighbor = function (_p13) {
-		var _p14 = _p13;
-		var _p16 = _p14._1;
-		var _p15 = _p14._0;
+	var neighbor = function (_p12) {
+		var _p13 = _p12;
+		var _p15 = _p13._1;
+		var _p14 = _p13._0;
 		var right = _elm_community$random_extra$Random_Extra$constant(
-			{ctor: '_Tuple2', _0: _p15 + 1, _1: _p16});
+			{ctor: '_Tuple2', _0: _p14 + 1, _1: _p15});
 		var left = _elm_community$random_extra$Random_Extra$constant(
-			{ctor: '_Tuple2', _0: _p15 - 1, _1: _p16});
+			{ctor: '_Tuple2', _0: _p14 - 1, _1: _p15});
 		var down = _elm_community$random_extra$Random_Extra$constant(
-			{ctor: '_Tuple2', _0: _p15, _1: _p16 - 1});
+			{ctor: '_Tuple2', _0: _p14, _1: _p15 - 1});
 		var up = _elm_community$random_extra$Random_Extra$constant(
-			{ctor: '_Tuple2', _0: _p15, _1: _p16 + 1});
+			{ctor: '_Tuple2', _0: _p14, _1: _p15 + 1});
 		return _elm_community$random_extra$Random_Extra$frequency(
 			{
 				ctor: '::',
@@ -10563,44 +10563,62 @@ var _user$project$Anatoly$randomNeighbor = function (_p11) {
 	return A3(
 		_elm_lang$core$Random$map2,
 		F2(
-			function (_p17, c) {
-				var _p18 = _p17;
-				return {ctor: '_Tuple3', _0: _p18._0, _1: _p18._1, _2: c};
+			function (_p16, c) {
+				var _p17 = _p16;
+				return {ctor: '_Tuple3', _0: _p17._0, _1: _p17._1, _2: c};
 			}),
 		neighbor(
-			{ctor: '_Tuple2', _0: _p12._0, _1: _p12._1}),
+			{ctor: '_Tuple2', _0: _p11._0, _1: _p11._1}),
 		color);
 };
 var _user$project$Anatoly$randomShape = function (side) {
 	var process = F2(
-		function (previous, _p19) {
+		function (previous, _p18) {
+			var _p19 = _p18;
 			var _p20 = _p19;
-			var _p21 = _p20;
 			return ((_elm_lang$core$Native_Utils.cmp(
-				_elm_lang$core$Basics$abs(_p20._0),
+				_elm_lang$core$Basics$abs(_p19._0),
 				side) > 0) || (_elm_lang$core$Native_Utils.cmp(
-				_elm_lang$core$Basics$abs(_p20._1),
+				_elm_lang$core$Basics$abs(_p19._1),
 				side) > 0)) ? _elm_community$random_extra$Random_Extra$constant(previous) : A2(
 				_elm_lang$core$Random$andThen,
 				process(
-					{ctor: '::', _0: _p21, _1: previous}),
-				_user$project$Anatoly$randomNeighbor(_p21));
+					{ctor: '::', _0: _p20, _1: previous}),
+				_user$project$Anatoly$randomNeighbor(_p20));
 		});
 	return A2(
 		process,
 		{ctor: '[]'},
 		{ctor: '_Tuple3', _0: 0, _1: 0, _2: _elm_lang$core$Color$white});
 };
+var _user$project$Anatoly$shape = F2(
+	function (seed, side) {
+		return function (pts) {
+			return {
+				previous: A2(_elm_lang$core$List$drop, 1, pts),
+				current: A2(
+					_elm_lang$core$Maybe$withDefault,
+					{ctor: '_Tuple3', _0: 0, _1: 0, _2: _elm_lang$core$Color$white},
+					_elm_lang$core$List$head(pts)),
+				side: side,
+				paused: true
+			};
+		}(
+			_elm_lang$core$Tuple$first(
+				A2(
+					_elm_lang$core$Random$step,
+					_user$project$Anatoly$randomShape(side),
+					_elm_lang$core$Random$initialSeed(seed))));
+	});
 var _user$project$Anatoly$init = {
 	previous: {ctor: '[]'},
 	current: {ctor: '_Tuple3', _0: 0, _1: 0, _2: _elm_lang$core$Color$white},
 	side: 100,
-	res: 5,
 	paused: false
 };
-var _user$project$Anatoly$Model = F5(
-	function (a, b, c, d, e) {
-		return {previous: a, current: b, side: c, res: d, paused: e};
+var _user$project$Anatoly$Model = F4(
+	function (a, b, c, d) {
+		return {previous: a, current: b, side: c, paused: d};
 	});
 var _user$project$Anatoly$Key = function (a) {
 	return {ctor: 'Key', _0: a};
@@ -10608,23 +10626,21 @@ var _user$project$Anatoly$Key = function (a) {
 var _user$project$Anatoly$SetShape = function (a) {
 	return {ctor: 'SetShape', _0: a};
 };
-var _user$project$Anatoly$initWithShape = F2(
-	function (side, res) {
-		return {
-			ctor: '_Tuple2',
-			_0: {
-				previous: {ctor: '[]'},
-				current: {ctor: '_Tuple3', _0: 0, _1: 0, _2: _elm_lang$core$Color$white},
-				side: side,
-				res: res,
-				paused: true
-			},
-			_1: A2(
-				_elm_lang$core$Random$generate,
-				_user$project$Anatoly$SetShape,
-				_user$project$Anatoly$randomShape(side))
-		};
-	});
+var _user$project$Anatoly$initWithShape = function (side) {
+	return {
+		ctor: '_Tuple2',
+		_0: {
+			previous: {ctor: '[]'},
+			current: {ctor: '_Tuple3', _0: 0, _1: 0, _2: _elm_lang$core$Color$white},
+			side: side,
+			paused: true
+		},
+		_1: A2(
+			_elm_lang$core$Random$generate,
+			_user$project$Anatoly$SetShape,
+			_user$project$Anatoly$randomShape(side))
+	};
+};
 var _user$project$Anatoly$Add = function (a) {
 	return {ctor: 'Add', _0: a};
 };
@@ -10648,8 +10664,8 @@ var _user$project$Anatoly$update = F2(
 	function (msg, model) {
 		update:
 		while (true) {
-			var _p22 = msg;
-			switch (_p22.ctor) {
+			var _p21 = msg;
+			switch (_p21.ctor) {
 				case 'ResetPoints':
 					return {
 						ctor: '_Tuple2',
@@ -10662,35 +10678,33 @@ var _user$project$Anatoly$update = F2(
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				case 'Add':
-					if ((_elm_lang$core$Native_Utils.cmp(
-						_elm_lang$core$Basics$abs(_p22._0._0),
-						(model.side / 2) | 0) > 0) || (_elm_lang$core$Native_Utils.cmp(
-						_elm_lang$core$Basics$abs(_p22._0._1),
-						(model.side / 2) | 0) > 0)) {
-						var _v8 = _user$project$Anatoly$ResetPoints,
-							_v9 = model;
-						msg = _v8;
-						model = _v9;
-						continue update;
-					} else {
-						return {
-							ctor: '_Tuple2',
-							_0: _elm_lang$core$Native_Utils.update(
-								model,
-								{
-									previous: A2(
-										_elm_lang$core$Basics_ops['++'],
-										model.previous,
-										{
-											ctor: '::',
-											_0: model.current,
-											_1: {ctor: '[]'}
-										}),
-									current: _p22._0
-								}),
-							_1: _elm_lang$core$Platform_Cmd$none
-						};
-					}
+					return ((_elm_lang$core$Native_Utils.cmp(
+						_elm_lang$core$Basics$abs(_p21._0._0),
+						(model.side / 3) | 0) > 0) || (_elm_lang$core$Native_Utils.cmp(
+						_elm_lang$core$Basics$abs(_p21._0._1),
+						(model.side / 3) | 0) > 0)) ? {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{paused: true}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					} : {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{
+								previous: A2(
+									_elm_lang$core$Basics_ops['++'],
+									model.previous,
+									{
+										ctor: '::',
+										_0: model.current,
+										_1: {ctor: '[]'}
+									}),
+								current: _p21._0
+							}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
 				case 'Tick':
 					return {
 						ctor: '_Tuple2',
@@ -10701,7 +10715,7 @@ var _user$project$Anatoly$update = F2(
 							_user$project$Anatoly$randomNeighbor(model.current))
 					};
 				case 'Key':
-					switch (_p22._0) {
+					switch (_p21._0) {
 						case 32:
 							return {
 								ctor: '_Tuple2',
@@ -10711,29 +10725,29 @@ var _user$project$Anatoly$update = F2(
 								_1: _elm_lang$core$Platform_Cmd$none
 							};
 						case 13:
-							var _v10 = _user$project$Anatoly$ResetPoints,
-								_v11 = _elm_lang$core$Native_Utils.update(
+							var _v8 = _user$project$Anatoly$ResetPoints,
+								_v9 = _elm_lang$core$Native_Utils.update(
 								model,
 								{paused: false});
-							msg = _v10;
-							model = _v11;
+							msg = _v8;
+							model = _v9;
 							continue update;
 						default:
 							return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 					}
 				default:
-					if (_p22._0.ctor === '[]') {
-						var _v12 = _user$project$Anatoly$ResetPoints,
-							_v13 = model;
-						msg = _v12;
-						model = _v13;
+					if (_p21._0.ctor === '[]') {
+						var _v10 = _user$project$Anatoly$ResetPoints,
+							_v11 = model;
+						msg = _v10;
+						model = _v11;
 						continue update;
 					} else {
 						return {
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
 								model,
-								{current: _p22._0._0, previous: _p22._0._1, paused: true}),
+								{current: _p21._0._0, previous: _p21._0._1, paused: true}),
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
 					}
@@ -10744,7 +10758,7 @@ var _user$project$Anatoly$main = _elm_lang$html$Html$program(
 	{
 		init: {ctor: '_Tuple2', _0: _user$project$Anatoly$init, _1: _elm_lang$core$Platform_Cmd$none},
 		update: _user$project$Anatoly$update,
-		view: _user$project$Anatoly$view,
+		view: _user$project$Anatoly$view(5),
 		subscriptions: _user$project$Anatoly$subscriptions
 	})();
 var Elm = {};

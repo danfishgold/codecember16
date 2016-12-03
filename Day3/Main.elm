@@ -157,7 +157,16 @@ view { side, current, previous, res, symmetry } =
                     g [] [ point ( x, y, c ), point ( -y, x, c ), point ( y, -x, c ), point ( -x, -y, c ) ]
 
                 Mirror ->
-                    g [] [ point ( x, y, c ), point ( -x, y, c ), point ( x, -y, c ), point ( -x, -y, c ) ]
+                    g []
+                        [ point ( x, y, c )
+                        , point ( y, x, c )
+                        , point ( -x, y, c )
+                        , point ( -y, x, c )
+                        , point ( x, -y, c )
+                        , point ( y, -x, c )
+                        , point ( -x, -y, c )
+                        , point ( -y, -x, c )
+                        ]
 
         point ( x0, y0, c ) =
             rect

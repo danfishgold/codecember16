@@ -6,9 +6,7 @@ import Element
 import Time exposing (second, every, Time)
 import Color exposing (Color)
 import Random exposing (Generator, generate)
-import Random.Array
-import Random.List
-import Array exposing (Array)
+import Random.Extra
 import Keyboard exposing (KeyCode)
 
 
@@ -43,7 +41,7 @@ type Symmetry
 subscriptions : Model -> Sub Msg
 subscriptions _ =
     Sub.batch
-        [ every (0.005 * second) Tick
+        [ every (0.0001 * second) Tick
         , Keyboard.ups Key
         ]
 
@@ -56,23 +54,21 @@ randomColor : Generator Color
 randomColor =
     let
         colors =
-            Array.fromList
-                [ Color.white
-                , Color.red
-                , Color.blue
-                , Color.green
-                , Color.yellow
-                , Color.purple
-                ]
+            [ Color.white
+            , Color.red
+            , Color.blue
+            , Color.green
+            , Color.yellow
+            , Color.purple
+            ]
     in
-        Random.Array.sample colors
+        Random.Extra.sample colors
             |> Random.map (Maybe.withDefault Color.white)
 
 
 randomNeighbor : ( Int, Int ) -> Generator ( Int, Int )
 randomNeighbor ( x, y ) =
-    Random.List.choose [ ( x + 1, y ), ( x - 1, y ), ( x, y + 1 ), ( x, y - 1 ) ]
-        |> Random.map Tuple.first
+    Random.Extra.sample [ ( x + 1, y ), ( x - 1, y ), ( x, y + 1 ), ( x, y - 1 ) ]
         |> Random.map (Maybe.withDefault ( x, y ))
 
 

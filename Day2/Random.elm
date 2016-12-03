@@ -1,7 +1,7 @@
-module Day2.Random exposing (ryb1, ryb1v1, ryb1v2, ryb1v3, ryb2v2)
+module Day2.Random exposing (ryb, ryb1, ryb1v1, ryb1v2, ryb1v3, ryb2v2)
 
-import Day2.Ryb exposing (ryb)
-import Random exposing (Generator, float, map)
+import Day2.Ryb as Ryb
+import Random exposing (Generator, float, map, map3)
 import Color exposing (Color)
 
 
@@ -10,22 +10,33 @@ hue =
     float 0 360
 
 
+{-| A random color in ryb space.
+-}
+ryb : Generator Color
+ryb =
+    map3 Ryb.ryb
+        (float 0 360)
+        (float 0 1)
+        (float 0 1)
+
+
 {-|
-   One random color in ryb space.
+   One random color in ryb space with predetermined saturation and lightness.
 -}
 ryb1 : Float -> Float -> Generator Color
 ryb1 s l =
-    hue |> map (\h -> ryb h s l)
+    hue |> map (\h -> Ryb.ryb h s l)
 
 
 {-|
    Two random colors in ryb space that have opposite hues
+   with given saturation and lightness
 -}
 ryb1v1 : Float -> Float -> Generator ( Color, Color )
 ryb1v1 s l =
     let
         clr h =
-            ryb h s l
+            Ryb.ryb h s l
 
         colors h =
             ( clr h
@@ -44,7 +55,7 @@ ryb1v2 : Float -> Float -> Float -> Generator ( Color, Color, Color )
 ryb1v2 s l spacing =
     let
         clr h =
-            ryb h s l
+            Ryb.ryb h s l
 
         colors h =
             ( clr h
@@ -64,7 +75,7 @@ ryb1v3 : Float -> Float -> Float -> Generator ( Color, Color, Color, Color )
 ryb1v3 s l spacing =
     let
         clr h =
-            ryb h s l
+            Ryb.ryb h s l
 
         colors h =
             ( clr h
@@ -86,7 +97,7 @@ ryb2v2 : Float -> Float -> Float -> Generator ( Color, Color, Color, Color )
 ryb2v2 s l spacing =
     let
         clr h =
-            ryb h s l
+            Ryb.ryb h s l
 
         colors h =
             ( clr (h + spacing / 2)

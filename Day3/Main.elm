@@ -55,6 +55,12 @@ update msg model =
         Key 32 ->
             ( { model | points = [] }, Cmd.none )
 
+        Key 49 ->
+            ( { model | symmetry = Mirror, points = [] }, Cmd.none )
+
+        Key 50 ->
+            ( { model | symmetry = Rotation, points = [] }, Cmd.none )
+
         Key _ ->
             ( model, Cmd.none )
 

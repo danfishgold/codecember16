@@ -17,7 +17,6 @@ type alias Model =
     { previous : List Point
     , current : Point
     , side : Int
-    , res : Float
     , paused : Bool
     }
 
@@ -31,21 +30,33 @@ init =
     { previous = []
     , current = ( 0, 0, Color.white )
     , side = 100
-    , res = 5
     , paused = False
     }
 
 
-initWithShape : Int -> Float -> ( Model, Cmd Msg )
-initWithShape side res =
+initWithShape : Int -> ( Model, Cmd Msg )
+initWithShape side =
     ( { previous = []
       , current = ( 0, 0, Color.white )
       , side = side
-      , res = res
       , paused = True
       }
     , generate SetShape (randomShape side)
     )
+
+
+shape : Int -> Int -> Model
+shape seed side =
+    seed
+        |> Random.initialSeed
+        |> Random.step (randomShape side)
+        |> Tuple.first
+        |> \pts ->
+            { previous = List.drop 1 pts
+            , current = List.head pts |> Maybe.withDefault ( 0, 0, Color.white )
+            , side = side
+            , paused = True
+            }
 
 
 type Msg
@@ -131,8 +142,8 @@ update msg model =
             ( { model | current = ( 0, 0, Color.white ), previous = [] }, Cmd.none )
 
         Add (( x, y, _ ) as pt) ->
-            if abs x > model.side // 2 || abs y > model.side // 2 then
-                update ResetPoints model
+            if abs x > model.side // 3 || abs y > model.side // 3 then
+                ( { model | paused = True }, Cmd.none )
             else
                 ( { model
                     | previous = model.previous ++ [ model.current ]
@@ -170,8 +181,8 @@ update msg model =
 --
 
 
-view : Model -> Svg Msg
-view { side, current, previous, res } =
+view : Float -> Model -> Svg Msg
+view res { side, current, previous } =
     let
         bg =
             rect
@@ -226,6 +237,6 @@ main =
     program
         { init = ( init, Cmd.none )
         , update = update
-        , view = view
+        , view = view 5
         , subscriptions = subscriptions
         }

@@ -82,9 +82,19 @@ randomColor =
 
 randomNeighbor : ( Int, Int ) -> Generator ( Int, Int )
 randomNeighbor ( x, y ) =
-    Random.Extra.sample [ ( x + 1, y ), ( x - 1, y ), ( x, y + 1 ), ( x, y - 1 ) ]
-        |> Random.map (Maybe.withDefault ( x, y ))
-        |> Random.map (\( x, y ) -> ( max x 0, max y 0 ))
+    let
+        forward =
+            Random.Extra.sample [ ( x + 1, y ), ( x, y + 1 ) ]
+
+        backward =
+            Random.Extra.sample [ ( x - 1, y ), ( x, y - 1 ) ]
+    in
+        Random.Extra.frequency [ ( 0.57, forward ), ( 0.43, backward ) ]
+            |> Random.map (Maybe.withDefault ( x, y ))
+
+
+
+-- |> Random.map (\( x, y ) -> ( max x 0, max y 0 ))
 
 
 randomPoint : Model -> Generator ( Int, Int, Color )

@@ -79,12 +79,8 @@ randomNeighbor ( x, y ) =
         backward =
             Random.Extra.sample [ ( x - 1, y ), ( x, y - 1 ) ]
     in
-        Random.Extra.frequency [ ( 0.57, forward ), ( 0.43, backward ) ]
+        Random.Extra.frequency [ ( 0.65, forward ), ( 0.35, backward ) ]
             |> Random.map (Maybe.withDefault ( x, y ))
-
-
-
--- |> Random.map (\( x, y ) -> ( max x 0, max y 0 ))
 
 
 randomPoint : Model -> Generator ( Int, Int, Color )

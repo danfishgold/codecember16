@@ -18,12 +18,13 @@ type alias Model =
     , side : Int
     , res : Float
     , symmetry : Symmetry
+    , paused : Bool
     }
 
 
 init : Model
 init =
-    { points = [], side = 100, res = 5, symmetry = Mirror }
+    { points = [], side = 100, res = 5, symmetry = Mirror, paused = False }
 
 
 type Msg
@@ -42,9 +43,12 @@ type Symmetry
 
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
+subscriptions model =
     Sub.batch
-        [ every (0.0001 * second) Tick
+        [ if model.paused then
+            Sub.none
+          else
+            every (0.0001 * second) Tick
         , Keyboard.ups Key
         ]
 
@@ -104,7 +108,7 @@ update msg model =
             ( model, generate Add (randomPoint model) )
 
         Key 32 ->
-            ( { model | points = [] }, Cmd.none )
+            ( { model | paused = not model.paused }, Cmd.none )
 
         Key 49 ->
             ( { model | symmetry = Mirror, points = [] }, Cmd.none )

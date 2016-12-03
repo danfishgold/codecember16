@@ -10,6 +10,7 @@ import Svg exposing (Svg, svg, rect, g)
 import Svg.Attributes exposing (x, y, width, height, fill)
 import Svg.Keyed exposing (node)
 import Color.Convert exposing (colorToCssRgb)
+import Day2.Random exposing (ryb1)
 
 
 type alias Model =
@@ -66,18 +67,7 @@ subscriptions model =
 
 randomColor : Generator Color
 randomColor =
-    let
-        colors =
-            [ Color.white
-            , Color.red
-            , Color.blue
-            , Color.green
-            , Color.yellow
-            , Color.purple
-            ]
-    in
-        Random.Extra.sample colors
-            |> Random.map (Maybe.withDefault Color.white)
+    ryb1 1 0.35
 
 
 randomNeighbor : ( Int, Int ) -> Generator ( Int, Int )

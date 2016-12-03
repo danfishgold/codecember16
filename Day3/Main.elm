@@ -9,6 +9,7 @@ import Random exposing (Generator, generate)
 import Random.Array
 import Random.List
 import Array exposing (Array)
+import Keyboard exposing (KeyCode)
 
 
 type alias Model =
@@ -27,6 +28,7 @@ init =
 type Msg
     = Tick Time
     | Add ( Int, Int, Color )
+    | Key KeyCode
 
 
 type Symmetry
@@ -49,6 +51,12 @@ update msg model =
 
         Tick _ ->
             ( model, generate Add (randomPoint model) )
+
+        Key 32 ->
+            ( { model | points = [] }, Cmd.none )
+
+        Key _ ->
+            ( model, Cmd.none )
 
 
 
@@ -90,7 +98,10 @@ view { side, points, res, symmetry } =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    every (0.01 * second) Tick
+    Sub.batch
+        [ every (0.01 * second) Tick
+        , Keyboard.ups Key
+        ]
 
 
 

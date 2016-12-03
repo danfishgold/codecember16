@@ -22,7 +22,7 @@ type alias Model =
 
 init : Model
 init =
-    { points = [], side = 50, res = 5, symmetry = Mirror }
+    { points = [], side = 100, res = 5, symmetry = Mirror }
 
 
 type Msg
@@ -34,6 +34,58 @@ type Msg
 type Symmetry
     = Mirror
     | Rotation
+
+
+
+--
+
+
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+    Sub.batch
+        [ every (0.005 * second) Tick
+        , Keyboard.ups Key
+        ]
+
+
+
+--
+
+
+randomColor : Generator Color
+randomColor =
+    let
+        colors =
+            Array.fromList
+                [ Color.white
+                , Color.red
+                , Color.blue
+                , Color.green
+                , Color.yellow
+                , Color.purple
+                ]
+    in
+        Random.Array.sample colors
+            |> Random.map (Maybe.withDefault Color.white)
+
+
+randomNeighbor : ( Int, Int ) -> Generator ( Int, Int )
+randomNeighbor ( x, y ) =
+    Random.List.choose [ ( x + 1, y ), ( x - 1, y ), ( x, y + 1 ), ( x, y - 1 ) ]
+        |> Random.map Tuple.first
+        |> Random.map (Maybe.withDefault ( x, y ))
+
+
+randomPoint : Model -> Generator ( Int, Int, Color )
+randomPoint model =
+    case model.points of
+        ( x, y, _ ) :: _ ->
+            Random.map2 (\( x, y ) c -> ( x, y, c ))
+                (randomNeighbor ( x, y ))
+                (randomColor)
+
+        [] ->
+            randomColor |> Random.map (\c -> ( 0, 0, c ))
 
 
 
@@ -96,58 +148,6 @@ view { side, points, res, symmetry } =
             (side * ceiling res)
             (bg :: pts)
             |> Element.toHtml
-
-
-
---
-
-
-subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Sub.batch
-        [ every (0.01 * second) Tick
-        , Keyboard.ups Key
-        ]
-
-
-
---
-
-
-randomColor : Generator Color
-randomColor =
-    let
-        colors =
-            Array.fromList
-                [ Color.white
-                , Color.red
-                , Color.blue
-                , Color.green
-                , Color.yellow
-                , Color.purple
-                ]
-    in
-        Random.Array.sample colors
-            |> Random.map (Maybe.withDefault Color.white)
-
-
-randomNeighbor : ( Int, Int ) -> Generator ( Int, Int )
-randomNeighbor ( x, y ) =
-    Random.List.choose [ ( x + 1, y ), ( x - 1, y ), ( x, y + 1 ), ( x, y - 1 ) ]
-        |> Random.map Tuple.first
-        |> Random.map (Maybe.withDefault ( x, y ))
-
-
-randomPoint : Model -> Generator ( Int, Int, Color )
-randomPoint model =
-    case model.points of
-        ( x, y, _ ) :: _ ->
-            Random.map2 (\( x, y ) c -> ( x, y, c ))
-                (randomNeighbor ( x, y ))
-                (randomColor)
-
-        [] ->
-            randomColor |> Random.map (\c -> ( 0, 0, c ))
 
 
 

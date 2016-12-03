@@ -15,17 +15,23 @@ type alias Model =
     { points : List ( Int, Int, Color )
     , side : Int
     , res : Float
+    , symmetry : Symmetry
     }
 
 
 init : Model
 init =
-    { points = [], side = 50, res = 5 }
+    { points = [], side = 50, res = 5, symmetry = Mirror }
 
 
 type Msg
     = Tick Time
     | Add ( Int, Int, Color )
+
+
+type Symmetry
+    = Mirror
+    | Rotation
 
 
 
@@ -50,7 +56,7 @@ update msg model =
 
 
 view : Model -> Html Msg
-view { side, points, res } =
+view { side, points, res, symmetry } =
     let
         bg =
             rect (toFloat side * res) (toFloat side * res) |> filled Color.black
@@ -61,7 +67,12 @@ view { side, points, res } =
                 |> List.reverse
 
         mirroredPoint ( x, y, c ) =
-            group [ point ( x, y, c ), point ( -y, x, c ), point ( y, -x, c ), point ( -x, -y, c ) ]
+            case symmetry of
+                Rotation ->
+                    group [ point ( x, y, c ), point ( -y, x, c ), point ( y, -x, c ), point ( -x, -y, c ) ]
+
+                Mirror ->
+                    group [ point ( x, y, c ), point ( -x, y, c ), point ( x, -y, c ), point ( -x, -y, c ) ]
 
         point ( x, y, c ) =
             rect res res |> filled c |> move ( toFloat x * res, toFloat y * res )

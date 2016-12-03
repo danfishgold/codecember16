@@ -36,10 +36,23 @@ init =
     }
 
 
+initWithShape : Int -> Float -> ( Model, Cmd Msg )
+initWithShape side res =
+    ( { previous = []
+      , current = ( 0, 0, Color.white )
+      , side = side
+      , res = res
+      , paused = True
+      }
+    , generate SetShape (randomShape side)
+    )
+
+
 type Msg
     = ResetPoints
     | Tick Time
     | Add Point
+    | SetShape (List Point)
     | Key KeyCode
 
 
@@ -94,6 +107,17 @@ randomNeighbor ( x0, y0, _ ) =
             (color)
 
 
+randomShape : Int -> Generator (List Point)
+randomShape side =
+    let
+        process previous (( x, y, _ ) as pt) =
+            if abs x > side || abs y > side then
+                Random.Extra.constant previous
+            else
+                randomNeighbor pt
+                    |> Random.andThen (process (pt :: previous))
+    in
+        process [] ( 0, 0, Color.white )
 
 
 
@@ -128,6 +152,18 @@ update msg model =
 
         Key _ ->
             ( model, Cmd.none )
+
+        SetShape [] ->
+            update ResetPoints model
+
+        SetShape (current :: previous) ->
+            ( { model
+                | current = current
+                , previous = previous
+                , paused = True
+              }
+            , Cmd.none
+            )
 
 
 

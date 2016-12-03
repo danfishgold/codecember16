@@ -17,7 +17,6 @@ type alias Model =
     { previous : List Point
     , current : Point
     , side : Int
-    , res : Float
     , paused : Bool
     }
 
@@ -31,7 +30,6 @@ init =
     { previous = []
     , current = ( 0, 0, Color.white )
     , side = 100
-    , res = 5
     , paused = False
     }
 
@@ -41,7 +39,6 @@ initWithShape side res =
     ( { previous = []
       , current = ( 0, 0, Color.white )
       , side = side
-      , res = res
       , paused = True
       }
     , generate SetShape (randomShape side)
@@ -170,8 +167,8 @@ update msg model =
 --
 
 
-view : Model -> Svg Msg
-view { side, current, previous, res } =
+view : Float -> Model -> Svg Msg
+view res { side, current, previous } =
     let
         bg =
             rect
@@ -226,6 +223,6 @@ main =
     program
         { init = ( init, Cmd.none )
         , update = update
-        , view = view
+        , view = view 5
         , subscriptions = subscriptions
         }

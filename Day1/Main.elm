@@ -40,11 +40,11 @@ init =
       , shift = ( 0, 0 )
       , width = 0.15
       , aspectRatio = 1.5
-      , window = WindowSize 750 500
+      , window = WindowSize 0 0
       }
     , Cmd.batch
         [ Task.perform WindowResize Window.size
-        , Random.generate SetParameters randomModelParameters
+        , Random.generate SetModel (randomModel <| WindowSize 0 0)
         ]
     )
 
@@ -52,7 +52,7 @@ init =
 type Msg
     = WindowResize Window.Size
     | KeyPressed KeyCode
-    | SetParameters ( ( Color, Color, Color, Color ), ( Float, Float ), Float, Float )
+    | SetModel Model
 
 
 
@@ -73,21 +73,13 @@ update msg model =
             )
 
         KeyPressed 32 ->
-            ( model, Random.generate SetParameters randomModelParameters )
+            ( model, Random.generate SetModel (randomModel model.window) )
 
         KeyPressed _ ->
             ( model, Cmd.none )
 
-        SetParameters ( ( c1, c2, c3, lc ), shift, wd, ratio ) ->
-            ( { model
-                | color1 = c1
-                , color2 = c2
-                , color3 = c3
-                , lineColor = lc
-                , shift = shift
-                , width = wd
-                , aspectRatio = ratio
-              }
+        SetModel newModel ->
+            ( newModel
             , Cmd.none
             )
 
@@ -96,8 +88,8 @@ update msg model =
 --
 
 
-randomModelParameters : Random.Generator ( ( Color, Color, Color, Color ), ( Float, Float ), Float, Float )
-randomModelParameters =
+randomModel : WindowSize -> Random.Generator Model
+randomModel window =
     let
         shift =
             Random.map2 (,)
@@ -116,8 +108,19 @@ randomModelParameters =
 
         aspectRatio =
             Random.float 1.2 1.7
+
+        model ( c1, c2, c3, lc ) shift wd ratio =
+            { color1 = c1
+            , color2 = c2
+            , color3 = c3
+            , lineColor = lc
+            , shift = shift
+            , width = wd
+            , aspectRatio = ratio
+            , window = window
+            }
     in
-        Random.map4 (,,,)
+        Random.map4 model
             colors
             shift
             width

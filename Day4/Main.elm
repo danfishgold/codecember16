@@ -58,20 +58,21 @@ update msg model =
 --
 
 
-view : String -> Model -> Html Msg
-view side { events } =
+view : String -> String -> Model -> Html Msg
+view width height { events } =
     let
         eventDiv title opacity =
             div
                 [ style
-                    [ ( "width", side )
-                    , ( "height", side )
+                    [ ( "width", width )
+                    , ( "height", height )
                     , ( "flex", "0 1 auto" )
                     , ( "opacity", toString <| opacity )
                     , ( "display", "flex" )
                     , ( "text-align", "center" )
                     , ( "align-items", "center" )
                     , ( "justify-content", "center" )
+                    , ( "padding", "10px 10px" )
                     ]
                 ]
                 [ text title ]
@@ -80,13 +81,14 @@ view side { events } =
             if not fired then
                 eventDiv title 0
             else
-                eventDiv title <| decay <| 5 * current / duration
+                eventDiv title <| decay <| current / (0.25 * second)
     in
         events
             |> List.map event
             |> div
                 [ style
-                    [ ( "width", "500px" )
+                    [ ( "width", "95%" )
+                    , ( "max-width", "900px" )
                     , ( "margin", "0 auto" )
                     , ( "display", "flex" )
                     , ( "flex-wrap", "wrap" )
@@ -117,5 +119,5 @@ main =
         { init = init events
         , subscriptions = subscriptions
         , update = update
-        , view = view "100px"
+        , view = view "150px" "45px"
         }

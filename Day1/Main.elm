@@ -4,13 +4,11 @@ import Svg exposing (Svg, svg, g, line, polygon)
 import Svg.Attributes exposing (points, fill, transform)
 import Svg.Attributes exposing (strokeWidth, stroke, strokeDasharray, x1, x2, y1, y2)
 import Svg.Attributes exposing (width, height)
-import Html exposing (program)
-import Window
+import Html exposing (programWithFlags)
 import Keyboard exposing (KeyCode)
 import Random
 import Random.Color
 import String
-import Task
 import Color exposing (Color)
 import Color.Convert exposing (colorToCssRgb)
 
@@ -27,12 +25,19 @@ type alias Model =
     }
 
 
+type alias Flags =
+    { width : Float
+    , height : Float
+    , randomize : Bool
+    }
+
+
 type alias WindowSize =
     { width : Float, height : Float }
 
 
-init : ( Model, Cmd Msg )
-init =
+init : Flags -> ( Model, Cmd Msg )
+init { width, height, randomize } =
     ( { color1 = Color.blue
       , color2 = Color.green
       , color3 = Color.red
@@ -40,18 +45,17 @@ init =
       , shift = ( 0, 0 )
       , width = 0.15
       , aspectRatio = 1.5
-      , window = WindowSize 750 500
+      , window = WindowSize width height
       }
-    , Cmd.batch
-        [ Task.perform WindowResize Window.size
-        , Random.generate SetParameters randomModelParameters
-        ]
+    , if randomize then
+        Random.generate SetParameters randomModelParameters
+      else
+        Cmd.none
     )
 
 
 type Msg
-    = WindowResize Window.Size
-    | KeyPressed KeyCode
+    = KeyPressed KeyCode
     | SetParameters ( ( Color, Color, Color, Color ), ( Float, Float ), Float, Float )
 
 
@@ -62,16 +66,6 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case (Debug.log "message" msg) of
-        WindowResize { width, height } ->
-            ( { model
-                | window =
-                    { width = toFloat width
-                    , height = toFloat height
-                    }
-              }
-            , Cmd.none
-            )
-
         KeyPressed 32 ->
             ( model, Random.generate SetParameters randomModelParameters )
 
@@ -130,10 +124,7 @@ randomModelParameters =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch
-        [ Keyboard.ups KeyPressed
-        , Window.resizes WindowResize
-        ]
+    Keyboard.ups KeyPressed
 
 
 
@@ -257,8 +248,8 @@ view ({ window, width, aspectRatio } as model) =
                 |> g []
     in
         svg
-            [ Svg.Attributes.width <| toString <| window.width - 5
-            , Svg.Attributes.height <| toString <| window.height - 5
+            [ Svg.Attributes.width <| toString <| window.width
+            , Svg.Attributes.height <| toString <| window.height
             ]
             [ g []
                 [ repeat parallelogram
@@ -271,9 +262,9 @@ view ({ window, width, aspectRatio } as model) =
 --
 
 
-main : Program Never Model Msg
+main : Program Flags Model Msg
 main =
-    program
+    programWithFlags
         { init = init
         , view = view
         , update = update

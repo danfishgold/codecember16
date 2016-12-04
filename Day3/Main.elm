@@ -26,11 +26,11 @@ type alias Point =
     ( Int, Int, Color )
 
 
-init : Model
-init =
+init : Int -> Model
+init side =
     { previous = Dict.empty
     , current = ( 0, 0, Color.white )
-    , side = 100
+    , side = side
     , paused = False
     }
 
@@ -120,10 +120,10 @@ randomNeighbor ( x0, y0, _ ) =
                     Random.Extra.constant ( x + 1, y )
             in
                 Random.Extra.frequency
-                    [ ( 0.4, up )
-                    , ( 0.3, down )
+                    [ ( 0.335, up )
+                    , ( 0.28, down )
                     , ( 0.3, left )
-                    , ( 0.5, right )
+                    , ( 0.37, right )
                     ]
 
         color =
@@ -258,7 +258,7 @@ view res { side, current, previous } =
 main : Program Never Model Msg
 main =
     program
-        { init = ( init, Cmd.none )
+        { init = ( init 100, Cmd.none )
         , update = update
         , view = view 5
         , subscriptions = subscriptions

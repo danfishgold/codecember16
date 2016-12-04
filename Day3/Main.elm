@@ -178,6 +178,9 @@ update msg model =
         Key 32 ->
             update ResetPoints { model | paused = False }
 
+        Key 13 ->
+            ( model, generate SetShape (randomShape (model.side // 3)) )
+
         Key _ ->
             ( model, Cmd.none )
 

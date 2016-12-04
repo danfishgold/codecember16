@@ -12,6 +12,7 @@ import Random.Color
 import String
 import Task
 import Color exposing (Color)
+import Color.Convert exposing (colorToCssRgb)
 
 
 type alias Model =
@@ -158,21 +159,6 @@ parallelogramColor model i j =
             model.color1
 
 
-colorToString : Color -> String
-colorToString color =
-    color
-        |> Color.toRgb
-        |> (\{ red, green, blue } ->
-                "rgb("
-                    ++ toString red
-                    ++ ", "
-                    ++ toString green
-                    ++ ", "
-                    ++ toString blue
-                    ++ ")"
-           )
-
-
 translation : Model -> Int -> Int -> Svg.Attribute Msg
 translation { width, aspectRatio, shift, window } i j =
     let
@@ -198,7 +184,7 @@ parallelogram ({ width, aspectRatio, window } as model) i j =
     let
         color =
             parallelogramColor model i j
-                |> colorToString
+                |> colorToCssRgb
 
         wd =
             width * window.width
@@ -227,7 +213,7 @@ lineGroup ({ width, aspectRatio, lineColor, window } as model) i j =
             ( window.width * width / 4, window.width * width * aspectRatio / 4 )
 
         lineProps =
-            [ stroke <| colorToString lineColor
+            [ stroke <| colorToCssRgb lineColor
             , strokeWidth "1.5"
             , translation model i j
             , strokeDasharray "10, 5"
@@ -253,39 +239,32 @@ lineGroup ({ width, aspectRatio, lineColor, window } as model) i j =
             ]
 
 
-repeat : Model -> (Model -> Int -> Int -> Svg Msg) -> Svg Msg
-repeat model shape =
-    let
-        ( n, m ) =
-            counts model
-
-        row i =
-            List.range 0 n
-                |> List.map (shape model i)
-    in
-        List.range 0 m
-            |> List.concatMap row
-            |> g []
-
-
-counts : Model -> ( Int, Int )
-counts ({ width, aspectRatio } as model) =
-    ( ceiling (1 / width) + 2
-    , ceiling (1 / (width * aspectRatio / 2)) + 2
-    )
-
-
 view : Model -> Svg Msg
 view ({ window, width, aspectRatio } as model) =
-    svg
-        [ Svg.Attributes.width <| toString <| window.width - 5
-        , Svg.Attributes.height <| toString <| window.height - 5
-        ]
-        [ g []
-            [ repeat model parallelogram
-            , repeat model lineGroup
+    let
+        ( n, m ) =
+            ( ceiling (1 / width) + 2
+            , ceiling (1 / (width * aspectRatio / 2)) + 2
+            )
+
+        row shape i =
+            List.range 0 n
+                |> List.map (shape model i)
+
+        repeat shape =
+            List.range 0 m
+                |> List.concatMap (row shape)
+                |> g []
+    in
+        svg
+            [ Svg.Attributes.width <| toString <| window.width - 5
+            , Svg.Attributes.height <| toString <| window.height - 5
             ]
-        ]
+            [ g []
+                [ repeat parallelogram
+                , repeat lineGroup
+                ]
+            ]
 
 
 

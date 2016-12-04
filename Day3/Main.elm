@@ -11,10 +11,11 @@ import Svg.Attributes exposing (x, y, width, height, fill)
 import Svg.Keyed exposing (node)
 import Color.Convert exposing (colorToCssRgb)
 import Day2.Random exposing (ryb1)
+import Dict exposing (Dict)
 
 
 type alias Model =
-    { previous : List Point
+    { previous : Dict ( Int, Int ) Point
     , current : Point
     , side : Int
     , paused : Bool
@@ -27,7 +28,7 @@ type alias Point =
 
 init : Model
 init =
-    { previous = []
+    { previous = Dict.empty
     , current = ( 0, 0, Color.white )
     , side = 100
     , paused = False
@@ -36,7 +37,7 @@ init =
 
 initWithShape : Int -> ( Model, Cmd Msg )
 initWithShape side =
-    ( { previous = []
+    ( { previous = Dict.empty
       , current = ( 0, 0, Color.white )
       , side = side
       , paused = True
@@ -51,12 +52,27 @@ shape seed side =
         |> Random.initialSeed
         |> Random.step (randomShape side)
         |> Tuple.first
-        |> \pts ->
-            { previous = List.drop 1 pts
-            , current = List.head pts |> Maybe.withDefault ( 0, 0, Color.white )
+        |> separateList
+        |> \( curr, prev ) ->
+            { previous = prev
+            , current = curr
             , side = side
             , paused = True
             }
+
+
+separateList : List Point -> ( Point, Dict ( Int, Int ) Point )
+separateList pts =
+    case pts of
+        [] ->
+            ( ( 0, 0, Color.white ), Dict.empty )
+
+        current :: previous ->
+            ( current
+            , previous
+                |> List.map (\( x, y, c ) -> ( ( x, y ), ( x, y, c ) ))
+                |> Dict.fromList
+            )
 
 
 type Msg
@@ -139,18 +155,22 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ResetPoints ->
-            ( { model | current = ( 0, 0, Color.white ), previous = [] }, Cmd.none )
+            ( { model | current = ( 0, 0, Color.white ), previous = Dict.empty }, Cmd.none )
 
         Add (( x, y, _ ) as pt) ->
             if abs x > model.side // 3 || abs y > model.side // 3 then
                 ( { model | paused = True }, Cmd.none )
             else
-                ( { model
-                    | previous = model.previous ++ [ model.current ]
-                    , current = pt
-                  }
-                , Cmd.none
-                )
+                let
+                    addToDict ( x, y, c ) dict =
+                        dict |> Dict.insert ( x, y ) ( x, y, c )
+                in
+                    ( { model
+                        | previous = model.previous |> addToDict model.current
+                        , current = pt
+                      }
+                    , Cmd.none
+                    )
 
         Tick _ ->
             ( model, generate Add (randomNeighbor model.current) )
@@ -167,14 +187,17 @@ update msg model =
         SetShape [] ->
             update ResetPoints model
 
-        SetShape (current :: previous) ->
-            ( { model
-                | current = current
-                , previous = previous
-                , paused = True
-              }
-            , Cmd.none
-            )
+        SetShape pts ->
+            pts
+                |> separateList
+                |> \( curr, prev ) ->
+                    ( { model
+                        | current = curr
+                        , previous = prev
+                        , paused = True
+                      }
+                    , Cmd.none
+                    )
 
 
 
@@ -195,7 +218,7 @@ view res { side, current, previous } =
                 []
 
         pts =
-            (previous ++ [ current ])
+            (Dict.values previous ++ [ current ])
                 |> List.indexedMap (\i pt -> ( toString i, mirroredPoint pt ))
                 |> node "g" []
 

@@ -6328,6 +6328,9 @@ var _elm_lang$core$Color$Linear = F3(
 		return {ctor: 'Linear', _0: a, _1: b, _2: c};
 	});
 var _elm_lang$core$Color$linear = _elm_lang$core$Color$Linear;
+var _elm_lang$core$Process$kill = _elm_lang$core$Native_Scheduler.kill;
+var _elm_lang$core$Process$sleep = _elm_lang$core$Native_Scheduler.sleep;
+var _elm_lang$core$Process$spawn = _elm_lang$core$Native_Scheduler.spawn;
 //import Maybe, Native.Array, Native.List, Native.Utils, Result //
 
 var _elm_lang$core$Native_Json = function() {
@@ -7099,9 +7102,6 @@ return {
 };
 
 }();
-var _elm_lang$core$Process$kill = _elm_lang$core$Native_Scheduler.kill;
-var _elm_lang$core$Process$sleep = _elm_lang$core$Native_Scheduler.sleep;
-var _elm_lang$core$Process$spawn = _elm_lang$core$Native_Scheduler.spawn;
 var _elm_lang$core$Regex$split = _elm_lang$core$Native_Regex.split;
 var _elm_lang$core$Regex$replace = _elm_lang$core$Native_Regex.replace;
 var _elm_lang$core$Regex$find = _elm_lang$core$Native_Regex.find;
@@ -10466,7 +10466,7 @@ var _user$project$Anatoly$view = F2(
 					}),
 				A2(
 					_elm_lang$core$Basics_ops['++'],
-					_p1.previous,
+					_elm_lang$core$Dict$values(_p1.previous),
 					{
 						ctor: '::',
 						_0: _p1.current,
@@ -10544,16 +10544,16 @@ var _user$project$Anatoly$randomNeighbor = function (_p10) {
 		return _elm_community$random_extra$Random_Extra$frequency(
 			{
 				ctor: '::',
-				_0: {ctor: '_Tuple2', _0: 0.4, _1: up},
+				_0: {ctor: '_Tuple2', _0: 0.335, _1: up},
 				_1: {
 					ctor: '::',
-					_0: {ctor: '_Tuple2', _0: 0.3, _1: down},
+					_0: {ctor: '_Tuple2', _0: 0.28, _1: down},
 					_1: {
 						ctor: '::',
 						_0: {ctor: '_Tuple2', _0: 0.3, _1: left},
 						_1: {
 							ctor: '::',
-							_0: {ctor: '_Tuple2', _0: 0.5, _1: right},
+							_0: {ctor: '_Tuple2', _0: 0.37, _1: right},
 							_1: {ctor: '[]'}
 						}
 					}
@@ -10591,30 +10591,55 @@ var _user$project$Anatoly$randomShape = function (side) {
 		{ctor: '[]'},
 		{ctor: '_Tuple3', _0: 0, _1: 0, _2: _elm_lang$core$Color$white});
 };
+var _user$project$Anatoly$separateList = function (pts) {
+	var _p21 = pts;
+	if (_p21.ctor === '[]') {
+		return {
+			ctor: '_Tuple2',
+			_0: {ctor: '_Tuple3', _0: 0, _1: 0, _2: _elm_lang$core$Color$white},
+			_1: _elm_lang$core$Dict$empty
+		};
+	} else {
+		return {
+			ctor: '_Tuple2',
+			_0: _p21._0,
+			_1: _elm_lang$core$Dict$fromList(
+				A2(
+					_elm_lang$core$List$map,
+					function (_p22) {
+						var _p23 = _p22;
+						var _p25 = _p23._1;
+						var _p24 = _p23._0;
+						return {
+							ctor: '_Tuple2',
+							_0: {ctor: '_Tuple2', _0: _p24, _1: _p25},
+							_1: {ctor: '_Tuple3', _0: _p24, _1: _p25, _2: _p23._2}
+						};
+					},
+					_p21._1))
+		};
+	}
+};
 var _user$project$Anatoly$shape = F2(
 	function (seed, side) {
-		return function (pts) {
-			return {
-				previous: A2(_elm_lang$core$List$drop, 1, pts),
-				current: A2(
-					_elm_lang$core$Maybe$withDefault,
-					{ctor: '_Tuple3', _0: 0, _1: 0, _2: _elm_lang$core$Color$white},
-					_elm_lang$core$List$head(pts)),
-				side: side,
-				paused: true
-			};
+		return function (_p26) {
+			var _p27 = _p26;
+			return {previous: _p27._1, current: _p27._0, side: side, paused: true};
 		}(
-			_elm_lang$core$Tuple$first(
-				A2(
-					_elm_lang$core$Random$step,
-					_user$project$Anatoly$randomShape(side),
-					_elm_lang$core$Random$initialSeed(seed))));
+			_user$project$Anatoly$separateList(
+				_elm_lang$core$Tuple$first(
+					A2(
+						_elm_lang$core$Random$step,
+						_user$project$Anatoly$randomShape(side),
+						_elm_lang$core$Random$initialSeed(seed)))));
 	});
-var _user$project$Anatoly$init = {
-	previous: {ctor: '[]'},
-	current: {ctor: '_Tuple3', _0: 0, _1: 0, _2: _elm_lang$core$Color$white},
-	side: 100,
-	paused: false
+var _user$project$Anatoly$init = function (side) {
+	return {
+		previous: _elm_lang$core$Dict$empty,
+		current: {ctor: '_Tuple3', _0: 0, _1: 0, _2: _elm_lang$core$Color$white},
+		side: side,
+		paused: false
+	};
 };
 var _user$project$Anatoly$Model = F4(
 	function (a, b, c, d) {
@@ -10630,7 +10655,7 @@ var _user$project$Anatoly$initWithShape = function (side) {
 	return {
 		ctor: '_Tuple2',
 		_0: {
-			previous: {ctor: '[]'},
+			previous: _elm_lang$core$Dict$empty,
 			current: {ctor: '_Tuple3', _0: 0, _1: 0, _2: _elm_lang$core$Color$white},
 			side: side,
 			paused: true
@@ -10664,8 +10689,8 @@ var _user$project$Anatoly$update = F2(
 	function (msg, model) {
 		update:
 		while (true) {
-			var _p21 = msg;
-			switch (_p21.ctor) {
+			var _p28 = msg;
+			switch (_p28.ctor) {
 				case 'ResetPoints':
 					return {
 						ctor: '_Tuple2',
@@ -10673,38 +10698,46 @@ var _user$project$Anatoly$update = F2(
 							model,
 							{
 								current: {ctor: '_Tuple3', _0: 0, _1: 0, _2: _elm_lang$core$Color$white},
-								previous: {ctor: '[]'}
+								previous: _elm_lang$core$Dict$empty
 							}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				case 'Add':
-					return ((_elm_lang$core$Native_Utils.cmp(
-						_elm_lang$core$Basics$abs(_p21._0._0),
+					if ((_elm_lang$core$Native_Utils.cmp(
+						_elm_lang$core$Basics$abs(_p28._0._0),
 						(model.side / 3) | 0) > 0) || (_elm_lang$core$Native_Utils.cmp(
-						_elm_lang$core$Basics$abs(_p21._0._1),
-						(model.side / 3) | 0) > 0)) ? {
-						ctor: '_Tuple2',
-						_0: _elm_lang$core$Native_Utils.update(
-							model,
-							{paused: true}),
-						_1: _elm_lang$core$Platform_Cmd$none
-					} : {
-						ctor: '_Tuple2',
-						_0: _elm_lang$core$Native_Utils.update(
-							model,
-							{
-								previous: A2(
-									_elm_lang$core$Basics_ops['++'],
-									model.previous,
-									{
-										ctor: '::',
-										_0: model.current,
-										_1: {ctor: '[]'}
-									}),
-								current: _p21._0
-							}),
-						_1: _elm_lang$core$Platform_Cmd$none
-					};
+						_elm_lang$core$Basics$abs(_p28._0._1),
+						(model.side / 3) | 0) > 0)) {
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{paused: true}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					} else {
+						var addToDict = F2(
+							function (_p29, dict) {
+								var _p30 = _p29;
+								var _p32 = _p30._1;
+								var _p31 = _p30._0;
+								return A3(
+									_elm_lang$core$Dict$insert,
+									{ctor: '_Tuple2', _0: _p31, _1: _p32},
+									{ctor: '_Tuple3', _0: _p31, _1: _p32, _2: _p30._2},
+									dict);
+							});
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{
+									previous: A2(addToDict, model.current, model.previous),
+									current: _p28._0
+								}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					}
 				case 'Tick':
 					return {
 						ctor: '_Tuple2',
@@ -10715,48 +10748,57 @@ var _user$project$Anatoly$update = F2(
 							_user$project$Anatoly$randomNeighbor(model.current))
 					};
 				case 'Key':
-					switch (_p21._0) {
+					switch (_p28._0) {
 						case 32:
-							return {
-								ctor: '_Tuple2',
-								_0: _elm_lang$core$Native_Utils.update(
-									model,
-									{paused: !model.paused}),
-								_1: _elm_lang$core$Platform_Cmd$none
-							};
-						case 13:
-							var _v8 = _user$project$Anatoly$ResetPoints,
-								_v9 = _elm_lang$core$Native_Utils.update(
+							var _v12 = _user$project$Anatoly$ResetPoints,
+								_v13 = _elm_lang$core$Native_Utils.update(
 								model,
 								{paused: false});
-							msg = _v8;
-							model = _v9;
+							msg = _v12;
+							model = _v13;
 							continue update;
+						case 13:
+							return {
+								ctor: '_Tuple2',
+								_0: model,
+								_1: A2(
+									_elm_lang$core$Random$generate,
+									_user$project$Anatoly$SetShape,
+									_user$project$Anatoly$randomShape((model.side / 3) | 0))
+							};
 						default:
 							return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 					}
 				default:
-					if (_p21._0.ctor === '[]') {
-						var _v10 = _user$project$Anatoly$ResetPoints,
-							_v11 = model;
-						msg = _v10;
-						model = _v11;
+					if (_p28._0.ctor === '[]') {
+						var _v14 = _user$project$Anatoly$ResetPoints,
+							_v15 = model;
+						msg = _v14;
+						model = _v15;
 						continue update;
 					} else {
-						return {
-							ctor: '_Tuple2',
-							_0: _elm_lang$core$Native_Utils.update(
-								model,
-								{current: _p21._0._0, previous: _p21._0._1, paused: true}),
-							_1: _elm_lang$core$Platform_Cmd$none
-						};
+						return function (_p33) {
+							var _p34 = _p33;
+							return {
+								ctor: '_Tuple2',
+								_0: _elm_lang$core$Native_Utils.update(
+									model,
+									{current: _p34._0, previous: _p34._1, paused: true}),
+								_1: _elm_lang$core$Platform_Cmd$none
+							};
+						}(
+							_user$project$Anatoly$separateList(_p28._0));
 					}
 			}
 		}
 	});
 var _user$project$Anatoly$main = _elm_lang$html$Html$program(
 	{
-		init: {ctor: '_Tuple2', _0: _user$project$Anatoly$init, _1: _elm_lang$core$Platform_Cmd$none},
+		init: {
+			ctor: '_Tuple2',
+			_0: _user$project$Anatoly$init(100),
+			_1: _elm_lang$core$Platform_Cmd$none
+		},
 		update: _user$project$Anatoly$update,
 		view: _user$project$Anatoly$view(5),
 		subscriptions: _user$project$Anatoly$subscriptions

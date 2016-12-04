@@ -10292,7 +10292,12 @@ var _user$project$Argyle$view = function (_p15) {
 			_1: {ctor: '[]'}
 		});
 };
-var _user$project$Argyle$randomModelParameters = function () {
+var _user$project$Argyle$randomModel = function (window) {
+	var model = F4(
+		function (_p20, shift, wd, ratio) {
+			var _p21 = _p20;
+			return {color1: _p21._0, color2: _p21._1, color3: _p21._2, lineColor: _p21._3, shift: shift, width: wd, aspectRatio: ratio, window: window};
+		});
 	var aspectRatio = A2(_elm_lang$core$Random$float, 1.2, 1.7);
 	var width = A2(_elm_lang$core$Random$float, 8.0e-2, 0.2);
 	var colors = A5(
@@ -10313,17 +10318,16 @@ var _user$project$Argyle$randomModelParameters = function () {
 			}),
 		A2(_elm_lang$core$Random$float, 0, 1),
 		A2(_elm_lang$core$Random$float, 0, 1));
-	return A5(
-		_elm_lang$core$Random$map4,
-		F4(
-			function (v0, v1, v2, v3) {
-				return {ctor: '_Tuple4', _0: v0, _1: v1, _2: v2, _3: v3};
-			}),
-		colors,
-		shift,
-		width,
-		aspectRatio);
-}();
+	return A5(_elm_lang$core$Random$map4, model, colors, shift, width, aspectRatio);
+};
+var _user$project$Argyle$pattern = F2(
+	function (window, seed) {
+		return _elm_lang$core$Tuple$first(
+			A2(
+				_elm_lang$core$Random$step,
+				_user$project$Argyle$randomModel(window),
+				_elm_lang$core$Random$initialSeed(seed)));
+	});
 var _user$project$Argyle$Model = F8(
 	function (a, b, c, d, e, f, g, h) {
 		return {color1: a, color2: b, color3: c, lineColor: d, shift: e, width: f, aspectRatio: g, window: h};
@@ -10336,11 +10340,13 @@ var _user$project$Argyle$WindowSize = F2(
 	function (a, b) {
 		return {width: a, height: b};
 	});
-var _user$project$Argyle$SetParameters = function (a) {
-	return {ctor: 'SetParameters', _0: a};
+var _user$project$Argyle$SetModel = function (a) {
+	return {ctor: 'SetModel', _0: a};
 };
-var _user$project$Argyle$init = function (_p20) {
-	var _p21 = _p20;
+var _user$project$Argyle$init = function (_p22) {
+	var _p23 = _p22;
+	var _p25 = _p23.width;
+	var _p24 = _p23.height;
 	return {
 		ctor: '_Tuple2',
 		_0: {
@@ -10351,32 +10357,33 @@ var _user$project$Argyle$init = function (_p20) {
 			shift: {ctor: '_Tuple2', _0: 0, _1: 0},
 			width: 0.15,
 			aspectRatio: 1.5,
-			window: A2(_user$project$Argyle$WindowSize, _p21.width, _p21.height)
+			window: A2(_user$project$Argyle$WindowSize, _p25, _p24)
 		},
-		_1: _p21.randomize ? A2(_elm_lang$core$Random$generate, _user$project$Argyle$SetParameters, _user$project$Argyle$randomModelParameters) : _elm_lang$core$Platform_Cmd$none
+		_1: _p23.randomize ? A2(
+			_elm_lang$core$Random$generate,
+			_user$project$Argyle$SetModel,
+			_user$project$Argyle$randomModel(
+				A2(_user$project$Argyle$WindowSize, _p25, _p24))) : _elm_lang$core$Platform_Cmd$none
 	};
 };
 var _user$project$Argyle$update = F2(
 	function (msg, model) {
-		var _p22 = A2(_elm_lang$core$Debug$log, 'message', msg);
-		if (_p22.ctor === 'KeyPressed') {
-			if (_p22._0 === 32) {
+		var _p26 = A2(_elm_lang$core$Debug$log, 'message', msg);
+		if (_p26.ctor === 'KeyPressed') {
+			if (_p26._0 === 32) {
 				return {
 					ctor: '_Tuple2',
 					_0: model,
-					_1: A2(_elm_lang$core$Random$generate, _user$project$Argyle$SetParameters, _user$project$Argyle$randomModelParameters)
+					_1: A2(
+						_elm_lang$core$Random$generate,
+						_user$project$Argyle$SetModel,
+						_user$project$Argyle$randomModel(model.window))
 				};
 			} else {
 				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 			}
 		} else {
-			return {
-				ctor: '_Tuple2',
-				_0: _elm_lang$core$Native_Utils.update(
-					model,
-					{color1: _p22._0._0._0, color2: _p22._0._0._1, color3: _p22._0._0._2, lineColor: _p22._0._0._3, shift: _p22._0._1, width: _p22._0._2, aspectRatio: _p22._0._3}),
-				_1: _elm_lang$core$Platform_Cmd$none
-			};
+			return {ctor: '_Tuple2', _0: _p26._0, _1: _elm_lang$core$Platform_Cmd$none};
 		}
 	});
 var _user$project$Argyle$KeyPressed = function (a) {

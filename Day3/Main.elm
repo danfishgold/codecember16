@@ -176,9 +176,6 @@ update msg model =
             ( model, generate Add (randomNeighbor model.current) )
 
         Key 32 ->
-            ( { model | paused = not model.paused }, Cmd.none )
-
-        Key 13 ->
             update ResetPoints { model | paused = False }
 
         Key _ ->

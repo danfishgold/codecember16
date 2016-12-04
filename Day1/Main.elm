@@ -49,6 +49,14 @@ init =
     )
 
 
+pattern : WindowSize -> Int -> Model
+pattern window seed =
+    seed
+        |> Random.initialSeed
+        |> Random.step (randomModel window)
+        |> Tuple.first
+
+
 type Msg
     = WindowResize Window.Size
     | KeyPressed KeyCode

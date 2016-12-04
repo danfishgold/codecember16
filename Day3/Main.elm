@@ -11,10 +11,11 @@ import Svg.Attributes exposing (x, y, width, height, fill)
 import Svg.Keyed exposing (node)
 import Color.Convert exposing (colorToCssRgb)
 import Day2.Random exposing (ryb1)
+import Dict exposing (Dict)
 
 
 type alias Model =
-    { previous : List Point
+    { previous : Dict ( Int, Int ) Point
     , current : Point
     , side : Int
     , paused : Bool
@@ -25,18 +26,18 @@ type alias Point =
     ( Int, Int, Color )
 
 
-init : Model
-init =
-    { previous = []
+init : Int -> Model
+init side =
+    { previous = Dict.empty
     , current = ( 0, 0, Color.white )
-    , side = 100
+    , side = side
     , paused = False
     }
 
 
 initWithShape : Int -> ( Model, Cmd Msg )
 initWithShape side =
-    ( { previous = []
+    ( { previous = Dict.empty
       , current = ( 0, 0, Color.white )
       , side = side
       , paused = True
@@ -51,12 +52,27 @@ shape seed side =
         |> Random.initialSeed
         |> Random.step (randomShape side)
         |> Tuple.first
-        |> \pts ->
-            { previous = List.drop 1 pts
-            , current = List.head pts |> Maybe.withDefault ( 0, 0, Color.white )
+        |> separateList
+        |> \( curr, prev ) ->
+            { previous = prev
+            , current = curr
             , side = side
             , paused = True
             }
+
+
+separateList : List Point -> ( Point, Dict ( Int, Int ) Point )
+separateList pts =
+    case pts of
+        [] ->
+            ( ( 0, 0, Color.white ), Dict.empty )
+
+        current :: previous ->
+            ( current
+            , previous
+                |> List.map (\( x, y, c ) -> ( ( x, y ), ( x, y, c ) ))
+                |> Dict.fromList
+            )
 
 
 type Msg
@@ -104,10 +120,10 @@ randomNeighbor ( x0, y0, _ ) =
                     Random.Extra.constant ( x + 1, y )
             in
                 Random.Extra.frequency
-                    [ ( 0.4, up )
-                    , ( 0.3, down )
+                    [ ( 0.335, up )
+                    , ( 0.28, down )
                     , ( 0.3, left )
-                    , ( 0.5, right )
+                    , ( 0.37, right )
                     ]
 
         color =
@@ -139,27 +155,31 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ResetPoints ->
-            ( { model | current = ( 0, 0, Color.white ), previous = [] }, Cmd.none )
+            ( { model | current = ( 0, 0, Color.white ), previous = Dict.empty }, Cmd.none )
 
         Add (( x, y, _ ) as pt) ->
             if abs x > model.side // 3 || abs y > model.side // 3 then
                 ( { model | paused = True }, Cmd.none )
             else
-                ( { model
-                    | previous = model.previous ++ [ model.current ]
-                    , current = pt
-                  }
-                , Cmd.none
-                )
+                let
+                    addToDict ( x, y, c ) dict =
+                        dict |> Dict.insert ( x, y ) ( x, y, c )
+                in
+                    ( { model
+                        | previous = model.previous |> addToDict model.current
+                        , current = pt
+                      }
+                    , Cmd.none
+                    )
 
         Tick _ ->
             ( model, generate Add (randomNeighbor model.current) )
 
         Key 32 ->
-            ( { model | paused = not model.paused }, Cmd.none )
+            update ResetPoints { model | paused = False }
 
         Key 13 ->
-            update ResetPoints { model | paused = False }
+            ( model, generate SetShape (randomShape (model.side // 3)) )
 
         Key _ ->
             ( model, Cmd.none )
@@ -167,14 +187,17 @@ update msg model =
         SetShape [] ->
             update ResetPoints model
 
-        SetShape (current :: previous) ->
-            ( { model
-                | current = current
-                , previous = previous
-                , paused = True
-              }
-            , Cmd.none
-            )
+        SetShape pts ->
+            pts
+                |> separateList
+                |> \( curr, prev ) ->
+                    ( { model
+                        | current = curr
+                        , previous = prev
+                        , paused = True
+                      }
+                    , Cmd.none
+                    )
 
 
 
@@ -195,7 +218,7 @@ view res { side, current, previous } =
                 []
 
         pts =
-            (previous ++ [ current ])
+            (Dict.values previous ++ [ current ])
                 |> List.indexedMap (\i pt -> ( toString i, mirroredPoint pt ))
                 |> node "g" []
 
@@ -235,7 +258,7 @@ view res { side, current, previous } =
 main : Program Never Model Msg
 main =
     program
-        { init = ( init, Cmd.none )
+        { init = ( init 100, Cmd.none )
         , update = update
         , view = view 5
         , subscriptions = subscriptions

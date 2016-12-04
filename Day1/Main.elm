@@ -48,15 +48,23 @@ init { width, height, randomize } =
       , window = WindowSize width height
       }
     , if randomize then
-        Random.generate SetParameters randomModelParameters
+        Random.generate SetModel (randomModel <| WindowSize width height)
       else
         Cmd.none
     )
 
 
+pattern : WindowSize -> Int -> Model
+pattern window seed =
+    seed
+        |> Random.initialSeed
+        |> Random.step (randomModel window)
+        |> Tuple.first
+
+
 type Msg
     = KeyPressed KeyCode
-    | SetParameters ( ( Color, Color, Color, Color ), ( Float, Float ), Float, Float )
+    | SetModel Model
 
 
 
@@ -67,21 +75,13 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case (Debug.log "message" msg) of
         KeyPressed 32 ->
-            ( model, Random.generate SetParameters randomModelParameters )
+            ( model, Random.generate SetModel (randomModel model.window) )
 
         KeyPressed _ ->
             ( model, Cmd.none )
 
-        SetParameters ( ( c1, c2, c3, lc ), shift, wd, ratio ) ->
-            ( { model
-                | color1 = c1
-                , color2 = c2
-                , color3 = c3
-                , lineColor = lc
-                , shift = shift
-                , width = wd
-                , aspectRatio = ratio
-              }
+        SetModel newModel ->
+            ( newModel
             , Cmd.none
             )
 
@@ -90,8 +90,8 @@ update msg model =
 --
 
 
-randomModelParameters : Random.Generator ( ( Color, Color, Color, Color ), ( Float, Float ), Float, Float )
-randomModelParameters =
+randomModel : WindowSize -> Random.Generator Model
+randomModel window =
     let
         shift =
             Random.map2 (,)
@@ -110,8 +110,19 @@ randomModelParameters =
 
         aspectRatio =
             Random.float 1.2 1.7
+
+        model ( c1, c2, c3, lc ) shift wd ratio =
+            { color1 = c1
+            , color2 = c2
+            , color3 = c3
+            , lineColor = lc
+            , shift = shift
+            , width = wd
+            , aspectRatio = ratio
+            , window = window
+            }
     in
-        Random.map4 (,,,)
+        Random.map4 model
             colors
             shift
             width

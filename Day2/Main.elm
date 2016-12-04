@@ -67,16 +67,6 @@ update msg model =
             ( model, generate Set (ryb2v2 1 0.5 45 |> map t4) )
 
 
-main : Program Never Model Msg
-main =
-    program
-        { init = ( [], Cmd.none )
-        , update = update
-        , view = view
-        , subscriptions = always Sub.none
-        }
-
-
 view : Model -> Html Msg
 view colors =
     let
@@ -137,3 +127,13 @@ view colors =
                     , height <| toString <| d * toFloat (ceiling (d / 2))
                     ]
             ]
+
+
+main : Program Never Model Msg
+main =
+    program
+        { init = ( [], Cmd.none )
+        , update = update
+        , view = view
+        , subscriptions = always Sub.none
+        }

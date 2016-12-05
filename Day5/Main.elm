@@ -1,7 +1,8 @@
 module Automaton exposing (..)
 
 import Html exposing (program)
-import Html exposing (Html, div, text)
+import Html exposing (Html, div)
+import Html.Attributes exposing (style)
 import Svg exposing (Svg, svg, rect, g)
 import Svg.Attributes exposing (x, y, width, height, fill, stroke, strokeWidth, transform)
 import Svg.Events exposing (onClick)
@@ -25,10 +26,10 @@ type Msg
 
 init : ( Model, Cmd Msg )
 init =
-    ( { levels = 10
+    ( { levels = 70
       , ruleRadius = 1
-      , colors = 2
-      , rule = Dict.empty |> Dict.update [ 0, 1, 0 ] (always (Just 1))
+      , colors = 3
+      , rule = Dict.empty
       }
     , Cmd.none
     )
@@ -126,7 +127,7 @@ color i =
             Color.red
 
 
-pyramid : Float -> Model -> Svg Msg
+pyramid : Float -> Model -> Html Msg
 pyramid res model =
     let
         pixel i j c =
@@ -148,11 +149,14 @@ pyramid res model =
         levels model
             |> List.indexedMap row
             |> List.concatMap identity
-            |> g []
+            |> svg
+                [ width <| toString <| res * toFloat (2 * model.levels + 1)
+                , height <| toString <| res * toFloat model.levels
+                ]
 
 
-rules : Float -> Model -> Svg Msg
-rules res { rule, ruleRadius, colors } =
+rules : Float -> Model -> Html Msg
+rules res { rule, ruleRadius, colors, levels } =
     let
         pixel i j c =
             rect
@@ -180,21 +184,47 @@ rules res { rule, ruleRadius, colors } =
             List.indexedMap (pixel 0) rl
 
         tetris i rl =
-            g
-                [ transform <| "translate(" ++ toString (50 + 50 * i) ++ ", 300)"
+            svg
+                [ width <| toString <| res * toFloat n + 2
+                , height <| toString <| res * 2 + 2
                 , onClick (ShiftRule rl)
                 ]
-                (bottom rl :: top rl)
+                [ g [ transform "translate(1, 1)" ] (bottom rl :: top rl) ]
+
+        insideDiv rsvg =
+            div
+                [ style
+                    [ ( "flex", "0 0 auto" )
+                    , ( "padding", "20px 20px" )
+                    ]
+                ]
+                [ rsvg ]
     in
         allRules
             |> Debug.log "rules"
             |> List.indexedMap tetris
-            |> g []
+            |> List.map insideDiv
+            |> div
+                [ style
+                    [ ( "display", "flex" )
+                    , ( "flex-wrap", "wrap" )
+                    , ( "width", "95%" )
+                    , ( "max-width", "600px" )
+                    ]
+                ]
 
 
-view : Float -> Model -> Svg Msg
+view : Float -> Model -> Html Msg
 view res model =
-    svg [ width "600px", height "600px" ] [ pyramid res model, rules res model ]
+    div
+        [ style
+            [ ( "margin", "0 auto" )
+            , ( "display", "flex" )
+            , ( "flex-direction", "column" )
+            , ( "align-items", "center" )
+            ]
+        ]
+        [ pyramid (res / 2) model, rules res model ]
 
 
 

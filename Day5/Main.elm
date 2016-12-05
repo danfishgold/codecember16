@@ -26,7 +26,7 @@ type Msg
 
 init : ( Model, Cmd Msg )
 init =
-    ( { levels = 70
+    ( { levels = 120
       , ruleRadius = 1
       , colors = 3
       , rule = Dict.empty
@@ -225,7 +225,7 @@ view res model =
             , ( "align-items", "center" )
             ]
         ]
-        [ pyramid (res / 2) model, rules res model ]
+        [ pyramid (res / 3) model, rules res model ]
 
 
 

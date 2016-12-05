@@ -40,7 +40,7 @@ kthRule c n k =
     if n == 0 then
         []
     else
-        (k % c) :: kthRule c (n - 1) (k // c)
+        kthRule c (n - 1) (k // c) ++ [ k % c ]
 
 
 
@@ -174,7 +174,8 @@ rules res { rule, ruleRadius, colors, levels } =
             2 * ruleRadius + 1
 
         allRules =
-            List.range 0 (colors ^ n)
+            List.range 0 (colors ^ n - 1)
+                |> List.reverse
                 |> List.map (kthRule colors n)
 
         bottom rl =

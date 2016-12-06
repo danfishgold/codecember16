@@ -7,31 +7,39 @@ import Svg exposing (Svg, svg, rect, g)
 import Svg.Attributes exposing (x, y, width, height, fill, stroke, strokeWidth, transform)
 import Svg.Events exposing (onClick)
 import Dict exposing (Dict)
-import Array
 import Color exposing (Color)
 import Color.Convert exposing (colorToCssRgb)
+import Task
 
 
 type alias Model =
-    { levels : Int
+    { levelCount : Int
     , ruleRadius : Int
     , colors : Int
     , rule : Dict (List Int) Int
+    , levels : List (List Int)
     }
+
+
+message : msg -> Cmd msg
+message msg =
+    Task.perform identity (Task.succeed msg)
 
 
 type Msg
     = ShiftRule (List Int)
+    | AddRowIfNeeded
 
 
-init : ( Model, Cmd Msg )
-init =
-    ( { levels = 120
+init : Int -> ( Model, Cmd Msg )
+init levelCount =
+    ( { levelCount = levelCount
       , ruleRadius = 1
       , colors = 3
       , rule = Dict.empty
+      , levels = [ [ 1 ] ]
       }
-    , Cmd.none
+    , message AddRowIfNeeded
     )
 
 
@@ -69,49 +77,48 @@ update msg model =
                         Nothing ->
                             Just 1
             in
-                ( { model | rule = Dict.update idx shift model.rule }, Cmd.none )
+                ( { model
+                    | rule = Dict.update idx shift model.rule
+                    , levels = [ [ 1 ] ]
+                  }
+                , message AddRowIfNeeded
+                )
+
+        AddRowIfNeeded ->
+            if List.length model.levels < model.levelCount then
+                let
+                    lastLevel =
+                        model.levels
+                            |> List.drop (List.length model.levels - 1)
+                            |> List.head
+                            |> Maybe.withDefault [ 1 ]
+
+                    levels =
+                        model.levels ++ [ nextLevel model.rule model.ruleRadius lastLevel ]
+                in
+                    ( { model | levels = levels }, message AddRowIfNeeded )
+            else
+                ( model, Cmd.none )
 
 
 
 --
 
 
-paddedNs : Int -> List Int -> List (List Int)
-paddedNs r xs =
+nextLevel : Dict (List Int) Int -> Int -> List Int -> List Int
+nextLevel rule rad lvl =
     let
-        len =
-            List.length xs
-
-        arr =
-            Array.fromList xs
-
-        around k =
-            List.range (k - r) (k + r) |> List.map (\i -> Array.get i arr |> Maybe.withDefault 0)
-    in
-        List.range 0 len
-            |> List.map around
-
-
-levels : Model -> List (List Int)
-levels { levels, colors, ruleRadius, rule } =
-    let
-        width =
-            2 * levels + 1
+        fn x ( prevs, tupl ) =
+            let
+                tuple =
+                    tupl ++ [ x ]
+            in
+                ( prevs ++ [ Dict.get tuple rule |> Maybe.withDefault 0 ], List.drop 1 tuple )
 
         initial =
-            List.range 0 width
-                |> List.map
-                    (\i ->
-                        if i == width // 2 then
-                            1
-                        else
-                            0
-                    )
-
-        next _ level =
-            paddedNs ruleRadius level |> List.map (\k -> Dict.get k rule |> Maybe.withDefault 0)
+            List.repeat (2 * rad) 0
     in
-        List.scanl next initial (List.range 1 levels)
+        List.foldl fn ( [], initial ) (List.append lvl initial) |> Tuple.first
 
 
 color : Int -> Color
@@ -130,6 +137,9 @@ color i =
 pyramid : Float -> Model -> Html Msg
 pyramid res model =
     let
+        j0 i =
+            model.levelCount - i
+
         pixel i j c =
             rect
                 [ x <| toString <| res * toFloat j
@@ -141,22 +151,19 @@ pyramid res model =
                 []
 
         row i pxls =
-            pxls |> List.indexedMap (pixel i)
-
-        rows =
-            levels model
+            pxls |> List.indexedMap (\j -> pixel i (j0 i + j))
     in
-        levels model
+        model.levels
             |> List.indexedMap row
-            |> List.concatMap identity
+            |> List.concat
             |> svg
-                [ width <| toString <| res * toFloat (2 * model.levels + 1)
-                , height <| toString <| res * toFloat model.levels
+                [ width <| toString <| res * toFloat (2 * model.levelCount + 1)
+                , height <| toString <| res * toFloat model.levelCount
                 ]
 
 
 rules : Float -> Model -> Html Msg
-rules res { rule, ruleRadius, colors, levels } =
+rules res { rule, ruleRadius, colors, levelCount } =
     let
         pixel i j c =
             rect
@@ -202,7 +209,6 @@ rules res { rule, ruleRadius, colors, levels } =
                 [ rsvg ]
     in
         allRules
-            |> Debug.log "rules"
             |> List.indexedMap tetris
             |> List.map insideDiv
             |> div
@@ -235,7 +241,7 @@ view res model =
 main : Program Never Model Msg
 main =
     program
-        { init = init
+        { init = init 120
         , subscriptions = subscriptions
         , update = update
         , view = view 10

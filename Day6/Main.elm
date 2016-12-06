@@ -3,15 +3,14 @@ module Poisson exposing (..)
 import Html exposing (program)
 import Html exposing (Html, div, text)
 import Svg exposing (Svg, svg, g)
+import Svg.Keyed exposing (node)
 import Svg.Attributes exposing (cx, cy, r, fill, width, height)
 import Dict exposing (Dict)
 import Set exposing (Set)
 import Random exposing (Generator)
 import Random.Set
-import Random.Extra exposing (constant)
 import Color exposing (Color, black, red)
 import Color.Convert exposing (colorToCssRgb)
-import Keyboard exposing (KeyCode)
 import Time exposing (Time, every, second)
 
 
@@ -31,6 +30,7 @@ type alias Model =
     , height : Float
     , k : Int
     , r : Float
+    , seed : Random.Seed
     }
 
 
@@ -55,6 +55,7 @@ init width height k r =
       , height = height
       , k = k
       , r = r
+      , seed = Random.initialSeed 0
       }
         |> updateAlgorithm (AddActive ( width / 2, height / 2 ))
     , Cmd.none
@@ -69,6 +70,19 @@ init width height k r =
    if some point q is near an existing point in grid, add q to the active list.
    repeat until activePoints is empty
 -}
+--
+--
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    if Set.isEmpty model.activeList then
+        Sub.none
+    else
+        Time.every (second / 100) Tick
+
+
+
 --
 
 
@@ -85,11 +99,6 @@ pointAround r ( x, y ) =
             ( x + r * cos t, y + r * sin t )
     in
         Random.map2 pt rad arg
-
-
-dist : Point -> Point -> Float
-dist ( x1, y1 ) ( x2, y2 ) =
-    sqrt ((x1 - x2) ^ 2 + (y1 - y2) ^ 2)
 
 
 isFar : Float -> Dict GridPoint Point -> Point -> Bool
@@ -113,7 +122,7 @@ isFar r grid ( x, y ) =
                             True
 
                         Just ( x1, y1 ) ->
-                            dist ( x, y ) ( x1, y1 ) >= r
+                            (x - x1) ^ 2 + (y - y1) ^ 2 >= r ^ 2
     in
         List.all isFarFrom keys
 
@@ -123,41 +132,31 @@ isWithin width height ( x, y ) =
     0 <= x && x <= width && 0 <= y && y <= height
 
 
-step : Model -> Generator Alg
-step { activeList, k, r, grid, width, height } =
+step : Model -> ( Alg, Random.Seed )
+step { seed, activeList, k, r, grid, width, height } =
     let
-        processPoint pnt =
+        processPoint ( pnt, seed1 ) =
             case pnt of
                 Nothing ->
-                    constant Finished
+                    ( Finished, seed1 )
 
                 Just p ->
-                    stepFor p k
+                    stepFor seed1 p k
 
-        stepFor p kp =
+        stepFor seed1 p kp =
             let
-                dealWith q =
+                dealWith ( q, seed2 ) =
                     if isFar r grid q && isWithin width height q then
-                        constant (AddActive q)
+                        ( AddActive q, seed2 )
                     else
-                        stepFor p (kp - 1)
+                        stepFor seed2 p (kp - 1)
             in
                 if kp == 0 then
-                    constant (MoveToFinal p)
+                    ( MoveToFinal p, seed1 )
                 else
-                    pointAround r p
-                        |> Random.andThen dealWith
+                    Random.step (pointAround r p) seed1 |> dealWith
     in
-        Random.Set.sample activeList |> Random.andThen processPoint
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.none
-    if Set.isEmpty model.activeList then
-        Sub.none
-    else
-        Time.every (second / 100) Tick
+        Random.step (Random.Set.sample activeList) seed |> processPoint
 
 
 
@@ -165,8 +164,8 @@ subscriptions model =
 
 
 updateAlgorithm : Alg -> Model -> Model
-updateAlgorithm step model =
-    case step of
+updateAlgorithm alg model =
+    case alg of
         MoveToFinal p ->
             { model
                 | activeList = model.activeList |> Set.remove p
@@ -189,6 +188,23 @@ updateAlgorithm step model =
             model
 
 
+makeStep : Model -> Model
+makeStep model =
+    let
+        ( alg, seed1 ) =
+            step model
+    in
+        updateAlgorithm alg { model | seed = seed1 }
+
+
+makeSteps : Int -> Model -> Model
+makeSteps n model =
+    if n > 0 then
+        makeSteps (n - 1) (makeStep model)
+    else
+        model
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -196,7 +212,7 @@ update msg model =
             ( updateAlgorithm step model, Cmd.none )
 
         Tick _ ->
-            ( model, Random.generate Step (step model) )
+            ( model |> makeSteps 10, Cmd.none )
 
         SetModel newModel ->
             ( newModel, Cmd.none )
@@ -219,16 +235,13 @@ circle c ( x, y ) =
 
 view : Model -> Html Msg
 view ({ activeList, finalPoints } as model) =
-    if Set.isEmpty activeList then
-        svg
-            [ width <| toString model.width
-            , height <| toString model.height
-            ]
-            [ g [] (finalPoints |> List.map (circle black))
-            , g [] (activeList |> Set.toList |> List.map (circle red))
-            ]
-    else
-        svg [] []
+    svg
+        [ width <| toString model.width
+        , height <| toString model.height
+        ]
+        [ node "g" [] (finalPoints |> List.map (\pt -> ( toString pt, circle black pt )))
+        , node "g" [] (activeList |> Set.toList |> List.map (\pt -> ( toString pt, circle red pt )))
+        ]
 
 
 
@@ -238,7 +251,7 @@ view ({ activeList, finalPoints } as model) =
 main : Program Never Model Msg
 main =
     program
-        { init = init 500 500 30 20
+        { init = init 500 500 30 10
         , subscriptions = subscriptions
         , update = update
         , view = view

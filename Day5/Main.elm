@@ -79,7 +79,7 @@ update msg model =
             in
                 ( { model
                     | rule = Dict.update idx shift model.rule
-                    , levels = [ [ 1 ] ]
+                    , levels = [ model.levels |> List.head |> Maybe.withDefault [ 1 ] ]
                   }
                 , message AddRowIfNeeded
                 )

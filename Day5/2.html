@@ -3671,6 +3671,202 @@ var _elm_lang$core$Result$fromMaybe = F2(
 			return _elm_lang$core$Result$Err(err);
 		}
 	});
+var _elm_lang$core$Task$onError = _elm_lang$core$Native_Scheduler.onError;
+var _elm_lang$core$Task$andThen = _elm_lang$core$Native_Scheduler.andThen;
+var _elm_lang$core$Task$spawnCmd = F2(
+	function (router, _p0) {
+		var _p1 = _p0;
+		return _elm_lang$core$Native_Scheduler.spawn(
+			A2(
+				_elm_lang$core$Task$andThen,
+				_elm_lang$core$Platform$sendToApp(router),
+				_p1._0));
+	});
+var _elm_lang$core$Task$fail = _elm_lang$core$Native_Scheduler.fail;
+var _elm_lang$core$Task$mapError = F2(
+	function (convert, task) {
+		return A2(
+			_elm_lang$core$Task$onError,
+			function (_p2) {
+				return _elm_lang$core$Task$fail(
+					convert(_p2));
+			},
+			task);
+	});
+var _elm_lang$core$Task$succeed = _elm_lang$core$Native_Scheduler.succeed;
+var _elm_lang$core$Task$map = F2(
+	function (func, taskA) {
+		return A2(
+			_elm_lang$core$Task$andThen,
+			function (a) {
+				return _elm_lang$core$Task$succeed(
+					func(a));
+			},
+			taskA);
+	});
+var _elm_lang$core$Task$map2 = F3(
+	function (func, taskA, taskB) {
+		return A2(
+			_elm_lang$core$Task$andThen,
+			function (a) {
+				return A2(
+					_elm_lang$core$Task$andThen,
+					function (b) {
+						return _elm_lang$core$Task$succeed(
+							A2(func, a, b));
+					},
+					taskB);
+			},
+			taskA);
+	});
+var _elm_lang$core$Task$map3 = F4(
+	function (func, taskA, taskB, taskC) {
+		return A2(
+			_elm_lang$core$Task$andThen,
+			function (a) {
+				return A2(
+					_elm_lang$core$Task$andThen,
+					function (b) {
+						return A2(
+							_elm_lang$core$Task$andThen,
+							function (c) {
+								return _elm_lang$core$Task$succeed(
+									A3(func, a, b, c));
+							},
+							taskC);
+					},
+					taskB);
+			},
+			taskA);
+	});
+var _elm_lang$core$Task$map4 = F5(
+	function (func, taskA, taskB, taskC, taskD) {
+		return A2(
+			_elm_lang$core$Task$andThen,
+			function (a) {
+				return A2(
+					_elm_lang$core$Task$andThen,
+					function (b) {
+						return A2(
+							_elm_lang$core$Task$andThen,
+							function (c) {
+								return A2(
+									_elm_lang$core$Task$andThen,
+									function (d) {
+										return _elm_lang$core$Task$succeed(
+											A4(func, a, b, c, d));
+									},
+									taskD);
+							},
+							taskC);
+					},
+					taskB);
+			},
+			taskA);
+	});
+var _elm_lang$core$Task$map5 = F6(
+	function (func, taskA, taskB, taskC, taskD, taskE) {
+		return A2(
+			_elm_lang$core$Task$andThen,
+			function (a) {
+				return A2(
+					_elm_lang$core$Task$andThen,
+					function (b) {
+						return A2(
+							_elm_lang$core$Task$andThen,
+							function (c) {
+								return A2(
+									_elm_lang$core$Task$andThen,
+									function (d) {
+										return A2(
+											_elm_lang$core$Task$andThen,
+											function (e) {
+												return _elm_lang$core$Task$succeed(
+													A5(func, a, b, c, d, e));
+											},
+											taskE);
+									},
+									taskD);
+							},
+							taskC);
+					},
+					taskB);
+			},
+			taskA);
+	});
+var _elm_lang$core$Task$sequence = function (tasks) {
+	var _p3 = tasks;
+	if (_p3.ctor === '[]') {
+		return _elm_lang$core$Task$succeed(
+			{ctor: '[]'});
+	} else {
+		return A3(
+			_elm_lang$core$Task$map2,
+			F2(
+				function (x, y) {
+					return {ctor: '::', _0: x, _1: y};
+				}),
+			_p3._0,
+			_elm_lang$core$Task$sequence(_p3._1));
+	}
+};
+var _elm_lang$core$Task$onEffects = F3(
+	function (router, commands, state) {
+		return A2(
+			_elm_lang$core$Task$map,
+			function (_p4) {
+				return {ctor: '_Tuple0'};
+			},
+			_elm_lang$core$Task$sequence(
+				A2(
+					_elm_lang$core$List$map,
+					_elm_lang$core$Task$spawnCmd(router),
+					commands)));
+	});
+var _elm_lang$core$Task$init = _elm_lang$core$Task$succeed(
+	{ctor: '_Tuple0'});
+var _elm_lang$core$Task$onSelfMsg = F3(
+	function (_p7, _p6, _p5) {
+		return _elm_lang$core$Task$succeed(
+			{ctor: '_Tuple0'});
+	});
+var _elm_lang$core$Task$command = _elm_lang$core$Native_Platform.leaf('Task');
+var _elm_lang$core$Task$Perform = function (a) {
+	return {ctor: 'Perform', _0: a};
+};
+var _elm_lang$core$Task$perform = F2(
+	function (toMessage, task) {
+		return _elm_lang$core$Task$command(
+			_elm_lang$core$Task$Perform(
+				A2(_elm_lang$core$Task$map, toMessage, task)));
+	});
+var _elm_lang$core$Task$attempt = F2(
+	function (resultToMessage, task) {
+		return _elm_lang$core$Task$command(
+			_elm_lang$core$Task$Perform(
+				A2(
+					_elm_lang$core$Task$onError,
+					function (_p8) {
+						return _elm_lang$core$Task$succeed(
+							resultToMessage(
+								_elm_lang$core$Result$Err(_p8)));
+					},
+					A2(
+						_elm_lang$core$Task$andThen,
+						function (_p9) {
+							return _elm_lang$core$Task$succeed(
+								resultToMessage(
+									_elm_lang$core$Result$Ok(_p9)));
+						},
+						task))));
+	});
+var _elm_lang$core$Task$cmdMap = F2(
+	function (tagger, _p10) {
+		var _p11 = _p10;
+		return _elm_lang$core$Task$Perform(
+			A2(_elm_lang$core$Task$map, tagger, _p11._0));
+	});
+_elm_lang$core$Native_Platform.effectManagers['Task'] = {pkg: 'elm-lang/core', init: _elm_lang$core$Task$init, onEffects: _elm_lang$core$Task$onEffects, onSelfMsg: _elm_lang$core$Task$onSelfMsg, tag: 'cmd', cmdMap: _elm_lang$core$Task$cmdMap};
 //import Native.Utils //
 
 var _elm_lang$core$Native_Debug = function() {
@@ -9177,57 +9373,8 @@ var _user$project$Automaton$color = function (i) {
 			return _elm_lang$core$Color$red;
 	}
 };
-var _user$project$Automaton$paddedNs = F2(
-	function (r, xs) {
-		var arr = _elm_lang$core$Array$fromList(xs);
-		var around = function (k) {
-			return A2(
-				_elm_lang$core$List$map,
-				function (i) {
-					return A2(
-						_elm_lang$core$Maybe$withDefault,
-						0,
-						A2(_elm_lang$core$Array$get, i, arr));
-				},
-				A2(_elm_lang$core$List$range, k - r, k + r));
-		};
-		var len = _elm_lang$core$List$length(xs);
-		return A2(
-			_elm_lang$core$List$map,
-			around,
-			A2(_elm_lang$core$List$range, 0, len));
-	});
-var _user$project$Automaton$levels = function (_p1) {
-	var _p2 = _p1;
-	var _p4 = _p2.levels;
-	var next = F2(
-		function (_p3, level) {
-			return A2(
-				_elm_lang$core$List$map,
-				function (k) {
-					return A2(
-						_elm_lang$core$Maybe$withDefault,
-						0,
-						A2(_elm_lang$core$Dict$get, k, _p2.rule));
-				},
-				A2(_user$project$Automaton$paddedNs, _p2.ruleRadius, level));
-		});
-	var width = (2 * _p4) + 1;
-	var initial = A2(
-		_elm_lang$core$List$map,
-		function (i) {
-			return _elm_lang$core$Native_Utils.eq(i, (width / 2) | 0) ? 1 : 0;
-		},
-		A2(_elm_lang$core$List$range, 0, width));
-	return A3(
-		_elm_lang$core$List$scanl,
-		next,
-		initial,
-		A2(_elm_lang$core$List$range, 1, _p4));
-};
 var _user$project$Automaton$pyramid = F2(
 	function (res, model) {
-		var rows = _user$project$Automaton$levels(model);
 		var pixel = F3(
 			function (i, j, c) {
 				return A2(
@@ -9263,11 +9410,19 @@ var _user$project$Automaton$pyramid = F2(
 					},
 					{ctor: '[]'});
 			});
+		var j0 = function (i) {
+			return model.levelCount - i;
+		};
 		var row = F2(
 			function (i, pxls) {
 				return A2(
 					_elm_lang$core$List$indexedMap,
-					pixel(i),
+					function (j) {
+						return A2(
+							pixel,
+							i,
+							j0(i) + j);
+					},
 					pxls);
 			});
 		return A2(
@@ -9276,44 +9431,58 @@ var _user$project$Automaton$pyramid = F2(
 				ctor: '::',
 				_0: _elm_lang$svg$Svg_Attributes$width(
 					_elm_lang$core$Basics$toString(
-						res * _elm_lang$core$Basics$toFloat((2 * model.levels) + 1))),
+						res * _elm_lang$core$Basics$toFloat((2 * model.levelCount) + 1))),
 				_1: {
 					ctor: '::',
 					_0: _elm_lang$svg$Svg_Attributes$height(
 						_elm_lang$core$Basics$toString(
-							res * _elm_lang$core$Basics$toFloat(model.levels))),
+							res * _elm_lang$core$Basics$toFloat(model.levelCount))),
 					_1: {ctor: '[]'}
 				}
 			},
-			A2(
-				_elm_lang$core$List$concatMap,
-				_elm_lang$core$Basics$identity,
-				A2(
-					_elm_lang$core$List$indexedMap,
-					row,
-					_user$project$Automaton$levels(model))));
+			_elm_lang$core$List$concat(
+				A2(_elm_lang$core$List$indexedMap, row, model.levels)));
 	});
-var _user$project$Automaton$update = F2(
-	function (msg, model) {
-		var _p5 = msg;
-		var shift = function (ruleN) {
-			var _p6 = ruleN;
-			if (_p6.ctor === 'Just') {
-				return _elm_lang$core$Maybe$Just(
-					A2(_elm_lang$core$Basics_ops['%'], _p6._0 + 1, model.colors));
-			} else {
-				return _elm_lang$core$Maybe$Just(1);
-			}
-		};
-		return {
-			ctor: '_Tuple2',
-			_0: _elm_lang$core$Native_Utils.update(
-				model,
+var _user$project$Automaton$nextLevel = F3(
+	function (rule, rad, lvl) {
+		var initial = A2(_elm_lang$core$List$repeat, 2 * rad, 0);
+		var fn = F2(
+			function (x, _p1) {
+				var _p2 = _p1;
+				var tuple = A2(
+					_elm_lang$core$Basics_ops['++'],
+					_p2._1,
+					{
+						ctor: '::',
+						_0: x,
+						_1: {ctor: '[]'}
+					});
+				return {
+					ctor: '_Tuple2',
+					_0: A2(
+						_elm_lang$core$Basics_ops['++'],
+						_p2._0,
+						{
+							ctor: '::',
+							_0: A2(
+								_elm_lang$core$Maybe$withDefault,
+								0,
+								A2(_elm_lang$core$Dict$get, tuple, rule)),
+							_1: {ctor: '[]'}
+						}),
+					_1: A2(_elm_lang$core$List$drop, 1, tuple)
+				};
+			});
+		return _elm_lang$core$Tuple$first(
+			A3(
+				_elm_lang$core$List$foldl,
+				fn,
 				{
-					rule: A3(_elm_lang$core$Dict$update, _p5._0, shift, model.rule)
-				}),
-			_1: _elm_lang$core$Platform_Cmd$none
-		};
+					ctor: '_Tuple2',
+					_0: {ctor: '[]'},
+					_1: initial
+				},
+				A2(_elm_lang$core$List$append, lvl, initial)));
 	});
 var _user$project$Automaton$subscriptions = function (model) {
 	return _elm_lang$core$Platform_Sub$none;
@@ -9329,23 +9498,113 @@ var _user$project$Automaton$kthRule = F3(
 				_1: {ctor: '[]'}
 			});
 	});
-var _user$project$Automaton$init = {
-	ctor: '_Tuple2',
-	_0: {levels: 120, ruleRadius: 1, colors: 2, rule: _elm_lang$core$Dict$empty},
-	_1: _elm_lang$core$Platform_Cmd$none
+var _user$project$Automaton$message = function (msg) {
+	return A2(
+		_elm_lang$core$Task$perform,
+		_elm_lang$core$Basics$identity,
+		_elm_lang$core$Task$succeed(msg));
 };
-var _user$project$Automaton$Model = F4(
-	function (a, b, c, d) {
-		return {levels: a, ruleRadius: b, colors: c, rule: d};
+var _user$project$Automaton$Model = F5(
+	function (a, b, c, d, e) {
+		return {levelCount: a, ruleRadius: b, colors: c, rule: d, levels: e};
+	});
+var _user$project$Automaton$AddRowIfNeeded = {ctor: 'AddRowIfNeeded'};
+var _user$project$Automaton$init = function (levelCount) {
+	return {
+		ctor: '_Tuple2',
+		_0: {
+			levelCount: levelCount,
+			ruleRadius: 1,
+			colors: 2,
+			rule: _elm_lang$core$Dict$empty,
+			levels: {
+				ctor: '::',
+				_0: {
+					ctor: '::',
+					_0: 1,
+					_1: {ctor: '[]'}
+				},
+				_1: {ctor: '[]'}
+			}
+		},
+		_1: _user$project$Automaton$message(_user$project$Automaton$AddRowIfNeeded)
+	};
+};
+var _user$project$Automaton$update = F2(
+	function (msg, model) {
+		var _p3 = msg;
+		if (_p3.ctor === 'ShiftRule') {
+			var shift = function (ruleN) {
+				var _p4 = ruleN;
+				if (_p4.ctor === 'Just') {
+					return _elm_lang$core$Maybe$Just(
+						A2(_elm_lang$core$Basics_ops['%'], _p4._0 + 1, model.colors));
+				} else {
+					return _elm_lang$core$Maybe$Just(1);
+				}
+			};
+			return {
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Native_Utils.update(
+					model,
+					{
+						rule: A3(_elm_lang$core$Dict$update, _p3._0, shift, model.rule),
+						levels: {
+							ctor: '::',
+							_0: {
+								ctor: '::',
+								_0: 1,
+								_1: {ctor: '[]'}
+							},
+							_1: {ctor: '[]'}
+						}
+					}),
+				_1: _user$project$Automaton$message(_user$project$Automaton$AddRowIfNeeded)
+			};
+		} else {
+			if (_elm_lang$core$Native_Utils.cmp(
+				_elm_lang$core$List$length(model.levels),
+				model.levelCount) < 0) {
+				var lastLevel = A2(
+					_elm_lang$core$Maybe$withDefault,
+					{
+						ctor: '::',
+						_0: 1,
+						_1: {ctor: '[]'}
+					},
+					_elm_lang$core$List$head(
+						A2(
+							_elm_lang$core$List$drop,
+							_elm_lang$core$List$length(model.levels) - 1,
+							model.levels)));
+				var levels = A2(
+					_elm_lang$core$Basics_ops['++'],
+					model.levels,
+					{
+						ctor: '::',
+						_0: A3(_user$project$Automaton$nextLevel, model.rule, model.ruleRadius, lastLevel),
+						_1: {ctor: '[]'}
+					});
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{levels: levels}),
+					_1: _user$project$Automaton$message(_user$project$Automaton$AddRowIfNeeded)
+				};
+			} else {
+				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+			}
+		}
 	});
 var _user$project$Automaton$ShiftRule = function (a) {
 	return {ctor: 'ShiftRule', _0: a};
 };
 var _user$project$Automaton$rules = F2(
-	function (res, _p7) {
-		var _p8 = _p7;
-		var _p10 = _p8.ruleRadius;
-		var _p9 = _p8.colors;
+	function (res, _p5) {
+		var _p6 = _p5;
+		var _p8 = _p6.ruleRadius;
+		var _p7 = _p6.colors;
 		var insideDiv = function (rsvg) {
 			return A2(
 				_elm_lang$html$Html$div,
@@ -9369,15 +9628,15 @@ var _user$project$Automaton$rules = F2(
 					_1: {ctor: '[]'}
 				});
 		};
-		var n = (2 * _p10) + 1;
+		var n = (2 * _p8) + 1;
 		var allRules = A2(
 			_elm_lang$core$List$map,
-			A2(_user$project$Automaton$kthRule, _p9, n),
+			A2(_user$project$Automaton$kthRule, _p7, n),
 			_elm_lang$core$List$reverse(
 				A2(
 					_elm_lang$core$List$range,
 					0,
-					Math.pow(_p9, n) - 1)));
+					Math.pow(_p7, n) - 1)));
 		var pixel = F3(
 			function (i, j, c) {
 				return A2(
@@ -9425,11 +9684,11 @@ var _user$project$Automaton$rules = F2(
 			return A3(
 				pixel,
 				1,
-				_p10,
+				_p8,
 				A2(
 					_elm_lang$core$Maybe$withDefault,
 					0,
-					A2(_elm_lang$core$Dict$get, rl, _p8.rule)));
+					A2(_elm_lang$core$Dict$get, rl, _p6.rule)));
 		};
 		var top = function (rl) {
 			return A2(
@@ -9502,10 +9761,7 @@ var _user$project$Automaton$rules = F2(
 			A2(
 				_elm_lang$core$List$map,
 				insideDiv,
-				A2(
-					_elm_lang$core$List$indexedMap,
-					tetris,
-					A2(_elm_lang$core$Debug$log, 'rules', allRules))));
+				A2(_elm_lang$core$List$indexedMap, tetris, allRules)));
 	});
 var _user$project$Automaton$view = F2(
 	function (res, model) {
@@ -9545,7 +9801,7 @@ var _user$project$Automaton$view = F2(
 	});
 var _user$project$Automaton$main = _elm_lang$html$Html$program(
 	{
-		init: _user$project$Automaton$init,
+		init: _user$project$Automaton$init(120),
 		subscriptions: _user$project$Automaton$subscriptions,
 		update: _user$project$Automaton$update,
 		view: _user$project$Automaton$view(10)

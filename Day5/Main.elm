@@ -13,7 +13,7 @@ import Color.Convert exposing (colorToCssRgb)
 
 
 type alias Model =
-    { levels : Int
+    { levelCount : Int
     , ruleRadius : Int
     , colors : Int
     , rule : Dict (List Int) Int
@@ -26,7 +26,7 @@ type Msg
 
 init : ( Model, Cmd Msg )
 init =
-    ( { levels = 70
+    ( { levelCount = 70
       , ruleRadius = 1
       , colors = 3
       , rule = Dict.empty
@@ -93,10 +93,10 @@ paddedNs r xs =
 
 
 levels : Model -> List (List Int)
-levels { levels, colors, ruleRadius, rule } =
+levels { levelCount, colors, ruleRadius, rule } =
     let
         width =
-            2 * levels + 1
+            2 * levelCount + 1
 
         initial =
             List.range 0 width
@@ -111,7 +111,7 @@ levels { levels, colors, ruleRadius, rule } =
         next _ level =
             paddedNs ruleRadius level |> List.map (\k -> Dict.get k rule |> Maybe.withDefault 0)
     in
-        List.scanl next initial (List.range 1 levels)
+        List.scanl next initial (List.range 1 levelCount)
 
 
 color : Int -> Color
@@ -142,21 +142,18 @@ pyramid res model =
 
         row i pxls =
             pxls |> List.indexedMap (pixel i)
-
-        rows =
-            levels model
     in
         levels model
             |> List.indexedMap row
             |> List.concatMap identity
             |> svg
-                [ width <| toString <| res * toFloat (2 * model.levels + 1)
-                , height <| toString <| res * toFloat model.levels
+                [ width <| toString <| res * toFloat (2 * model.levelCount + 1)
+                , height <| toString <| res * toFloat model.levelCount
                 ]
 
 
 rules : Float -> Model -> Html Msg
-rules res { rule, ruleRadius, colors, levels } =
+rules res { rule, ruleRadius, colors, levelCount } =
     let
         pixel i j c =
             rect

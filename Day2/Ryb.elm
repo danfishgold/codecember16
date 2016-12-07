@@ -1,4 +1,4 @@
-module Day2.Ryb exposing (ryb)
+module Day2.Ryb exposing (ryb, ryba)
 
 import Color exposing (Color)
 
@@ -19,10 +19,16 @@ type alias Rgba =
     }
 
 
+ryba : Float -> Float -> Float -> Float -> Color
+ryba h s l alpha =
+    ryb h s l
+        |> Color.toRgb
+        |> \c -> Color.rgba c.red c.green c.blue alpha
+
+
 ryb : Float -> Float -> Float -> Color
 ryb h s l =
     Color.hsl (degrees h) s l
-        |> Debug.log "ryb"
         |> Color.toRgb
         |> rgbaAsRyba
         |> toRgba

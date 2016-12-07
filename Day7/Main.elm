@@ -1,33 +1,41 @@
-module Loops exposing (..)
+port module Loops exposing (..)
 
 import Html exposing (program)
 import Html exposing (Html, div, text)
-import Random
-import Random.Extra exposing (constant)
+import Color exposing (Color)
+import Day2.Ryb exposing (ryba)
 
 
 type alias Model =
     { minLength : Int
     , count : Int
-    , loops : List (List Point)
+    , loops : List Loop
+    , width : Int
+    , height : Int
     }
 
 
 type Msg
-    = Msg
+    = SetLoops (List Loop)
 
 
 type alias Point =
-    { x : Int, y : Int }
+    ( Int, Int )
+
+
+type alias Loop =
+    { points : List Point, center : Point, color : Color }
 
 
 init : ( Model, Cmd Msg )
 init =
     ( { minLength = 10
       , count = 1
-      , loops = Random.list 1 (loop 10) |> \loops -> Random.step loops (Random.initialSeed 0) |> Tuple.first
+      , loops = []
+      , width = 500
+      , height = 500
       }
-    , Cmd.none
+    , requestLoops ( 500, 500, 20, 200, 1 )
     )
 
 
@@ -35,36 +43,29 @@ init =
 --
 
 
-loop : Int -> Random.Generator (List Point)
-loop minLength =
-    let
-        diff =
-            Random.Extra.sample [ Point 0 1, Point 0 -1, Point 1 0, Point -1 0 ]
-                |> Random.map (Maybe.withDefault <| Point 0 1)
-
-        nextPoint { x, y } =
-            diff |> Random.map (\d -> Point (x + d.x) (y + d.y))
-
-        aloop minLength prevs =
-            prevs
-                |> List.head
-                |> Maybe.withDefault (Point 0 0)
-                |> \p ->
-                    if p == Point 0 0 && List.length prevs >= minLength then
-                        constant prevs
-                    else
-                        nextPoint p |> Random.andThen (\q -> aloop minLength (q :: prevs))
-    in
-        aloop minLength []
+type alias JSLoop =
+    ( List Point, Point, Float )
 
 
+{-| width, height, minLength, maxLength, count
+-}
+port requestLoops : ( Int, Int, Int, Int, Int ) -> Cmd msg
 
---
+
+port getLoops : (List JSLoop -> msg) -> Sub msg
+
+
+parseLoop : JSLoop -> Loop
+parseLoop ( pts, center, hue ) =
+    { points = pts
+    , center = center
+    , color = ryba (hue |> degrees) 1 0.5 0.5
+    }
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    getLoops (List.map parseLoop >> SetLoops)
 
 
 
@@ -74,8 +75,8 @@ subscriptions model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        _ ->
-            ( model, Cmd.none )
+        SetLoops loops ->
+            ( { model | loops = loops }, Cmd.none )
 
 
 

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Looops</title>
+</head>
+
+<body>
+
+<div id="div"></div>
+hello
+
+<script src="index.js"></script>
+<script>
+
+var dirs = [[0, 1], [0, -1], [1, 0], [-1, 0]]
+function randomDirection() {
+  return dirs[Math.floor(Math.random() * 4)]
+}
+
+
+function makeLoop(minLength, maxLength) {
+  var pt = [0, 0]
+  var pts = [pt]
+  while (pts.length < minLength || pt[0] != 0 || pt[1] != 0) {
+    if (pts.length >= maxLength) {
+      return makeLoop(minLength, maxLength)
+    }
+    var dir = randomDirection()
+    pt = [pt[0] + dir[0], pt[1] + dir[1]]
+    pts.push(pt)
+  }
+  return pts
+}
+
+
+
+
+
+var node = document.getElementById("div")
+var app = Elm.Loops.embed(node)
+
+app.ports.requestLoops.subscribe(function(args) {
+  var width = args[0], height = args[1], minLength = args[2], maxLength = args[3], count = args[4]
+  var loops = []
+  for (var i = 0; i < count; i++) {
+    points = makeLoop(minLength, maxLength)
+    center = [Math.random() * width | 0, Math.random() * height | 0]
+    hue = Math.random() * 360
+    loops.push([points, center, hue])
+  }
+
+  app.ports.getLoops.send(loops)
+})
+
+
+</script>
+
+
+
+</body>
+
+
+</html>

@@ -7,6 +7,7 @@ import Color exposing (Color)
 import Color.Convert exposing (colorToCssRgba)
 import Day2.Ryb exposing (ryba)
 import String
+import Keyboard exposing (KeyCode)
 
 
 type alias Model =
@@ -20,6 +21,7 @@ type alias Model =
 
 type Msg
     = SetLoops (List Loop)
+    | Key KeyCode
 
 
 type alias Point =
@@ -52,10 +54,10 @@ init width height minLength maxLength count =
 main : Program Never Model Msg
 main =
     program
-        { init = init 50 50 100 400 20
+        { init = init 100 100 400 1400 20
         , subscriptions = subscriptions
         , update = update
-        , view = view 10
+        , view = view 5
         }
 
 
@@ -85,7 +87,10 @@ parseLoop ( deltas, center, hue ) =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    getLoops (List.map parseLoop >> SetLoops)
+    Sub.batch
+        [ getLoops (List.map parseLoop >> SetLoops)
+        , Keyboard.ups Key
+        ]
 
 
 
@@ -97,6 +102,20 @@ update msg model =
     case msg of
         SetLoops loops ->
             ( { model | loops = loops }, Cmd.none )
+
+        Key 32 ->
+            ( model
+            , requestLoops
+                ( model.width
+                , model.height
+                , model.minLength
+                , model.maxLength
+                , List.length model.loops
+                )
+            )
+
+        Key _ ->
+            ( model, Cmd.none )
 
 
 

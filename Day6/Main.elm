@@ -8,6 +8,7 @@ import Svg.Attributes exposing (cx, cy, r, fill, width, height)
 import Dict exposing (Dict)
 import Set exposing (Set)
 import Random exposing (Generator)
+import Random.Extra exposing (constant)
 import Random.Set
 import Color exposing (Color, black, red)
 import Color.Convert exposing (colorToCssRgb)
@@ -22,15 +23,19 @@ type alias GridPoint =
     ( Int, Int )
 
 
-type alias Model =
+type alias Components =
     { activeList : Set Point
     , grid : Dict GridPoint Point
     , finalPoints : List Point
+    }
+
+
+type alias Model =
+    { components : Components
     , width : Float
     , height : Float
-    , k : Int
+    , step : Components -> Generator Alg
     , r : Float
-    , seed : Random.Seed
     }
 
 
@@ -43,40 +48,28 @@ type Alg
 type Msg
     = Step Alg
     | Tick Time
-    | SetModel Model
 
 
 init : Float -> Float -> Int -> Float -> ( Model, Cmd Msg )
 init width height k r =
-    ( { activeList = Set.empty
-      , grid = Dict.empty
-      , finalPoints = []
+    ( { components =
+            { activeList = Set.empty
+            , grid = Dict.empty
+            , finalPoints = []
+            }
       , width = width
       , height = height
-      , k = k
+      , step = stepFunction k r width height
       , r = r
-      , seed = Random.initialSeed 0
       }
         |> updateAlgorithm (AddActive ( width / 2, height / 2 ))
     , Cmd.none
     )
 
 
-
-{-
-   choose a point p at random.
-   try k random points around it
-   if all those points q are near another point, remove p from active list and add it to finalPoints.
-   if some point q is near an existing point in grid, add q to the active list.
-   repeat until activePoints is empty
--}
---
---
-
-
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    if Set.isEmpty model.activeList then
+    if Set.isEmpty model.components.activeList then
         Sub.none
     else
         Time.every (second / 100) Tick
@@ -86,8 +79,8 @@ subscriptions model =
 --
 
 
-pointAround : Float -> Point -> Generator Point
-pointAround r ( x, y ) =
+randomPointAround : Float -> Point -> Generator Point
+randomPointAround r ( x, y ) =
     let
         rad =
             Random.float 0 1 |> Random.map (\f -> r * sqrt (1 + 3 * f))
@@ -132,31 +125,44 @@ isWithin width height ( x, y ) =
     0 <= x && x <= width && 0 <= y && y <= height
 
 
-step : Model -> ( Alg, Random.Seed )
-step { seed, activeList, k, r, grid, width, height } =
+{-|
+Step 1: Take a random point p from activeList
+Step 2: Choose a random q around p
+Step 3: If q is near any existing point, remove it. If it's far enough, add it to activeList
+Step 4: Repeat steps 2-3 k times. If no q was added, move p from activeList to finalPoints.
+-}
+stepFunction : Int -> Float -> Float -> Float -> Components -> Generator Alg
+stepFunction k r width height components =
     let
-        processPoint ( pnt, seed1 ) =
-            case pnt of
-                Nothing ->
-                    ( Finished, seed1 )
+        isOk grid q =
+            isFar r grid q && isWithin width height q
 
-                Just p ->
-                    stepFor seed1 p k
+        pointAround p =
+            randomPointAround r p
 
-        stepFor seed1 p kp =
-            let
-                dealWith ( q, seed2 ) =
-                    if isFar r grid q && isWithin width height q then
-                        ( AddActive q, seed2 )
-                    else
-                        stepFor seed2 p (kp - 1)
-            in
-                if kp == 0 then
-                    ( MoveToFinal p, seed1 )
-                else
-                    Random.step (pointAround r p) seed1 |> dealWith
+        stepsFor grid p kp =
+            if kp > 0 then
+                pointAround p
+                    |> Random.andThen
+                        (\q ->
+                            if isOk grid q then
+                                constant (AddActive q)
+                            else
+                                stepsFor grid p (kp - 1)
+                        )
+            else
+                constant (MoveToFinal p)
     in
-        Random.step (Random.Set.sample activeList) seed |> processPoint
+        Random.Set.sample components.activeList
+            |> Random.andThen
+                (\choice ->
+                    case choice of
+                        Nothing ->
+                            constant Finished
+
+                        Just p ->
+                            stepsFor components.grid p k
+                )
 
 
 
@@ -164,58 +170,44 @@ step { seed, activeList, k, r, grid, width, height } =
 
 
 updateAlgorithm : Alg -> Model -> Model
-updateAlgorithm alg model =
+updateAlgorithm alg ({ components, r } as model) =
     case alg of
         MoveToFinal p ->
             { model
-                | activeList = model.activeList |> Set.remove p
-                , finalPoints = p :: model.finalPoints
+                | components =
+                    { components
+                        | activeList = components.activeList |> Set.remove p
+                        , finalPoints = p :: components.finalPoints
+                    }
             }
 
         AddActive ( x, y ) ->
             { model
-                | grid =
-                    model.grid
-                        |> Dict.update
-                            ( floor (2 * x / model.r)
-                            , floor (2 * y / model.r)
-                            )
-                            (always <| Just ( x, y ))
-                , activeList = Set.insert ( x, y ) model.activeList
+                | components =
+                    { components
+                        | grid =
+                            components.grid
+                                |> Dict.update
+                                    ( floor (2 * x / model.r)
+                                    , floor (2 * y / model.r)
+                                    )
+                                    (always <| Just ( x, y ))
+                        , activeList = Set.insert ( x, y ) components.activeList
+                    }
             }
 
         Finished ->
             model
 
 
-makeStep : Model -> Model
-makeStep model =
-    let
-        ( alg, seed1 ) =
-            step model
-    in
-        updateAlgorithm alg { model | seed = seed1 }
-
-
-makeSteps : Int -> Model -> Model
-makeSteps n model =
-    if n > 0 then
-        makeSteps (n - 1) (makeStep model)
-    else
-        model
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Step step ->
-            ( updateAlgorithm step model, Cmd.none )
-
         Tick _ ->
-            ( model |> makeSteps 10, Cmd.none )
+            ( model, Random.generate Step (model.step model.components) )
 
-        SetModel newModel ->
-            ( newModel, Cmd.none )
+        Step alg ->
+            ( updateAlgorithm alg model, Cmd.none )
 
 
 
@@ -234,13 +226,13 @@ circle c ( x, y ) =
 
 
 view : Model -> Html Msg
-view ({ activeList, finalPoints } as model) =
+view ({ components } as model) =
     svg
         [ width <| toString model.width
         , height <| toString model.height
         ]
-        [ node "g" [] (finalPoints |> List.map (\pt -> ( toString pt, circle black pt )))
-        , node "g" [] (activeList |> Set.toList |> List.map (\pt -> ( toString pt, circle red pt )))
+        [ node "g" [] (components.finalPoints |> List.map (\pt -> ( toString pt, circle black pt )))
+        , node "g" [] (components.activeList |> Set.toList |> List.map (\pt -> ( toString pt, circle red pt )))
         ]
 
 

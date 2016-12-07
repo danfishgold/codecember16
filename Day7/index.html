@@ -7,8 +7,6 @@
 
 <body>
 
-<div id="div"></div>
-hello
 
 <script src="index.js"></script>
 <script>
@@ -21,33 +19,35 @@ function randomDirection() {
 
 function makeLoop(minLength, maxLength) {
   var pt = [0, 0]
-  var pts = [pt]
-  while (pts.length < minLength || pt[0] != 0 || pt[1] != 0) {
-    if (pts.length >= maxLength) {
+  var deltas = []
+  while (deltas.length < minLength || pt[0] != 0 || pt[1] != 0) {
+    if (deltas.length >= maxLength) {
       return makeLoop(minLength, maxLength)
     }
     var dir = randomDirection()
     pt = [pt[0] + dir[0], pt[1] + dir[1]]
-    pts.push(pt)
+    deltas.push(dir)
   }
-  return pts
+  return deltas
 }
 
 
 
 
 
-var node = document.getElementById("div")
-var app = Elm.Loops.embed(node)
+var app = Elm.Loops.fullscreen()
 
 app.ports.requestLoops.subscribe(function(args) {
   var width = args[0], height = args[1], minLength = args[2], maxLength = args[3], count = args[4]
   var loops = []
+
   for (var i = 0; i < count; i++) {
-    points = makeLoop(minLength, maxLength)
+    deltas = makeLoop(minLength, maxLength)
     center = [Math.random() * width | 0, Math.random() * height | 0]
+    // center = [width / 2 | 0, height / 2 | 0]
     hue = Math.random() * 360
-    loops.push([points, center, hue])
+
+    loops.push([deltas, center, hue])
   }
 
   app.ports.getLoops.send(loops)

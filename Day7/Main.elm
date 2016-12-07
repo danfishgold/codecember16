@@ -1,15 +1,18 @@
 port module Loops exposing (..)
 
 import Html exposing (program)
-import Html exposing (Html, div, text)
+import Svg exposing (Svg, svg, path)
+import Svg.Attributes exposing (width, height, fill, d)
 import Color exposing (Color)
+import Color.Convert exposing (colorToCssRgba)
 import Day2.Ryb exposing (ryba)
+import String
 
 
 type alias Model =
-    { minLength : Int
-    , count : Int
-    , loops : List Loop
+    { loops : List Loop
+    , minLength : Int
+    , maxLength : Int
     , width : Int
     , height : Int
     }
@@ -24,19 +27,36 @@ type alias Point =
 
 
 type alias Loop =
-    { points : List Point, center : Point, color : Color }
+    { deltas : List Point
+    , center : Point
+    , color : Color
+    }
 
 
-init : ( Model, Cmd Msg )
-init =
-    ( { minLength = 10
-      , count = 1
-      , loops = []
-      , width = 500
-      , height = 500
+init : Int -> Int -> Int -> Int -> Int -> ( Model, Cmd Msg )
+init width height minLength maxLength count =
+    ( { loops = []
+      , width = width
+      , height = height
+      , minLength = minLength
+      , maxLength = maxLength
       }
-    , requestLoops ( 500, 500, 20, 200, 1 )
+    , requestLoops ( width, height, minLength, maxLength, count )
     )
+
+
+
+--
+
+
+main : Program Never Model Msg
+main =
+    program
+        { init = init 50 50 100 400 20
+        , subscriptions = subscriptions
+        , update = update
+        , view = view 10
+        }
 
 
 
@@ -56,10 +76,10 @@ port getLoops : (List JSLoop -> msg) -> Sub msg
 
 
 parseLoop : JSLoop -> Loop
-parseLoop ( pts, center, hue ) =
-    { points = pts
+parseLoop ( deltas, center, hue ) =
+    { deltas = deltas
     , center = center
-    , color = ryba (hue |> degrees) 1 0.5 0.5
+    , color = ryba (hue) 1 0.5 0.5
     }
 
 
@@ -83,20 +103,34 @@ update msg model =
 --
 
 
-view : Model -> Html Msg
-view model =
-    div [] [ text <| toString model ]
+view : Float -> Model -> Svg Msg
+view res model =
+    let
+        wd =
+            toFloat model.width * res
 
+        ht =
+            toFloat model.height * res
 
+        command cmd ( x, y ) =
+            cmd
+                ++ " "
+                ++ toString (toFloat x * res)
+                ++ " "
+                ++ toString (toFloat y * res)
 
---
+        pathD { deltas, center } =
+            (command "M" center)
+                :: (deltas |> List.map (command "l"))
+                |> String.join " "
 
-
-main : Program Never Model Msg
-main =
-    program
-        { init = init
-        , subscriptions = subscriptions
-        , update = update
-        , view = view
-        }
+        loopPath loop =
+            path
+                [ fill <| colorToCssRgba loop.color
+                , d <| pathD loop
+                ]
+                []
+    in
+        model.loops
+            |> List.map loopPath
+            |> svg [ width <| toString wd, height <| toString ht ]

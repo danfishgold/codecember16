@@ -2,7 +2,7 @@ module Cradle exposing (..)
 
 import Html exposing (program)
 import Svg exposing (Svg, svg, polyline)
-import Svg.Attributes exposing (width, height, points, stroke, strokeWidth, fill)
+import Svg.Attributes exposing (width, height, points, stroke, strokeWidth, fill, style)
 import Mouse
 
 
@@ -175,10 +175,10 @@ currentClose : Point -> List Point -> Closeness
 currentClose p pts =
     let
         actualI ( i, ( t, d2 ) ) =
-            if d2 <= 10 then
-                if abs (t) <= 0.1 then
+            if d2 <= 20 then
+                if abs (t) <= 0.2 then
                     Edge i
-                else if abs (t - 1) <= 0.1 then
+                else if abs (t - 1) <= 0.2 then
                     Edge (i + 1)
                 else if 0 <= t && t <= 1 then
                     Middle i t
@@ -239,7 +239,7 @@ update msg model =
 
 view : Model -> Svg Msg
 view model =
-    svg [ width "500", height "500" ]
+    svg [ width "500", height "500", style "pointer-events: none" ]
         [ polyline
             [ strokeWidth "2"
             , stroke "black"

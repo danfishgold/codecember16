@@ -11,7 +11,7 @@ type alias Point =
 
 
 type MouseState
-    = Up
+    = Up Point
     | Down Point
     | Moved Point Point
 
@@ -37,7 +37,7 @@ init : ( Model, Cmd Msg )
 init =
     ( { line = [ ( 50, 250 ), ( 450, 250 ) ]
       , previousClose = None
-      , mouse = Up
+      , mouse = Up ( 0, 0 )
       }
     , Cmd.none
     )
@@ -52,24 +52,22 @@ subscriptions model =
     let
         lastPoint =
             case model.mouse of
-                Up ->
-                    Nothing
+                Up p ->
+                    p
 
                 Down p ->
-                    Just p
+                    p
 
                 Moved _ p ->
-                    Just p
+                    p
     in
-        case lastPoint of
-            Nothing ->
-                Mouse.downs <| \{ x, y } -> ChangedState <| Down ( toFloat x, toFloat y )
-
-            Just p ->
-                Sub.batch
-                    [ Mouse.ups <| always (ChangedState Up)
-                    , Mouse.moves <| \{ x, y } -> ChangedState <| Moved p ( toFloat x, toFloat y )
-                    ]
+        if model.mouse == Down lastPoint then
+            Mouse.ups <| \{ x, y } -> ChangedState <| Up ( toFloat x, toFloat y )
+        else
+            Sub.batch
+                [ Mouse.downs <| \{ x, y } -> ChangedState <| Down ( toFloat x, toFloat y )
+                , Mouse.moves <| \{ x, y } -> ChangedState <| Moved lastPoint ( toFloat x, toFloat y )
+                ]
 
 
 
@@ -195,8 +193,8 @@ currentClose p pts =
 updateOnState : MouseState -> Model -> Model
 updateOnState state model =
     case state of
-        Up ->
-            { model | previousClose = None }
+        Up p ->
+            { model | previousClose = currentClose p model.line }
 
         Down p ->
             { model | previousClose = currentClose p model.line }
@@ -230,7 +228,7 @@ update : Msg -> Model -> Model
 update msg model =
     case msg of
         ChangedState state ->
-            { model | mouse = state } |> updateOnState state
+            model |> updateOnState state |> \model -> { model | mouse = state }
 
 
 

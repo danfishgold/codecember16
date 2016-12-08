@@ -118,16 +118,8 @@ var app = Elm.Poisson.fullscreen({width: width, height: height, k: k, r: r})
 var sampler = poissonDiscSampler(width, height, k, r, app.ports.candidates.send, app.ports.finals.send, app.ports.finished.send)
 
 app.ports.checkRandomCandidate.subscribe(function(p) {
-  sampler()
-  sampler()
-  sampler()
-  sampler()
-  sampler()
-  sampler()
-  sampler()
-  sampler()
-  sampler()
-  sampler()
+  for (var i = 0; i < 50; i++)
+    sampler()
 })
 
 

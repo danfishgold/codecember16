@@ -1,8 +1,8 @@
 module Cradle exposing (..)
 
 import Html exposing (program)
-import Svg exposing (Svg, svg, polyline)
-import Svg.Attributes exposing (width, height, points, stroke, strokeWidth, fill, style)
+import Svg exposing (Svg, svg, polyline, circle)
+import Svg.Attributes exposing (width, height, points, stroke, strokeWidth, fill, style, cx, cy, r)
 import Mouse
 
 
@@ -49,25 +49,28 @@ init =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    let
-        lastPoint =
-            case model.mouse of
-                Up p ->
-                    p
-
-                Down p ->
-                    p
-
-                Moved _ p ->
-                    p
-    in
-        if model.mouse == Down lastPoint then
+    case model.mouse of
+        Down _ ->
             Mouse.ups <| \{ x, y } -> ChangedState <| Up ( toFloat x, toFloat y )
-        else
+
+        _ ->
             Sub.batch
                 [ Mouse.downs <| \{ x, y } -> ChangedState <| Down ( toFloat x, toFloat y )
-                , Mouse.moves <| \{ x, y } -> ChangedState <| Moved lastPoint ( toFloat x, toFloat y )
+                , Mouse.moves <| \{ x, y } -> ChangedState <| Moved (mousePosition model.mouse) ( toFloat x, toFloat y )
                 ]
+
+
+mousePosition : MouseState -> Point
+mousePosition mouse =
+    case mouse of
+        Up p ->
+            p
+
+        Down p ->
+            p
+
+        Moved _ p ->
+            p
 
 
 
@@ -210,7 +213,7 @@ updateOnState state model =
                 case ( model.previousClose, close ) of
                     ( Edge i, Edge j ) ->
                         if i == j then
-                            { newModel | line = model.line |> Debug.log "line before moving" |> moveBy i (delta p1 p2) }
+                            { newModel | line = model.line |> moveBy i (delta p1 p2) }
                         else
                             newModel
 
@@ -237,18 +240,31 @@ update msg model =
 
 view : Model -> Svg Msg
 view model =
-    svg [ width "500", height "500", style "pointer-events: none" ]
-        [ polyline
-            [ strokeWidth "2"
-            , stroke "black"
-            , fill "none"
-            , model.line
-                |> List.map (\( x, y ) -> toString x ++ "," ++ toString y)
-                |> String.join " "
-                |> points
-            ]
-            []
-        ]
+    let
+        marker color ( x, y ) =
+            circle
+                [ cx <| toString x
+                , cy <| toString y
+                , r "2"
+                , fill color
+                ]
+                []
+    in
+        svg [ width "500", height "500", style "pointer-events: none" ]
+            ([ polyline
+                [ strokeWidth "2"
+                , stroke "black"
+                , fill "none"
+                , model.line
+                    |> List.map (\( x, y ) -> toString x ++ "," ++ toString y)
+                    |> String.join " "
+                    |> points
+                ]
+                []
+             , mousePosition model.mouse |> marker "red"
+             ]
+                ++ (model.line |> List.map (marker "black"))
+            )
 
 
 

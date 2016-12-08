@@ -8,7 +8,7 @@ import Svg.Attributes exposing (cx, cy, r, fill, width, height)
 import Set exposing (Set)
 import Color exposing (Color, black, red)
 import Color.Convert exposing (colorToCssRgb)
-import Time exposing (Time, every, second)
+import Time exposing (Time, second)
 import AnimationFrame exposing (times)
 
 
@@ -26,10 +26,11 @@ type alias Flags =
 
 type alias Model =
     { candidates : Set Point
-    , finals : List Point
+    , finals : List ( Point, Time )
     , width : Float
     , height : Float
     , finished : Bool
+    , time : Time
     }
 
 
@@ -47,6 +48,7 @@ init { width, height } =
       , width = width
       , height = height
       , finished = False
+      , time = 0
       }
     , Cmd.none
     )
@@ -92,13 +94,13 @@ subscriptions model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Tick _ ->
-            ( model, checkRandomCandidate () )
+        Tick time ->
+            ( { model | time = time }, checkRandomCandidate () )
 
         MoveToFinal p ->
             ( { model
                 | candidates = model.candidates |> Set.remove p
-                , finals = p :: model.finals
+                , finals = ( p, model.time ) :: model.finals
               }
             , Cmd.none
             )
@@ -118,12 +120,12 @@ update msg model =
 --
 
 
-circle : Color -> Point -> Svg msg
-circle c ( x, y ) =
+circle : Color -> Float -> Point -> Svg msg
+circle c rad ( x, y ) =
     Svg.circle
         [ cx <| toString x
         , cy <| toString y
-        , r <| "1.5"
+        , r <| toString rad
         , fill <| colorToCssRgb c
         ]
         []
@@ -132,17 +134,20 @@ circle c ( x, y ) =
 view : Model -> Html Msg
 view model =
     let
-        candidates =
-            model.candidates |> Set.toList |> List.map (\pt -> ( toString pt, circle red pt ))
+        radius dt =
+            dt / (0.2 * second) |> min 1 |> ((*) 2)
+
+        point ( pt, t ) =
+            ( toString pt, circle black (radius <| model.time - t) pt )
 
         finals =
-            model.finals |> List.map (\pt -> ( toString pt, circle black pt ))
+            model.finals |> List.map point
     in
         svg
             [ width <| toString model.width
             , height <| toString model.height
             ]
-            [ node "g" [] (candidates ++ finals)
+            [ node "g" [] finals
             ]
 
 

@@ -123,7 +123,7 @@ circle c ( x, y ) =
     Svg.circle
         [ cx <| toString x
         , cy <| toString y
-        , r <| "1"
+        , r <| "1.5"
         , fill <| colorToCssRgb c
         ]
         []

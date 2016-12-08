@@ -209,18 +209,21 @@ updateOnState state model =
                 newModel =
                     { model | previousClose = close }
             in
-                if close /= model.previousClose then
-                    newModel
-                else
-                    case close of
-                        None ->
+                case ( model.previousClose, close ) of
+                    ( Edge i, Edge j ) ->
+                        if i == j then
+                            { newModel | line = model.line |> Debug.log "line before moving" |> moveBy i (delta p1 p2) }
+                        else
                             newModel
 
-                        Edge i ->
-                            { newModel | line = model.line |> Debug.log "line before moving" |> moveBy i (delta p1 p2) }
-
-                        Middle i t ->
+                    ( Middle i _, Middle j t ) ->
+                        if i == j then
                             { newModel | line = model.line |> insert i (fraction t p1 p2), previousClose = Edge (i + 1) }
+                        else
+                            newModel
+
+                    _ ->
+                        newModel
 
 
 update : Msg -> Model -> Model

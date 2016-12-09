@@ -147,7 +147,7 @@ update msg model =
 view : Model -> Svg Msg
 view { mouse, polygons } =
     let
-        polygon fillColor strokeColor pts =
+        polygon fillColor strokeColor sWidth pts =
             Svg.polygon
                 [ pts
                     |> List.map (\( x, y ) -> toString x ++ "," ++ toString y)
@@ -155,17 +155,26 @@ view { mouse, polygons } =
                     |> points
                 , fill fillColor
                 , stroke strokeColor
-                , strokeWidth "1"
+                , strokeWidth <| toString sWidth
                 ]
                 []
+
+        areas source =
+            polygons
+                |> destinations source
+                |> pairs
+                |> List.map (\( p1, p2 ) -> [ source, p1, p2 ])
+                |> List.map (polygon "rgba(0, 0, 0, 0.2)" "" 0)
+
+        sources dist n =
+            List.range 0 n
+                |> List.map (\i -> degrees <| toFloat i / toFloat n * 360)
+                |> List.map (\ang -> ( dist, ang ))
+                |> (\pts -> ( 0, 0 ) :: pts)
+                |> List.map (cartesian mouse)
     in
-        ((polygons
-            |> destinations mouse
-            |> pairs
-            |> List.map (\( p1, p2 ) -> [ mouse, p1, p2 ])
-            |> List.map (polygon "black" "black")
-         )
-            ++ (polygons |> List.map (polygon "none" "black"))
+        ((sources 10 5 |> List.concatMap areas)
+            ++ (polygons |> List.map (polygon "none" "black" 1))
         )
             |> svg [ width "500", height "500" ]
 

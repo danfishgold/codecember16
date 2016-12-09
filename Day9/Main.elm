@@ -26,6 +26,7 @@ init =
     ( { polygons =
             [ [ ( 100, 120 ), ( 100, 170 ), ( 200, 200 ), ( 200, 100 ) ]
             , [ ( 330, 470 ), ( 200, 430 ), ( 210, 350 ), ( 300, 390 ) ]
+            , [ ( 330, 170 ), ( 410, 100 ), ( 400, 190 ) ]
             , [ ( 0, 0 ), ( 0, 500 ), ( 500, 500 ), ( 500, 0 ) ]
             ]
       , mouse = ( 0, 0 )
@@ -109,8 +110,8 @@ cartesian ( x0, y0 ) ( d, angle ) =
     ( x0 + d * cos angle, y0 + d * sin angle )
 
 
-destinations : List (List Point) -> Point -> List Point
-destinations polygons mouse =
+destinations : Point -> List (List Point) -> List Point
+destinations mouse polygons =
     let
         lines =
             polygons |> List.concatMap pairs
@@ -144,38 +145,27 @@ update msg model =
 
 
 view : Model -> Svg Msg
-view model =
+view { mouse, polygons } =
     let
-        line ( xm, ym ) ( x, y ) =
-            Svg.line
-                [ x1 <| toString xm
-                , y1 <| toString ym
-                , x2 <| toString x
-                , y2 <| toString y
-                , stroke "black"
-                , strokeWidth "1"
-                ]
-                []
-
-        poly pts =
+        polygon fillColor strokeColor pts =
             Svg.polygon
                 [ pts
                     |> List.map (\( x, y ) -> toString x ++ "," ++ toString y)
                     |> String.join " "
                     |> points
-                , fill "none"
-                , stroke "black"
+                , fill fillColor
+                , stroke strokeColor
                 , strokeWidth "1"
                 ]
                 []
     in
-        ((destinations model.polygons model.mouse
+        ((polygons
+            |> destinations mouse
             |> pairs
-            |> List.map (\( p1, p2 ) -> [ model.mouse, p1, p2 ])
-            |> List.map poly
-          -- |> List.map (line model.mouse)
+            |> List.map (\( p1, p2 ) -> [ mouse, p1, p2 ])
+            |> List.map (polygon "black" "black")
          )
-            ++ (model.polygons |> List.map poly)
+            ++ (polygons |> List.map (polygon "none" "black"))
         )
             |> svg [ width "500", height "500" ]
 

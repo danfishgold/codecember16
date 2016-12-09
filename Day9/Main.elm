@@ -169,7 +169,10 @@ view model =
                 []
     in
         ((destinations model.polygons model.mouse
-            |> List.map (line model.mouse)
+            |> pairs
+            |> List.map (\( p1, p2 ) -> [ model.mouse, p1, p2 ])
+            |> List.map poly
+          -- |> List.map (line model.mouse)
          )
             ++ (model.polygons |> List.map poly)
         )

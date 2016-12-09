@@ -2,12 +2,10 @@ port module Poisson exposing (..)
 
 import Html exposing (programWithFlags)
 import Html exposing (Html, div, text)
-import Svg exposing (Svg, svg, g)
-import Svg.Keyed exposing (node)
-import Svg.Attributes exposing (cx, cy, r, fill, width, height)
+import Collage
+import Element
 import Set exposing (Set)
 import Color exposing (Color, black, red)
-import Color.Convert exposing (colorToCssRgb)
 import Time exposing (Time, second)
 import AnimationFrame exposing (times)
 
@@ -120,15 +118,11 @@ update msg model =
 --
 
 
-circle : Color -> Float -> Point -> Svg msg
-circle c rad ( x, y ) =
-    Svg.circle
-        [ cx <| toString x
-        , cy <| toString y
-        , r <| toString rad
-        , fill <| colorToCssRgb c
-        ]
-        []
+circle : Color -> Float -> Point -> Collage.Form
+circle c rad shift =
+    Collage.circle rad
+        |> Collage.filled c
+        |> Collage.move shift
 
 
 view : Model -> Html Msg
@@ -137,18 +131,16 @@ view model =
         radius dt =
             dt / (0.2 * second) |> min 1 |> ((*) 2)
 
-        point ( pt, t ) =
-            ( toString pt, circle black (radius <| model.time - t) pt )
+        point ( ( x, y ), t ) =
+            circle
+                black
+                (radius <| model.time - t)
+                ( x - model.width / 2, y - model.height / 2 )
 
         finals =
             model.finals |> List.map point
     in
-        svg
-            [ width <| toString model.width
-            , height <| toString model.height
-            ]
-            [ node "g" [] finals
-            ]
+        Collage.collage (floor model.width) (floor model.height) finals |> Element.toHtml
 
 
 

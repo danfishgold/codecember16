@@ -1,9 +1,15 @@
 module Nicky exposing (..)
 
-import Html exposing (program)
-import Svg exposing (Svg, svg, polygon)
-import Svg.Attributes exposing (width, height)
-import Svg.Attributes exposing (points, x1, y1, x2, y2, stroke, strokeWidth, fill)
+import Html exposing (Html, program)
+
+
+-- import Svg exposing (Svg, svg, polygon)
+-- import Svg.Attributes exposing (width, height)
+-- import Svg.Attributes exposing (points, x1, y1, x2, y2, stroke, strokeWidth, fill)
+
+import Collage exposing (polygon, group, filled, outlined, defaultLine)
+import Element
+import Color
 import Mouse
 
 
@@ -24,10 +30,10 @@ type Msg
 init : ( Model, Cmd Msg )
 init =
     ( { polygons =
-            [ [ ( 100, 120 ), ( 100, 170 ), ( 200, 200 ), ( 200, 100 ) ]
-            , [ ( 330, 470 ), ( 200, 430 ), ( 210, 350 ), ( 300, 390 ) ]
-            , [ ( 330, 170 ), ( 410, 100 ), ( 400, 190 ) ]
-            , [ ( 0, 0 ), ( 0, 500 ), ( 500, 500 ), ( 500, 0 ) ]
+            [ [ ( -150, -130 ), ( -150, -80 ), ( -50, -50 ), ( -50, -150 ) ]
+            , [ ( 80, 220 ), ( -50, 180 ), ( -40, 100 ), ( 50, 140 ) ]
+            , [ ( 90, -80 ), ( 160, -150 ), ( 150, -60 ) ]
+            , [ ( -250, -250 ), ( -250, 250 ), ( 250, 250 ), ( 250, -250 ) ]
             ]
       , mouse = ( 0, 0 )
       }
@@ -144,39 +150,35 @@ update msg model =
 --
 
 
-view : Model -> Svg Msg
+view : Model -> Html Msg
 view { mouse, polygons } =
     let
-        polygon fillColor strokeColor sWidth pts =
-            Svg.polygon
-                [ pts
-                    |> List.map (\( x, y ) -> toString x ++ "," ++ toString y)
-                    |> String.join " "
-                    |> points
-                , fill fillColor
-                , stroke strokeColor
-                , strokeWidth <| toString sWidth
-                ]
-                []
+        actualMouse =
+            ( Tuple.first mouse - 250, 250 - Tuple.second mouse )
 
         areas source =
             polygons
                 |> destinations source
                 |> pairs
                 |> List.map (\( p1, p2 ) -> [ source, p1, p2 ])
-                |> List.map (polygon "rgba(0, 0, 0, 0.2)" "" 0)
+                |> List.map polygon
+                |> List.map (filled <| Color.rgba 0 0 0 0.2)
 
         sources dist n =
             List.range 0 n
                 |> List.map (\i -> degrees <| toFloat i / toFloat n * 360)
                 |> List.map (\ang -> ( dist, ang ))
                 |> (\pts -> ( 0, 0 ) :: pts)
-                |> List.map (cartesian mouse)
+                |> List.map (cartesian actualMouse)
     in
-        ((sources 10 5 |> List.concatMap areas)
-            ++ (polygons |> List.map (polygon "none" "black" 1))
-        )
-            |> svg [ width "500", height "500" ]
+        [ polygons
+            |> List.map polygon
+            |> List.map (outlined defaultLine)
+            |> group
+        , sources 10 10 |> List.concatMap areas |> group
+        ]
+            |> Collage.collage 500 500
+            |> Element.toHtml
 
 
 

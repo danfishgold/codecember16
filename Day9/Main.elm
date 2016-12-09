@@ -119,6 +119,7 @@ destinations polygons mouse =
             polygons
                 |> List.concatMap (List.map (angle mouse))
                 |> List.concatMap (\t -> [ t - 0.001, t + 0.001 ])
+                |> List.sort
 
         rayIntersection angle =
             lines

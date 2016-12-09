@@ -115,6 +115,11 @@ moveBy idx ( dx, dy ) pts =
         |> modify idx (\( x, y ) -> ( x + dx, y + dy ))
 
 
+moveTo : Int -> Point -> List Point -> List Point
+moveTo idx pt pts =
+    pts |> modify idx (always pt)
+
+
 delta : Point -> Point -> Point
 delta ( x1, y1 ) ( x2, y2 ) =
     ( x2 - x1, y2 - y1 )
@@ -211,11 +216,11 @@ updateOnState state model =
                     { model | previousClose = close }
             in
                 case ( model.previousClose, close ) of
-                    ( Edge i, Edge j ) ->
-                        if i == j then
+                    ( prev, Edge i ) ->
+                        if prev == Edge i then
                             { newModel | line = model.line |> moveBy i (delta p1 p2) }
                         else
-                            newModel
+                            { newModel | line = model.line |> moveTo i p2 }
 
                     ( Middle i _, Middle j t ) ->
                         if i == j then

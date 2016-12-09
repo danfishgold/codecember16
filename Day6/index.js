@@ -11426,7 +11426,7 @@ var _user$project$Poisson$subscriptions = function (model) {
 						_elm_lang$core$Basics$always(_user$project$Poisson$Finished)),
 					_1: {
 						ctor: '::',
-						_0: model.finished ? _elm_lang$core$Platform_Sub$none : _elm_lang$animation_frame$AnimationFrame$times(_user$project$Poisson$Tick),
+						_0: _elm_lang$animation_frame$AnimationFrame$times(_user$project$Poisson$Tick),
 						_1: {ctor: '[]'}
 					}
 				}

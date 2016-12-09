@@ -78,10 +78,7 @@ subscriptions model =
         [ candidates AddCandidate
         , finals MoveToFinal
         , finished (always Finished)
-        , if model.finished then
-            Sub.none
-          else
-            times Tick
+        , times Tick
         ]
 
 

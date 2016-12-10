@@ -169,53 +169,65 @@ minimumBy fn xs =
                     |> Just
 
 
-nearestForPoints : Point -> List Point -> Maybe ( Int, ( Float, Float ) )
-nearestForPoints p pts =
+parametersToLocation : ( Int, ( Float, Float ) ) -> ( Float, Closeness )
+parametersToLocation ( i, ( t, d2 ) ) =
+    if d2 <= 30 then
+        if abs (t) <= 0.2 then
+            ( d2, Edge i )
+        else if abs (t - 1) <= 0.2 then
+            ( d2, Edge (i + 1) )
+        else if 0 <= t && t <= 1 then
+            ( d2, Middle i t )
+        else
+            ( d2, None )
+    else
+        ( d2, None )
+
+
+locationsForPoints : Point -> List Point -> List ( Float, Closeness )
+locationsForPoints p pts =
     pts
         |> pairs
         |> List.indexedMap (\i ln -> ( i, nearest p ln ))
-        |> List.filter (\( _, ( t, d2 ) ) -> -0.2 <= t && t <= 1.2 && d2 <= 30)
-        |> minimumBy (\( _, ( _, d2 ) ) -> d2)
+        |> List.map parametersToLocation
+        |> List.filter (\( _, closeness ) -> closeness /= None)
 
 
-currentClose : Point -> List Point -> Closeness
-currentClose p pts =
+currentClose : Closeness -> Point -> List Point -> Closeness
+currentClose prev p pts =
     let
-        actualI ( i, ( t, d2 ) ) =
-            if d2 <= 30 then
-                if abs (t) <= 0.2 then
-                    Edge i
-                else if abs (t - 1) <= 0.2 then
-                    Edge (i + 1)
-                else if 0 <= t && t <= 1 then
-                    Middle i t
-                else
-                    None
-            else
-                None
+        locations =
+            locationsForPoints p pts
     in
-        nearestForPoints p pts
-            |> Maybe.map actualI
-            |> Maybe.withDefault None
+        if List.any (\( _, closeness ) -> closeness == prev) locations then
+            prev
+        else
+            locations
+                |> minimumBy Tuple.first
+                |> Maybe.map Tuple.second
+                |> Maybe.withDefault None
 
 
 updateOnState : MouseState -> Model -> Model
 updateOnState state model =
-    case state of
-        Up p ->
-            { model | previousClose = currentClose p model.line }
+    let
+        close =
+            currentClose
+                model.previousClose
+                (mousePosition state)
+                model.line
 
-        Down p ->
-            { model | previousClose = currentClose p model.line }
+        newModel =
+            { model | previousClose = close }
+    in
+        case state of
+            Up p ->
+                newModel
 
-        Moved p1 p2 ->
-            let
-                close =
-                    currentClose p2 model.line
+            Down p ->
+                newModel
 
-                newModel =
-                    { model | previousClose = close }
-            in
+            Moved p1 p2 ->
                 case ( model.previousClose, close ) of
                     ( prev, Edge i ) ->
                         if prev == Edge i then
@@ -225,7 +237,12 @@ updateOnState state model =
 
                     ( Middle i _, Middle j t ) ->
                         if i == j then
-                            { newModel | line = model.line |> insert i (fraction t p1 p2), previousClose = Edge (i + 1) }
+                            { newModel
+                                | line =
+                                    model.line
+                                        |> insert i (fraction t p1 p2)
+                                , previousClose = Edge (i + 1)
+                            }
                         else
                             newModel
 

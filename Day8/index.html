@@ -8884,55 +8884,31 @@ var _elm_lang$svg$Svg_Attributes$accentHeight = _elm_lang$virtual_dom$VirtualDom
 var _user$project$Cradle$minimumBy = F2(
 	function (fn, xs) {
 		var step = F2(
-			function (x, _p0) {
-				var _p1 = _p0;
-				var _p3 = _p1._3;
-				var _p2 = _p1._0;
+			function (x, minX) {
 				return (_elm_lang$core$Native_Utils.cmp(
 					fn(x),
-					_p3) < 0) ? {
-					ctor: '_Tuple4',
-					_0: _p2 + 1,
-					_1: _p2,
-					_2: x,
-					_3: fn(x)
-				} : {ctor: '_Tuple4', _0: _p2 + 1, _1: _p1._1, _2: _p1._2, _3: _p3};
+					fn(minX)) < 0) ? x : minX;
 			});
-		var _p4 = xs;
-		if (_p4.ctor === '[]') {
+		var _p0 = xs;
+		if (_p0.ctor === '[]') {
 			return _elm_lang$core$Maybe$Nothing;
 		} else {
-			var _p7 = _p4._0;
-			return function (_p5) {
-				var _p6 = _p5;
-				return _elm_lang$core$Maybe$Just(
-					{ctor: '_Tuple2', _0: _p6._1, _1: _p6._2});
-			}(
-				A3(
-					_elm_lang$core$List$foldl,
-					step,
-					{
-						ctor: '_Tuple4',
-						_0: 1,
-						_1: 0,
-						_2: _p7,
-						_3: fn(_p7)
-					},
-					_p4._1));
+			return _elm_lang$core$Maybe$Just(
+				A3(_elm_lang$core$List$foldl, step, _p0._0, _p0._1));
 		}
 	});
 var _user$project$Cradle$nearest = F2(
-	function (_p9, _p8) {
-		var _p10 = _p9;
-		var _p11 = _p8;
-		var _p15 = _p11._0._1;
-		var _p14 = _p11._0._0;
-		var _p12 = {ctor: '_Tuple2', _0: _p10._0 - _p14, _1: _p10._1 - _p15};
-		var dx1 = _p12._0;
-		var dy1 = _p12._1;
-		var _p13 = {ctor: '_Tuple2', _0: _p11._1._0 - _p14, _1: _p11._1._1 - _p15};
-		var dx = _p13._0;
-		var dy = _p13._1;
+	function (_p2, _p1) {
+		var _p3 = _p2;
+		var _p4 = _p1;
+		var _p8 = _p4._0._1;
+		var _p7 = _p4._0._0;
+		var _p5 = {ctor: '_Tuple2', _0: _p3._0 - _p7, _1: _p3._1 - _p8};
+		var dx1 = _p5._0;
+		var dy1 = _p5._1;
+		var _p6 = {ctor: '_Tuple2', _0: _p4._1._0 - _p7, _1: _p4._1._1 - _p8};
+		var dx = _p6._0;
+		var dy = _p6._1;
 		var m = (dx * dx) + (dy * dy);
 		return {
 			ctor: '_Tuple2',
@@ -8941,25 +8917,25 @@ var _user$project$Cradle$nearest = F2(
 		};
 	});
 var _user$project$Cradle$fraction = F3(
-	function (t, _p17, _p16) {
-		var _p18 = _p17;
-		var _p21 = _p18._1;
-		var _p20 = _p18._0;
-		var _p19 = _p16;
-		return {ctor: '_Tuple2', _0: _p20 + (t * (_p19._0 - _p20)), _1: _p21 + (t * (_p19._1 - _p21))};
+	function (t, _p10, _p9) {
+		var _p11 = _p10;
+		var _p14 = _p11._1;
+		var _p13 = _p11._0;
+		var _p12 = _p9;
+		return {ctor: '_Tuple2', _0: _p13 + (t * (_p12._0 - _p13)), _1: _p14 + (t * (_p12._1 - _p14))};
 	});
 var _user$project$Cradle$delta = F2(
-	function (_p23, _p22) {
-		var _p24 = _p23;
-		var _p25 = _p22;
-		return {ctor: '_Tuple2', _0: _p25._0 - _p24._0, _1: _p25._1 - _p24._1};
+	function (_p16, _p15) {
+		var _p17 = _p16;
+		var _p18 = _p15;
+		return {ctor: '_Tuple2', _0: _p18._0 - _p17._0, _1: _p18._1 - _p17._1};
 	});
 var _user$project$Cradle$modify = F3(
 	function (idx, fn, xs) {
 		var xend = A2(_elm_lang$core$List$drop, idx, xs);
 		var start = A2(_elm_lang$core$List$take, idx, xs);
-		var _p26 = xend;
-		if (_p26.ctor === '::') {
+		var _p19 = xend;
+		if (_p19.ctor === '::') {
 			return A2(
 				_elm_lang$core$Basics_ops['++'],
 				start,
@@ -8967,24 +8943,32 @@ var _user$project$Cradle$modify = F3(
 					_elm_lang$core$Basics_ops['++'],
 					{
 						ctor: '::',
-						_0: fn(_p26._0),
+						_0: fn(_p19._0),
 						_1: {ctor: '[]'}
 					},
-					_p26._1));
+					_p19._1));
 		} else {
 			return start;
 		}
 	});
 var _user$project$Cradle$moveBy = F3(
-	function (idx, _p27, pts) {
-		var _p28 = _p27;
+	function (idx, _p20, pts) {
+		var _p21 = _p20;
 		return A3(
 			_user$project$Cradle$modify,
 			idx,
-			function (_p29) {
-				var _p30 = _p29;
-				return {ctor: '_Tuple2', _0: _p30._0 + _p28._0, _1: _p30._1 + _p28._1};
+			function (_p22) {
+				var _p23 = _p22;
+				return {ctor: '_Tuple2', _0: _p23._0 + _p21._0, _1: _p23._1 + _p21._1};
 			},
+			pts);
+	});
+var _user$project$Cradle$moveTo = F3(
+	function (idx, pt, pts) {
+		return A3(
+			_user$project$Cradle$modify,
+			idx,
+			_elm_lang$core$Basics$always(pt),
 			pts);
 	});
 var _user$project$Cradle$insert = F3(
@@ -9002,54 +8986,44 @@ var _user$project$Cradle$insert = F3(
 				A2(_elm_lang$core$List$drop, idx + 1, xs)));
 	});
 var _user$project$Cradle$pairs = function (xs) {
-	var _p31 = xs;
-	if ((_p31.ctor === '::') && (_p31._1.ctor === '::')) {
-		var _p32 = _p31._1._0;
+	var _p24 = xs;
+	if ((_p24.ctor === '::') && (_p24._1.ctor === '::')) {
+		var _p25 = _p24._1._0;
 		return {
 			ctor: '::',
-			_0: {ctor: '_Tuple2', _0: _p31._0, _1: _p32},
+			_0: {ctor: '_Tuple2', _0: _p24._0, _1: _p25},
 			_1: _user$project$Cradle$pairs(
-				{ctor: '::', _0: _p32, _1: _p31._1._1})
+				{ctor: '::', _0: _p25, _1: _p24._1._1})
 		};
 	} else {
 		return {ctor: '[]'};
 	}
 };
-var _user$project$Cradle$nearestForPoints = F2(
-	function (p, pts) {
-		return A2(
-			_user$project$Cradle$minimumBy,
-			_elm_lang$core$Tuple$second,
-			A2(
-				_elm_lang$core$List$map,
-				_user$project$Cradle$nearest(p),
-				_user$project$Cradle$pairs(pts)));
-	});
 var _user$project$Cradle$mousePosition = function (mouse) {
-	var _p33 = mouse;
-	switch (_p33.ctor) {
+	var _p26 = mouse;
+	switch (_p26.ctor) {
 		case 'Up':
-			return _p33._0;
+			return _p26._0;
 		case 'Down':
-			return _p33._0;
+			return _p26._0;
 		default:
-			return _p33._1;
+			return _p26._1;
 	}
 };
 var _user$project$Cradle$view = function (model) {
 	var marker = F2(
-		function (color, _p34) {
-			var _p35 = _p34;
+		function (color, _p27) {
+			var _p28 = _p27;
 			return A2(
 				_elm_lang$svg$Svg$circle,
 				{
 					ctor: '::',
 					_0: _elm_lang$svg$Svg_Attributes$cx(
-						_elm_lang$core$Basics$toString(_p35._0)),
+						_elm_lang$core$Basics$toString(_p28._0)),
 					_1: {
 						ctor: '::',
 						_0: _elm_lang$svg$Svg_Attributes$cy(
-							_elm_lang$core$Basics$toString(_p35._1)),
+							_elm_lang$core$Basics$toString(_p28._1)),
 						_1: {
 							ctor: '::',
 							_0: _elm_lang$svg$Svg_Attributes$r('2'),
@@ -9101,15 +9075,15 @@ var _user$project$Cradle$view = function (model) {
 											' ',
 											A2(
 												_elm_lang$core$List$map,
-												function (_p36) {
-													var _p37 = _p36;
+												function (_p29) {
+													var _p30 = _p29;
 													return A2(
 														_elm_lang$core$Basics_ops['++'],
-														_elm_lang$core$Basics$toString(_p37._0),
+														_elm_lang$core$Basics$toString(_p30._0),
 														A2(
 															_elm_lang$core$Basics_ops['++'],
 															',',
-															_elm_lang$core$Basics$toString(_p37._1)));
+															_elm_lang$core$Basics$toString(_p30._1)));
 												},
 												model.line))),
 									_1: {ctor: '[]'}
@@ -9172,81 +9146,122 @@ var _user$project$Cradle$init = {
 	},
 	_1: _elm_lang$core$Platform_Cmd$none
 };
-var _user$project$Cradle$currentClose = F2(
+var _user$project$Cradle$parametersToLocation = function (_p31) {
+	var _p32 = _p31;
+	var _p35 = _p32._1._0;
+	var _p34 = _p32._0;
+	var _p33 = _p32._1._1;
+	return (_elm_lang$core$Native_Utils.cmp(_p33, 30) < 1) ? ((_elm_lang$core$Native_Utils.cmp(
+		_elm_lang$core$Basics$abs(_p35),
+		0.2) < 1) ? {
+		ctor: '_Tuple2',
+		_0: _p33,
+		_1: _user$project$Cradle$Edge(_p34)
+	} : ((_elm_lang$core$Native_Utils.cmp(
+		_elm_lang$core$Basics$abs(_p35 - 1),
+		0.2) < 1) ? {
+		ctor: '_Tuple2',
+		_0: _p33,
+		_1: _user$project$Cradle$Edge(_p34 + 1)
+	} : (((_elm_lang$core$Native_Utils.cmp(0, _p35) < 1) && (_elm_lang$core$Native_Utils.cmp(_p35, 1) < 1)) ? {
+		ctor: '_Tuple2',
+		_0: _p33,
+		_1: A2(_user$project$Cradle$Middle, _p34, _p35)
+	} : {ctor: '_Tuple2', _0: _p33, _1: _user$project$Cradle$None}))) : {ctor: '_Tuple2', _0: _p33, _1: _user$project$Cradle$None};
+};
+var _user$project$Cradle$locationsForPoints = F2(
 	function (p, pts) {
-		var actualI = function (_p38) {
-			var _p39 = _p38;
-			var _p41 = _p39._1._0;
-			var _p40 = _p39._0;
-			return (_elm_lang$core$Native_Utils.cmp(_p39._1._1, 20) < 1) ? ((_elm_lang$core$Native_Utils.cmp(
-				_elm_lang$core$Basics$abs(_p41),
-				0.2) < 1) ? _user$project$Cradle$Edge(_p40) : ((_elm_lang$core$Native_Utils.cmp(
-				_elm_lang$core$Basics$abs(_p41 - 1),
-				0.2) < 1) ? _user$project$Cradle$Edge(_p40 + 1) : (((_elm_lang$core$Native_Utils.cmp(0, _p41) < 1) && (_elm_lang$core$Native_Utils.cmp(_p41, 1) < 1)) ? A2(_user$project$Cradle$Middle, _p40, _p41) : _user$project$Cradle$None))) : _user$project$Cradle$None;
-		};
 		return A2(
+			_elm_lang$core$List$filter,
+			function (_p36) {
+				var _p37 = _p36;
+				return !_elm_lang$core$Native_Utils.eq(_p37._1, _user$project$Cradle$None);
+			},
+			A2(
+				_elm_lang$core$List$map,
+				_user$project$Cradle$parametersToLocation,
+				A2(
+					_elm_lang$core$List$indexedMap,
+					F2(
+						function (i, ln) {
+							return {
+								ctor: '_Tuple2',
+								_0: i,
+								_1: A2(_user$project$Cradle$nearest, p, ln)
+							};
+						}),
+					_user$project$Cradle$pairs(pts))));
+	});
+var _user$project$Cradle$currentClose = F3(
+	function (prev, p, pts) {
+		var locations = A2(_user$project$Cradle$locationsForPoints, p, pts);
+		return A2(
+			_elm_lang$core$List$any,
+			function (_p38) {
+				var _p39 = _p38;
+				return _elm_lang$core$Native_Utils.eq(_p39._1, prev);
+			},
+			locations) ? prev : A2(
 			_elm_lang$core$Maybe$withDefault,
 			_user$project$Cradle$None,
 			A2(
 				_elm_lang$core$Maybe$map,
-				actualI,
-				A2(_user$project$Cradle$nearestForPoints, p, pts)));
+				_elm_lang$core$Tuple$second,
+				A2(_user$project$Cradle$minimumBy, _elm_lang$core$Tuple$first, locations)));
 	});
 var _user$project$Cradle$updateOnState = F2(
 	function (state, model) {
-		var _p42 = state;
-		switch (_p42.ctor) {
+		var close = A3(
+			_user$project$Cradle$currentClose,
+			model.previousClose,
+			_user$project$Cradle$mousePosition(state),
+			model.line);
+		var newModel = _elm_lang$core$Native_Utils.update(
+			model,
+			{previousClose: close});
+		var _p40 = state;
+		switch (_p40.ctor) {
 			case 'Up':
-				return _elm_lang$core$Native_Utils.update(
-					model,
-					{
-						previousClose: A2(_user$project$Cradle$currentClose, _p42._0, model.line)
-					});
+				return newModel;
 			case 'Down':
-				return _elm_lang$core$Native_Utils.update(
-					model,
-					{
-						previousClose: A2(_user$project$Cradle$currentClose, _p42._0, model.line)
-					});
+				return newModel;
 			default:
-				var _p47 = _p42._1;
-				var _p46 = _p42._0;
-				var close = A2(_user$project$Cradle$currentClose, _p47, model.line);
-				var newModel = _elm_lang$core$Native_Utils.update(
-					model,
-					{previousClose: close});
-				var _p43 = {ctor: '_Tuple2', _0: model.previousClose, _1: close};
+				var _p45 = _p40._1;
+				var _p44 = _p40._0;
+				var _p41 = {ctor: '_Tuple2', _0: model.previousClose, _1: close};
 				_v18_2:
 				do {
-					if (_p43.ctor === '_Tuple2') {
-						switch (_p43._0.ctor) {
+					if (_p41.ctor === '_Tuple2') {
+						switch (_p41._1.ctor) {
 							case 'Edge':
-								if (_p43._1.ctor === 'Edge') {
-									var _p44 = _p43._0._0;
-									return _elm_lang$core$Native_Utils.eq(_p44, _p43._1._0) ? _elm_lang$core$Native_Utils.update(
-										newModel,
-										{
-											line: A3(
-												_user$project$Cradle$moveBy,
-												_p44,
-												A2(_user$project$Cradle$delta, _p46, _p47),
-												model.line)
-										}) : newModel;
-								} else {
-									break _v18_2;
-								}
+								var _p42 = _p41._1._0;
+								return _elm_lang$core$Native_Utils.eq(
+									_p41._0,
+									_user$project$Cradle$Edge(_p42)) ? _elm_lang$core$Native_Utils.update(
+									newModel,
+									{
+										line: A3(
+											_user$project$Cradle$moveBy,
+											_p42,
+											A2(_user$project$Cradle$delta, _p44, _p45),
+											model.line)
+									}) : _elm_lang$core$Native_Utils.update(
+									newModel,
+									{
+										line: A3(_user$project$Cradle$moveTo, _p42, _p45, model.line)
+									});
 							case 'Middle':
-								if (_p43._1.ctor === 'Middle') {
-									var _p45 = _p43._0._0;
-									return _elm_lang$core$Native_Utils.eq(_p45, _p43._1._0) ? _elm_lang$core$Native_Utils.update(
+								if (_p41._0.ctor === 'Middle') {
+									var _p43 = _p41._0._0;
+									return _elm_lang$core$Native_Utils.eq(_p43, _p41._1._0) ? _elm_lang$core$Native_Utils.update(
 										newModel,
 										{
 											line: A3(
 												_user$project$Cradle$insert,
-												_p45,
-												A3(_user$project$Cradle$fraction, _p43._1._1, _p46, _p47),
+												_p43,
+												A3(_user$project$Cradle$fraction, _p41._1._1, _p44, _p45),
 												model.line),
-											previousClose: _user$project$Cradle$Edge(_p45 + 1)
+											previousClose: _user$project$Cradle$Edge(_p43 + 1)
 										}) : newModel;
 								} else {
 									break _v18_2;
@@ -9263,30 +9278,30 @@ var _user$project$Cradle$updateOnState = F2(
 	});
 var _user$project$Cradle$update = F2(
 	function (msg, model) {
-		var _p48 = msg;
-		var _p49 = _p48._0;
+		var _p46 = msg;
+		var _p47 = _p46._0;
 		return function (model) {
 			return _elm_lang$core$Native_Utils.update(
 				model,
-				{mouse: _p49});
+				{mouse: _p47});
 		}(
-			A2(_user$project$Cradle$updateOnState, _p49, model));
+			A2(_user$project$Cradle$updateOnState, _p47, model));
 	});
 var _user$project$Cradle$ChangedState = function (a) {
 	return {ctor: 'ChangedState', _0: a};
 };
 var _user$project$Cradle$subscriptions = function (model) {
-	var _p50 = model.mouse;
-	if (_p50.ctor === 'Down') {
+	var _p48 = model.mouse;
+	if (_p48.ctor === 'Down') {
 		return _elm_lang$mouse$Mouse$ups(
-			function (_p51) {
-				var _p52 = _p51;
+			function (_p49) {
+				var _p50 = _p49;
 				return _user$project$Cradle$ChangedState(
 					_user$project$Cradle$Up(
 						{
 							ctor: '_Tuple2',
-							_0: _elm_lang$core$Basics$toFloat(_p52.x),
-							_1: _elm_lang$core$Basics$toFloat(_p52.y)
+							_0: _elm_lang$core$Basics$toFloat(_p50.x),
+							_1: _elm_lang$core$Basics$toFloat(_p50.y)
 						}));
 			});
 	} else {
@@ -9294,29 +9309,29 @@ var _user$project$Cradle$subscriptions = function (model) {
 			{
 				ctor: '::',
 				_0: _elm_lang$mouse$Mouse$downs(
-					function (_p53) {
-						var _p54 = _p53;
+					function (_p51) {
+						var _p52 = _p51;
 						return _user$project$Cradle$ChangedState(
 							_user$project$Cradle$Down(
 								{
 									ctor: '_Tuple2',
-									_0: _elm_lang$core$Basics$toFloat(_p54.x),
-									_1: _elm_lang$core$Basics$toFloat(_p54.y)
+									_0: _elm_lang$core$Basics$toFloat(_p52.x),
+									_1: _elm_lang$core$Basics$toFloat(_p52.y)
 								}));
 					}),
 				_1: {
 					ctor: '::',
 					_0: _elm_lang$mouse$Mouse$moves(
-						function (_p55) {
-							var _p56 = _p55;
+						function (_p53) {
+							var _p54 = _p53;
 							return _user$project$Cradle$ChangedState(
 								A2(
 									_user$project$Cradle$Moved,
 									_user$project$Cradle$mousePosition(model.mouse),
 									{
 										ctor: '_Tuple2',
-										_0: _elm_lang$core$Basics$toFloat(_p56.x),
-										_1: _elm_lang$core$Basics$toFloat(_p56.y)
+										_0: _elm_lang$core$Basics$toFloat(_p54.x),
+										_1: _elm_lang$core$Basics$toFloat(_p54.y)
 									}));
 						}),
 					_1: {ctor: '[]'}

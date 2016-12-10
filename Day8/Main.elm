@@ -115,6 +115,11 @@ moveBy idx ( dx, dy ) pts =
         |> modify idx (\( x, y ) -> ( x + dx, y + dy ))
 
 
+moveTo : Int -> Point -> List Point -> List Point
+moveTo idx pt pts =
+    pts |> modify idx (always pt)
+
+
 delta : Point -> Point -> Point
 delta ( x1, y1 ) ( x2, y2 ) =
     ( x2 - x1, y2 - y1 )
@@ -146,80 +151,98 @@ nearest ( a, b ) ( ( x1, y1 ), ( x2, y2 ) ) =
         ( (dx * dx1 + dy * dy1) / m, (dx1 * dy - dx * dy1) ^ 2 / m )
 
 
-minimumBy : (a -> comparable) -> List a -> Maybe ( Int, a )
+minimumBy : (a -> comparable) -> List a -> Maybe a
 minimumBy fn xs =
     let
-        step x ( i, minI, minX, minV ) =
-            if fn x < minV then
-                ( i + 1, i, x, fn x )
+        step x minX =
+            if fn x < fn minX then
+                x
             else
-                ( i + 1, minI, minX, minV )
+                minX
     in
         case xs of
             [] ->
                 Nothing
 
             hd :: tl ->
-                List.foldl step ( 1, 0, hd, fn hd ) tl
-                    |> \( _, i, x, _ ) -> Just ( i, x )
+                List.foldl step hd tl
+                    |> Just
 
 
-nearestForPoints : Point -> List Point -> Maybe ( Int, ( Float, Float ) )
-nearestForPoints p pts =
+parametersToLocation : ( Int, ( Float, Float ) ) -> ( Float, Closeness )
+parametersToLocation ( i, ( t, d2 ) ) =
+    if d2 <= 30 then
+        if abs (t) <= 0.2 then
+            ( d2, Edge i )
+        else if abs (t - 1) <= 0.2 then
+            ( d2, Edge (i + 1) )
+        else if 0 <= t && t <= 1 then
+            ( d2, Middle i t )
+        else
+            ( d2, None )
+    else
+        ( d2, None )
+
+
+locationsForPoints : Point -> List Point -> List ( Float, Closeness )
+locationsForPoints p pts =
     pts
         |> pairs
-        |> List.map (nearest p)
-        |> minimumBy Tuple.second
+        |> List.indexedMap (\i ln -> ( i, nearest p ln ))
+        |> List.map parametersToLocation
+        |> List.filter (\( _, closeness ) -> closeness /= None)
 
 
-currentClose : Point -> List Point -> Closeness
-currentClose p pts =
+currentClose : Closeness -> Point -> List Point -> Closeness
+currentClose prev p pts =
     let
-        actualI ( i, ( t, d2 ) ) =
-            if d2 <= 20 then
-                if abs (t) <= 0.2 then
-                    Edge i
-                else if abs (t - 1) <= 0.2 then
-                    Edge (i + 1)
-                else if 0 <= t && t <= 1 then
-                    Middle i t
-                else
-                    None
-            else
-                None
+        locations =
+            locationsForPoints p pts
     in
-        nearestForPoints p pts
-            |> Maybe.map actualI
-            |> Maybe.withDefault None
+        if List.any (\( _, closeness ) -> closeness == prev) locations then
+            prev
+        else
+            locations
+                |> minimumBy Tuple.first
+                |> Maybe.map Tuple.second
+                |> Maybe.withDefault None
 
 
 updateOnState : MouseState -> Model -> Model
 updateOnState state model =
-    case state of
-        Up p ->
-            { model | previousClose = currentClose p model.line }
+    let
+        close =
+            currentClose
+                model.previousClose
+                (mousePosition state)
+                model.line
 
-        Down p ->
-            { model | previousClose = currentClose p model.line }
+        newModel =
+            { model | previousClose = close }
+    in
+        case state of
+            Up p ->
+                newModel
 
-        Moved p1 p2 ->
-            let
-                close =
-                    currentClose p2 model.line
+            Down p ->
+                newModel
 
-                newModel =
-                    { model | previousClose = close }
-            in
+            Moved p1 p2 ->
                 case ( model.previousClose, close ) of
-                    ( Edge i, Edge j ) ->
-                        if i == j then
+                    ( prev, Edge i ) ->
+                        if prev == Edge i then
                             { newModel | line = model.line |> moveBy i (delta p1 p2) }
                         else
-                            newModel
+                            { newModel | line = model.line |> moveTo i p2 }
 
                     ( Middle i _, Middle j t ) ->
                         if i == j then
-                            { newModel | line = model.line |> insert i (fraction t p1 p2), previousClose = Edge (i + 1) }
+                            { newModel
+                                | line =
+                                    model.line
+                                        |> insert i (fraction t p1 p2)
+                                , previousClose = Edge (i + 1)
+                            }
                         else
                             newModel
 

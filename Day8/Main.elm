@@ -151,37 +151,38 @@ nearest ( a, b ) ( ( x1, y1 ), ( x2, y2 ) ) =
         ( (dx * dx1 + dy * dy1) / m, (dx1 * dy - dx * dy1) ^ 2 / m )
 
 
-minimumBy : (a -> comparable) -> List a -> Maybe ( Int, a )
+minimumBy : (a -> comparable) -> List a -> Maybe a
 minimumBy fn xs =
     let
-        step x ( i, minI, minX, minV ) =
-            if fn x < minV then
-                ( i + 1, i, x, fn x )
+        step x minX =
+            if fn x < fn minX then
+                x
             else
-                ( i + 1, minI, minX, minV )
+                minX
     in
         case xs of
             [] ->
                 Nothing
 
             hd :: tl ->
-                List.foldl step ( 1, 0, hd, fn hd ) tl
-                    |> \( _, i, x, _ ) -> Just ( i, x )
+                List.foldl step hd tl
+                    |> Just
 
 
 nearestForPoints : Point -> List Point -> Maybe ( Int, ( Float, Float ) )
 nearestForPoints p pts =
     pts
         |> pairs
-        |> List.map (nearest p)
-        |> minimumBy Tuple.second
+        |> List.indexedMap (\i ln -> ( i, nearest p ln ))
+        |> List.filter (\( _, ( t, d2 ) ) -> -0.2 <= t && t <= 1.2 && d2 <= 30)
+        |> minimumBy (\( _, ( _, d2 ) ) -> d2)
 
 
 currentClose : Point -> List Point -> Closeness
 currentClose p pts =
     let
         actualI ( i, ( t, d2 ) ) =
-            if d2 <= 20 then
+            if d2 <= 30 then
                 if abs (t) <= 0.2 then
                     Edge i
                 else if abs (t - 1) <= 0.2 then

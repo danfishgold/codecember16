@@ -6,7 +6,7 @@ import Element
 import Day2.Random
 import Random
 import Mouse
-import Color exposing (Color, black)
+import Color exposing (Color)
 
 
 type alias Model =
@@ -67,11 +67,17 @@ subscriptions model =
 randomRect : Random.Generator Rect
 randomRect =
     let
+        randomZ =
+            Random.map (\f -> 1 / f) (Random.float 0 1)
+
+        pt x y z =
+            ( x * z, y * z, z )
+
         center =
-            Random.map3 (\x y z -> ( x, y, z ))
-                (Random.float -1 1)
-                (Random.float -1 1)
-                (Random.float 1 10)
+            Random.map3 pt
+                (Random.float -0.5 0.5)
+                (Random.float -0.5 0.5)
+                randomZ
     in
         Random.map4 Rect
             (center)
@@ -87,7 +93,13 @@ update msg model =
             ( { model | rects = rects }, Cmd.none )
 
         Mouse { x, y } ->
-            ( { model | eye = ( -model.width / 2 + toFloat x, model.height / 2 - toFloat y ) }, Cmd.none )
+            let
+                eye =
+                    ( toFloat x - model.width / 2
+                    , -(toFloat y - model.height / 2)
+                    )
+            in
+                ( { model | eye = eye }, Cmd.none )
 
 
 
@@ -112,7 +124,7 @@ edges { center, width, height } =
 
 project : Point2D -> Point3D -> Point2D
 project ( x0, y0 ) ( x, y, z ) =
-    ( x0 + (x - x0) / z, y0 + (y - y0) / z )
+    ( (x - x0) / z, (y - y0) / z )
 
 
 view : Model -> Html Msg
@@ -126,7 +138,7 @@ view { eye, width, height, rects } =
                 |> filled color
     in
         rects
-            |> List.sortBy z
+            |> List.sortBy (negate << z)
             |> List.map aRect
             |> Collage.collage (floor width) (floor height)
             |> Element.toHtml
@@ -139,7 +151,7 @@ view { eye, width, height, rects } =
 main : Program Never Model Msg
 main =
     program
-        { init = init 50
+        { init = init 40
         , subscriptions = subscriptions
         , update = update
         , view = view

@@ -98,8 +98,8 @@ update msg model =
         Mouse { x, y } ->
             let
                 eye =
-                    ( toFloat x - model.width / 2
-                    , -(toFloat y - model.height / 2)
+                    ( toFloat x / model.width - 0.5
+                    , -(toFloat y / model.height - 0.5)
                     )
             in
                 ( { model | eye = eye }, Cmd.none )
@@ -166,7 +166,8 @@ view { eye, width, height, rects } =
     let
         polygon color points =
             points
-                |> List.map (\( x, y, z ) -> project eye ( x * width, y * height, z ))
+                |> List.map (project eye)
+                |> List.map (\( x, y ) -> ( x * width, y * height ))
                 |> Collage.polygon
                 |> filled color
 

@@ -7,6 +7,7 @@ import Day2.Random
 import Random
 import Mouse
 import Color exposing (Color)
+import Color.Manipulate exposing (lighten)
 
 
 type alias Model =
@@ -30,6 +31,7 @@ type alias Rect =
     { center : Point3D
     , width : Float
     , height : Float
+    , depth : Float
     , color : Color
     }
 
@@ -79,8 +81,9 @@ randomRect =
                 (Random.float -0.5 0.5)
                 randomZ
     in
-        Random.map4 Rect
+        Random.map5 Rect
             (center)
+            (Random.float 0.1 0.2)
             (Random.float 0.1 0.2)
             (Random.float 0.1 0.2)
             (Day2.Random.ryb1 1 0.5)
@@ -122,6 +125,37 @@ edges { center, width, height } =
             ]
 
 
+faces : Rect -> ( List Point3D, List (List Point3D) )
+faces rect =
+    let
+        front =
+            edges rect
+
+        side ( ( x1, y1, z ), ( x2, y2, _ ) ) =
+            [ ( x1, y1, z ), ( x1, y1, z + rect.depth ), ( x2, y2, z + rect.depth ), ( x2, y2, z ) ]
+    in
+        ( front, front |> pairs |> List.map side )
+
+
+pairs : List a -> List ( a, a )
+pairs xs =
+    let
+        withoutOverflow xs =
+            case xs of
+                fst :: snd :: rest ->
+                    ( fst, snd ) :: withoutOverflow (snd :: rest)
+
+                _ ->
+                    []
+    in
+        case xs of
+            fst :: rest ->
+                withoutOverflow (xs ++ [ fst ])
+
+            [] ->
+                []
+
+
 project : Point2D -> Point3D -> Point2D
 project ( x0, y0 ) ( x, y, z ) =
     ( (x - x0) / z, (y - y0) / z )
@@ -130,12 +164,17 @@ project ( x0, y0 ) ( x, y, z ) =
 view : Model -> Html Msg
 view { eye, width, height, rects } =
     let
-        aRect ({ color } as rect) =
-            rect
-                |> edges
+        polygon color points =
+            points
                 |> List.map (\( x, y, z ) -> project eye ( x * width, y * height, z ))
                 |> Collage.polygon
                 |> filled color
+
+        facesElements color ( front, sides ) =
+            (sides |> List.map (polygon <| lighten 0.1 color)) ++ [ front |> polygon color ]
+
+        aRect rect =
+            faces rect |> facesElements rect.color |> Collage.group
     in
         rects
             |> List.sortBy (negate << z)

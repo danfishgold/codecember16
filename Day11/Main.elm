@@ -7,7 +7,7 @@ import Day2.Random
 import Random
 import Mouse
 import Color exposing (Color)
-import Color.Manipulate exposing (lighten)
+import Color.Manipulate exposing (lighten, darken)
 
 
 type alias Model =
@@ -114,46 +114,46 @@ z { center } =
     center |> \( _, _, z ) -> z
 
 
-edges : Rect -> List Point3D
-edges { center, width, height } =
-    center
-        |> \( x, y, z ) ->
-            [ ( x - width / 2, y - height / 2, z )
-            , ( x - width / 2, y + height / 2, z )
-            , ( x + width / 2, y + height / 2, z )
-            , ( x + width / 2, y - height / 2, z )
-            ]
-
-
-faces : Rect -> ( List Point3D, List (List Point3D) )
-faces rect =
+faces : Point2D -> Rect -> List ( Color, List Point3D )
+faces ( x0, y0 ) { center, width, height, depth, color } =
     let
+        ( x, y, z ) =
+            center
+
+        ( dx, dy, dz ) =
+            ( width / 2, height / 2, depth )
+
+        ( cFront, cTop, cBottom ) =
+            ( color, lighten 0.1 color, darken 0.1 color )
+
+        pt i j k =
+            ( x + i * dx, y + j * dy, z + k * dz )
+
         front =
-            edges rect
+            [ pt -1 -1 0, pt -1 1 0, pt 1 1 0, pt 1 -1 0 ]
 
-        side ( ( x1, y1, z ), ( x2, y2, _ ) ) =
-            [ ( x1, y1, z ), ( x1, y1, z + rect.depth ), ( x2, y2, z + rect.depth ), ( x2, y2, z ) ]
+        top =
+            [ pt -1 1 0, pt -1 1 1, pt 1 1 1, pt 1 1 0 ]
+
+        bottom =
+            [ pt -1 -1 0, pt -1 -1 1, pt 1 -1 1, pt 1 -1 0 ]
+
+        left =
+            [ pt -1 1 0, pt -1 -1 0, pt -1 -1 1, pt -1 1 1 ]
+
+        right =
+            [ pt 1 1 0, pt 1 -1 0, pt 1 -1 1, pt 1 1 1 ]
     in
-        ( front, front |> pairs |> List.map side )
-
-
-pairs : List a -> List ( a, a )
-pairs xs =
-    let
-        withoutOverflow xs =
-            case xs of
-                fst :: snd :: rest ->
-                    ( fst, snd ) :: withoutOverflow (snd :: rest)
-
-                _ ->
-                    []
-    in
-        case xs of
-            fst :: rest ->
-                withoutOverflow (xs ++ [ fst ])
-
-            [] ->
-                []
+        [ if y0 > y then
+            ( cTop, top )
+          else
+            ( cBottom, bottom )
+        , if x0 > x then
+            ( cTop, right )
+          else
+            ( cBottom, left )
+        , ( cFront, front )
+        ]
 
 
 project : Point2D -> Point3D -> Point2D
@@ -164,22 +164,17 @@ project ( x0, y0 ) ( x, y, z ) =
 view : Model -> Html Msg
 view { eye, width, height, rects } =
     let
-        polygon color points =
+        polygon ( color, points ) =
             points
                 |> List.map (project eye)
                 |> List.map (\( x, y ) -> ( x * width, y * height ))
                 |> Collage.polygon
                 |> filled color
-
-        facesElements color ( front, sides ) =
-            (sides |> List.map (polygon <| lighten 0.1 color)) ++ [ front |> polygon color ]
-
-        aRect rect =
-            faces rect |> facesElements rect.color |> Collage.group
     in
         rects
             |> List.sortBy (negate << z)
-            |> List.map aRect
+            |> List.concatMap (faces eye)
+            |> List.map polygon
             |> Collage.collage (floor width) (floor height)
             |> Element.toHtml
 

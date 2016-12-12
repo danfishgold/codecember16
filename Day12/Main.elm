@@ -98,7 +98,7 @@ url n objects f0 =
             |> List.sortBy .z
             |> List.map (project f0)
             |> List.foldr addToString base
-            |> ((++) "http://localhost:8000/Day12/")
+            |> ((++) "http://fishgold.co/codecember16/Day12/")
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )

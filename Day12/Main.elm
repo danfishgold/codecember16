@@ -8,9 +8,17 @@ import Navigation exposing (Location)
 import Task
 
 
+type alias Object =
+    { str : String
+    , f : Float
+    , z : Float
+    }
+
+
 type alias Model =
     { width : Float
     , fraction : Float
+    , objects : List Object
     }
 
 
@@ -33,7 +41,14 @@ fractionFromMouse { width } { x } =
 init : Location -> ( Model, Cmd Msg )
 init _ =
     ( { width = 1
-      , fraction = 0
+      , fraction = 0.5
+      , objects =
+            [ Object "|‾‾‾‾‾‾|" 0.5 1
+            , Object "|‾‾‾|" 0.1 1
+            , Object "┌──┐" 0.1 4
+            , Object "┌┐" -2 5
+            , Object "┌┐" 1.1 6
+            ]
       }
     , Task.perform widthFromWindow Window.size
     )
@@ -55,16 +70,35 @@ subscriptions model =
 --
 
 
-simpleUrl : Int -> Float -> String
-simpleUrl n fraction =
-    let
-        before =
-            floor <| (toFloat n * fraction)
+project : Float -> Object -> ( Object, Float )
+project f0 ({ f, z } as object) =
+    ( object, 0.5 + (f0 - f) / z )
 
-        after =
-            n - before
+
+url : Int -> List Object -> Float -> String
+url n objects f0 =
+    let
+        base =
+            String.repeat n "_"
+
+        addToString ( obj, f ) str =
+            let
+                k =
+                    floor <| f * toFloat n
+
+                before =
+                    str |> String.left k
+
+                after =
+                    str |> String.dropLeft (k + String.length obj.str)
+            in
+                before ++ obj.str ++ after
     in
-        "http://localhost:8000/Day12/" ++ String.join "|‾‾‾|" [ String.repeat before "_", String.repeat after "_" ]
+        objects
+            |> List.sortBy .z
+            |> List.map (project f0)
+            |> List.foldr addToString base
+            |> ((++) "http://localhost:8000/Day12/")
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -74,7 +108,7 @@ update msg model =
             ( { model | width = width }, Cmd.none )
 
         SetFraction f ->
-            ( { model | fraction = f }, Navigation.modifyUrl (simpleUrl 70 f) )
+            ( { model | fraction = f }, Navigation.modifyUrl (url 70 model.objects f) )
 
         None ->
             ( model, Cmd.none )

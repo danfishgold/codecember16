@@ -1,6 +1,15 @@
-module Day15.Polyomino exposing (..)
+module Day15.Polyomino
+    exposing
+        ( Letter(..)
+        , Word
+        , Point
+        , bn
+        , isRegular
+        , points
+        , random
+        , randomBN
+        )
 
-import Html exposing (text)
 import Set
 import Random
 import Random.Extra exposing (sample, constant)
@@ -125,21 +134,3 @@ randomBN min max =
         (randomWord min max)
         (randomWord min max)
         |> Random.Extra.filter (bn >> isRegular)
-
-
-
---
-
-
-bnBoundary : Word
-bnBoundary =
-    Random.step (randomBN 1 3) (Random.initialSeed 2) |> Tuple.first |> bn
-
-
-boundary : Word
-boundary =
-    Random.step (random 1 3) (Random.initialSeed 2) |> Tuple.first
-
-
-main =
-    text <| toString <| points ( 0, 0 ) bnBoundary

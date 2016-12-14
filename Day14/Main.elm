@@ -64,40 +64,49 @@ update msg model =
 circles : Float -> Float -> Float -> Float -> Color -> List (Svg msg)
 circles width height rad spacing color =
     let
-        circle x y =
+        d =
+            2 * rad + spacing
+
+        x i j =
+            if i % 2 == 0 then
+                d * j + d / 2
+            else
+                d * j
+
+        y i j =
+            d * toFloat i
+
+        circle i j =
             Svg.circle
-                [ cx <| toString x
-                , cy <| toString y
+                [ cx <| toString <| x i j
+                , cy <| toString <| y i j
                 , r <| toString rad
                 , fill <| colorToCssRgb color
                 ]
                 []
 
-        d =
-            2 * rad + spacing
+        ( rows, columns ) =
+            ( height / (d * sqrt 3 / 2) |> ceiling
+            , width / d |> ceiling
+            )
 
-        dx y =
-            if y % 2 == 0 then
-                d / 2
-            else
-                0
-
-        row y =
-            List.range 0 (width / d |> ceiling)
-                |> List.map (\i -> circle (dx y + toFloat i * d) (toFloat y * d))
+        row i =
+            List.range 0 columns
+                |> List.map toFloat
+                |> List.map (\j -> circle i j)
     in
-        List.range 0 (height / (d * sqrt 3 / 2) |> ceiling)
+        List.range 0 rows
             |> List.concatMap row
 
 
 view : Model -> Html Msg
 view { width, height, dx, dy } =
     let
-        circles2 =
-            circles width height 10 2.5 Color.red
-
         circles1 =
             circles width height 8 5 Color.red
+
+        circles2 =
+            circles width height 10 2.5 Color.red
     in
         svg
             [ Attrs.width <| toString width

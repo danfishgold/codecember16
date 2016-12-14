@@ -2,9 +2,11 @@ module Moiré exposing (..)
 
 import Html exposing (Html, program)
 import Svg exposing (Svg, svg, circle, g)
-import Svg.Attributes exposing (cx, cy, r, width, height, fill)
+import Svg.Attributes exposing (cx, cy, r, width, height, fill, transform)
 import Day14.Clip exposing (clip, clipPath)
 import Mouse
+import Color exposing (Color)
+import Color.Convert exposing (colorToCssRgb)
 
 
 type alias Point =
@@ -38,7 +40,14 @@ init width height =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Mouse.moves <| \{ x, y } -> Mouse <| Point (toFloat x) (toFloat y)
+    let
+        update { x, y } =
+            Point
+                (toFloat x |> max 0 |> min model.width)
+                (toFloat y |> max 0 |> min model.height)
+                |> Mouse
+    in
+        Mouse.moves update
 
 
 
@@ -56,23 +65,55 @@ update msg model =
 --
 
 
+circles : Float -> Float -> Float -> Float -> Color -> List (Svg msg)
+circles width height rad spacing color =
+    let
+        circle x y =
+            Svg.circle
+                [ cx <| toString x
+                , cy <| toString y
+                , r <| toString rad
+                , fill <| colorToCssRgb color
+                ]
+                []
+
+        d =
+            2 * rad + spacing
+
+        dx y =
+            if y % 2 == 0 then
+                d / 2
+            else
+                0
+
+        row y =
+            List.range 0 (width / d |> ceiling)
+                |> List.map (\i -> circle (dx y + toFloat i * d) (toFloat y * d))
+    in
+        List.range 0 (height / (d * sqrt 3 / 2) |> ceiling)
+            |> List.concatMap row
+
+
 view : Model -> Html Msg
 view model =
     let
-        circ x y =
-            circle [ cx <| toString x, cy <| toString y, r "50", fill "red" ] []
+        circles2 =
+            circles (2 * model.width) (2 * model.height) 10 3 Color.red
 
         circles1 =
-            List.range 0 10 |> List.map (\x -> circ (x * 150) 250)
-
-        circles2 =
-            List.range 0 10 |> List.map (\x -> circ (x * 150 + floor model.mouse.x) (280 + floor model.mouse.y))
+            circles model.width model.height 8.3 5 Color.red
     in
         svg
             [ width <| toString model.width
             , height <| toString model.height
             ]
-            [ clip "circles1" circles1, g [ clipPath "circles1" ] circles2 ]
+            [ clip "circles1" circles1
+            , g
+                [ clipPath "circles1" ]
+                [ g [ transform <| "translate(" ++ toString (model.mouse.x - model.width) ++ "," ++ toString (model.mouse.y - model.height) ++ ")" ]
+                    circles2
+                ]
+            ]
 
 
 

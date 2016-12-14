@@ -2,6 +2,8 @@ module Day15.Polyomino exposing (..)
 
 import Html exposing (text)
 import Set
+import Random
+import Random.Extra exposing (sample, constant)
 
 
 type Letter
@@ -88,5 +90,48 @@ isRegular word =
         list == set + 1
 
 
+bn : Word -> Word -> Word -> Word
+bn a b c =
+    a ++ b ++ c ++ complement a ++ complement b ++ complement c
+
+
+
+--
+
+
+randomLetter : Random.Generator Letter
+randomLetter =
+    sample [ U, D, L, R ] |> Random.map (Maybe.withDefault U)
+
+
+randomWord : Int -> Int -> Random.Generator Word
+randomWord min max =
+    Random.Extra.rangeLengthList min max randomLetter
+
+
+randomBN : Int -> Int -> Random.Generator Word
+randomBN min max =
+    Random.map3 bn
+        (randomWord min max)
+        (randomWord min max)
+        (randomWord min max)
+        |> Random.andThen
+            (\w ->
+                if isRegular w then
+                    constant w
+                else
+                    randomBN min max
+            )
+
+
+
+--
+
+
+word : Word
+word =
+    Random.step (randomBN 1 3) (Random.initialSeed 0) |> Tuple.first
+
+
 main =
-    text <| toString <| points ( 0, 0 ) [ U, U, L, D, L, D, R, R ]
+    text <| toString <| points ( 0, 0 ) word

@@ -2,33 +2,31 @@ module Moiré exposing (..)
 
 import Html exposing (Html, program)
 import Svg exposing (Svg, svg, circle, g)
-import Svg.Attributes exposing (cx, cy, r, width, height, fill, transform)
+import Svg.Attributes as Attrs exposing (cx, cy, r, fill, transform)
 import Day14.Clip exposing (clip, clipPath)
-import Mouse
 import Color exposing (Color)
 import Color.Convert exposing (colorToCssRgb)
-
-
-type alias Point =
-    { x : Float, y : Float }
+import AnimationFrame
 
 
 type alias Model =
     { width : Float
     , height : Float
-    , mouse : Point
+    , dx : Float
+    , dy : Float
     }
 
 
 type Msg
-    = Mouse Point
+    = Tick Float
 
 
 init : Float -> Float -> ( Model, Cmd Msg )
 init width height =
     ( { width = width
       , height = height
-      , mouse = Point 0 0
+      , dx = 0
+      , dy = 0
       }
     , Cmd.none
     )
@@ -40,14 +38,7 @@ init width height =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    let
-        update { x, y } =
-            Point
-                (toFloat x |> max 0 |> min model.width)
-                (toFloat y |> max 0 |> min model.height)
-                |> Mouse
-    in
-        Mouse.moves update
+    AnimationFrame.times Tick
 
 
 
@@ -57,8 +48,13 @@ subscriptions model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Mouse mouse ->
-            ( { model | mouse = mouse }, Cmd.none )
+        Tick t ->
+            ( { model
+                | dx = cos (t * 0.001) * 10
+                , dy = sin (t * 0.001) * 10
+              }
+            , Cmd.none
+            )
 
 
 
@@ -95,22 +91,22 @@ circles width height rad spacing color =
 
 
 view : Model -> Html Msg
-view model =
+view { width, height, dx, dy } =
     let
         circles2 =
-            circles (2 * model.width) (2 * model.height) 10 3 Color.red
+            circles width height 10 2.5 Color.red
 
         circles1 =
-            circles model.width model.height 8.3 5 Color.red
+            circles width height 8 5 Color.red
     in
         svg
-            [ width <| toString model.width
-            , height <| toString model.height
+            [ Attrs.width <| toString width
+            , Attrs.height <| toString height
             ]
             [ clip "circles1" circles1
             , g
                 [ clipPath "circles1" ]
-                [ g [ transform <| "translate(" ++ toString (model.mouse.x - model.width) ++ "," ++ toString (model.mouse.y - model.height) ++ ")" ]
+                [ g [ transform <| "translate(" ++ toString dx ++ "," ++ toString dy ++ ")" ]
                     circles2
                 ]
             ]

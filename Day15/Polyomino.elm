@@ -75,12 +75,14 @@ points origin word =
             origin :: points (add origin (delta hd)) tl
 
 
-isRegular : Word -> Word -> Word -> Bool
-isRegular a b c =
-    let
-        word =
-            bn ( a, b, c )
+bn : ( Word, Word, Word ) -> Word
+bn ( a, b, c ) =
+    a ++ b ++ c ++ complement a ++ complement b ++ complement c
 
+
+isRegular : Word -> Bool
+isRegular word =
+    let
         pts =
             points ( 0, 0 ) word
 
@@ -89,13 +91,11 @@ isRegular a b c =
 
         set =
             Set.fromList pts |> Set.size
+
+        ( first, last ) =
+            ( List.take 1 pts, List.drop (list - 1) pts )
     in
-        list == set + 1
-
-
-bn : Word -> Word -> Word -> Word
-bn a b c =
-    a ++ b ++ c ++ complement a ++ complement b ++ complement c
+        list == set + 1 && first == last
 
 
 
@@ -112,23 +112,34 @@ randomWord min max =
     Random.Extra.rangeLengthList min max randomLetter
 
 
+random : Int -> Int -> Random.Generator Word
+random min max =
+    randomWord min max
+        |> Random.Extra.filter isRegular
+
+
 randomBN : Int -> Int -> Random.Generator ( Word, Word, Word )
 randomBN min max =
     Random.map3 (,,)
         (randomWord min max)
         (randomWord min max)
         (randomWord min max)
-        |> Random.Extra.filter (\( a, b, c ) -> isRegular a b c)
+        |> Random.Extra.filter (bn >> isRegular)
 
 
 
 --
 
 
-word : Word
-word =
+bnBoundary : Word
+bnBoundary =
     Random.step (randomBN 1 3) (Random.initialSeed 2) |> Tuple.first |> bn
 
 
+boundary : Word
+boundary =
+    Random.step (random 1 3) (Random.initialSeed 2) |> Tuple.first
+
+
 main =
-    text <| toString <| points ( 0, 0 ) word
+    text <| toString <| points ( 0, 0 ) bnBoundary

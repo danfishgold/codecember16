@@ -7,14 +7,17 @@ import Day15.Polyomino as Poly
 import Random
 import Random.Extra
 import Keyboard exposing (KeyCode)
+import Color exposing (Color)
+import Color.Convert exposing (colorToCssRgb)
+import Day2.Random exposing (ryb1)
 
 
 type alias Model =
-    { width : Float, height : Float, polyominos : List Poly.Word }
+    { width : Float, height : Float, polyominos : List ( Color, Poly.Word ) }
 
 
 type Msg
-    = SetPolyominos (List Poly.Word)
+    = SetPolyominos (List ( Color, Poly.Word ))
     | Key KeyCode
 
 
@@ -43,7 +46,10 @@ subscriptions model =
 
 randomize : Cmd Msg
 randomize =
-    Random.list 9 (Poly.randomBN 2 6 |> Random.map Poly.bn)
+    Random.map2 (,)
+        (ryb1 1 0.5)
+        (Poly.randomBN 2 6 |> Random.map Poly.bn)
+        |> Random.list 9
         |> Random.generate SetPolyominos
 
 
@@ -64,8 +70,8 @@ update msg model =
 --
 
 
-polygon : Float -> Poly.Word -> Svg msg
-polygon scale word =
+polygon : Float -> ( Color, Poly.Word ) -> Svg msg
+polygon scale ( color, word ) =
     let
         pts =
             Poly.points ( 0, 0 ) word
@@ -87,7 +93,7 @@ polygon scale word =
     in
         Svg.polygon
             [ points pointsValue
-            , fill "none"
+            , fill <| colorToCssRgb color
             , stroke "black"
             , strokeWidth "1"
             ]
@@ -109,8 +115,8 @@ view model =
         translate i =
             "translate(" ++ toString (x i) ++ "," ++ toString (y i) ++ ")"
 
-        poly i word =
-            g [ transform <| translate i ] [ polygon scale word ]
+        poly i polyomino =
+            g [ transform <| translate i ] [ polygon scale polyomino ]
     in
         model.polyominos
             |> List.indexedMap poly

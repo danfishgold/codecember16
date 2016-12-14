@@ -6,6 +6,7 @@ import Svg.Attributes exposing (points, fill, stroke, strokeWidth, transform, wi
 import Day15.Polyomino as Poly
 import Random
 import Random.Extra
+import Keyboard exposing (KeyCode)
 
 
 type alias Model =
@@ -14,6 +15,7 @@ type alias Model =
 
 type Msg
     = SetPolyominos (List Poly.Word)
+    | Key KeyCode
 
 
 init : Float -> Float -> ( Model, Cmd Msg )
@@ -32,7 +34,7 @@ init width height =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Keyboard.ups Key
 
 
 
@@ -50,6 +52,12 @@ update msg model =
     case msg of
         SetPolyominos polyominos ->
             ( { model | polyominos = polyominos }, Cmd.none )
+
+        Key 32 ->
+            ( model, randomize )
+
+        Key _ ->
+            ( model, Cmd.none )
 
 
 

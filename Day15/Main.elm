@@ -76,17 +76,9 @@ polygon scale word =
                 |> List.foldr (\( px, py ) ( sx, sy ) -> ( sx + px, sy + py )) ( 0, 0 )
                 |> \( sumX, sumY ) ->
                     ( sumX / n, sumX / n )
-
-        transformValue =
-            "translate("
-                ++ toString -cx
-                ++ ","
-                ++ toString -cy
-                ++ ")"
     in
         Svg.polygon
             [ points pointsValue
-              -- , transform transformValue
             , fill "none"
             , stroke "black"
             , strokeWidth "1"
@@ -98,7 +90,7 @@ view : Model -> Svg Msg
 view model =
     let
         scale =
-            10
+            8
 
         x i =
             model.width / 6 + toFloat (i % 3) * model.width / 3

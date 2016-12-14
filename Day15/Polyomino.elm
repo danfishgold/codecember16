@@ -75,9 +75,12 @@ points origin word =
             origin :: points (add origin (delta hd)) tl
 
 
-isRegular : Word -> Bool
-isRegular word =
+isRegular : Word -> Word -> Word -> Bool
+isRegular a b c =
     let
+        word =
+            bn ( a, b, c )
+
         pts =
             points ( 0, 0 ) word
 
@@ -109,19 +112,13 @@ randomWord min max =
     Random.Extra.rangeLengthList min max randomLetter
 
 
-randomBN : Int -> Int -> Random.Generator Word
+randomBN : Int -> Int -> Random.Generator ( Word, Word, Word )
 randomBN min max =
-    Random.map3 bn
+    Random.map3 (,,)
         (randomWord min max)
         (randomWord min max)
         (randomWord min max)
-        |> Random.andThen
-            (\w ->
-                if isRegular w then
-                    constant w
-                else
-                    randomBN min max
-            )
+        |> Random.Extra.filter (\( a, b, c ) -> isRegular a b c)
 
 
 
@@ -130,7 +127,7 @@ randomBN min max =
 
 word : Word
 word =
-    Random.step (randomBN 1 3) (Random.initialSeed 0) |> Tuple.first
+    Random.step (randomBN 1 3) (Random.initialSeed 2) |> Tuple.first |> bn
 
 
 main =

@@ -2,13 +2,12 @@ module Polyomino exposing (..)
 
 import Html exposing (program)
 import Svg exposing (Svg, svg, g)
-import Svg.Attributes exposing (points, fill, stroke, strokeWidth, transform, width, height)
+import Svg.Attributes exposing (transform, width, height)
 import Day15.Polyomino as Poly
+import Day15.View as View
 import Random
-import Random.Extra
 import Keyboard exposing (KeyCode)
 import Color exposing (Color)
-import Color.Convert exposing (colorToCssRgb)
 import Day2.Random exposing (ryb1)
 
 
@@ -70,36 +69,6 @@ update msg model =
 --
 
 
-polygon : Float -> ( Color, Poly.Word ) -> Svg msg
-polygon scale ( color, word ) =
-    let
-        pts =
-            Poly.points ( 0, 0 ) word
-                |> List.map (\( x, y ) -> ( scale * toFloat x, scale * toFloat y ))
-
-        pointsValue =
-            pts
-                |> List.map (\( px, py ) -> toString px ++ "," ++ toString py)
-                |> String.join " "
-
-        n =
-            List.length pts |> toFloat
-
-        ( cx, cy ) =
-            pts
-                |> List.foldr (\( px, py ) ( sx, sy ) -> ( sx + px, sy + py )) ( 0, 0 )
-                |> \( sumX, sumY ) ->
-                    ( sumX / n, sumX / n )
-    in
-        Svg.polygon
-            [ points pointsValue
-            , fill <| colorToCssRgb color
-            , stroke "black"
-            , strokeWidth "1"
-            ]
-            []
-
-
 view : Float -> Model -> Svg Msg
 view scale model =
     let
@@ -112,8 +81,8 @@ view scale model =
         translate i =
             "translate(" ++ toString (x i) ++ "," ++ toString (y i) ++ ")"
 
-        poly i polyomino =
-            g [ transform <| translate i ] [ polygon scale polyomino ]
+        poly i ( color, word ) =
+            g [ transform <| translate i ] [ View.polygon scale color ( 0, 0 ) word ]
     in
         model.polyominos
             |> List.indexedMap poly

@@ -100,12 +100,9 @@ polygon scale ( color, word ) =
             []
 
 
-view : Model -> Svg Msg
-view model =
+view : Float -> Model -> Svg Msg
+view scale model =
     let
-        scale =
-            8
-
         x i =
             model.width / 6 + toFloat (i % 3) * model.width / 3
 
@@ -134,5 +131,5 @@ main =
         { init = init 500 500
         , subscriptions = subscriptions
         , update = update
-        , view = view
+        , view = view 8
         }

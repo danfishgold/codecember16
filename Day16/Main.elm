@@ -3,12 +3,12 @@ module Tiles exposing (..)
 import Html exposing (program)
 import Svg exposing (Svg, svg, g)
 import Svg.Attributes exposing (width, height, transform)
-import Day15.Polyomino as Poly exposing (Point)
+import Day15.Polyomino as Poly exposing (Point, Letter(..))
 import Day15.View exposing (polygon)
 import Random
 import Keyboard exposing (KeyCode)
 import Color exposing (Color, white)
-import Day2.Random exposing (ryb2v2)
+import Day2.Random exposing (ryb1v3)
 
 
 type alias Tile =
@@ -27,7 +27,7 @@ randomize : Cmd Msg
 randomize =
     let
         colors =
-            Random.generate SetColors (ryb2v2 1 0.5 45)
+            Random.generate SetColors (ryb1v3 1 0.5 45)
 
         tile =
             Random.generate SetTile (Poly.randomBN 2 8)
@@ -45,7 +45,7 @@ init : Float -> Float -> ( Model, Cmd Msg )
 init width height =
     ( { width = width
       , height = height
-      , tile = ( [], [], [] )
+      , tile = ( [ D ], [ L ], [] )
       , colors = ( white, white, white, white )
       }
     , randomize
@@ -98,6 +98,35 @@ axes ( w1, w2, w3 ) =
         ( vec <| w1 ++ w2, vec <| w3 ++ w2 )
 
 
+prefactors : Float -> Float -> ( Point, Point ) -> ( Float, Float )
+prefactors x y ( ( u1, u2 ), ( v1, v2 ) ) =
+    let
+        ( ux, uy, vx, vy ) =
+            ( toFloat u1, toFloat u2, toFloat v1, toFloat v2 )
+
+        det =
+            vy * ux - vx * uy
+    in
+        if det == 0 then
+            Debug.crash "base is colinear"
+        else
+            ( (vy * x - vx * y) / det, (ux * y - uy * x) / det )
+
+
+ranges : Float -> Float -> ( Point, Point ) -> ( ( Int, Int ), ( Int, Int ) )
+ranges wd ht vecs =
+    let
+        rangify xs =
+            ( List.minimum xs |> Maybe.withDefault 0 |> floor
+            , List.maximum xs |> Maybe.withDefault 0 |> ceiling
+            )
+    in
+        [ ( 0, 0 ), ( wd, 0 ), ( wd, ht ), ( 0, ht ) ]
+            |> List.map (\( x, y ) -> prefactors x y vecs)
+            |> List.unzip
+            |> \( i, j ) -> ( rangify i, rangify j )
+
+
 view : Float -> Model -> Svg Msg
 view scale model =
     let
@@ -132,15 +161,18 @@ view scale model =
         poly i j =
             polygon scale (color i j) (p0 i j) word
 
+        ( ( iMin, iMax ), ( jMin, jMax ) ) =
+            ranges (model.width / scale) (model.height / scale) ( u, v )
+
         row i =
-            List.range -5 5
+            List.range jMin jMax
                 |> List.map (poly i)
 
         grid =
-            List.range -5 5
+            List.range iMin iMax
                 |> List.concatMap row
     in
-        [ g [ transform "translate(250, 250)" ] grid ]
+        grid
             |> svg [ width <| toString model.width, height <| toString model.height ]
 
 

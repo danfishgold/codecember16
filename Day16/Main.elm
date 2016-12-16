@@ -27,10 +27,10 @@ randomize : Cmd Msg
 randomize =
     let
         colors =
-            Random.generate SetColors (ryb1v3 1 0.5 45)
+            Random.generate SetColors (ryb1v3 1 0.5 35)
 
         tile =
-            Random.generate SetTile (Poly.randomBN 2 8)
+            Random.generate SetTile (Poly.randomBN 3 7)
     in
         Cmd.batch [ colors, tile ]
 

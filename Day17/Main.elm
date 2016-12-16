@@ -88,10 +88,10 @@ view model =
             if i % 2 == 0 then
                 4
             else
-                7
+                8
 
         angle i =
-            model.angle * toFloat (i % 3 * 2 - 1)
+            model.angle * toFloat (i % 5 * 2 - 3)
 
         color i =
             Color.red

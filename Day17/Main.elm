@@ -1,10 +1,11 @@
 module Headache exposing (..)
 
-import Html exposing (Html, program)
-import Collage exposing (collage, move, rotate, group, filled)
-import Element
+import Html exposing (program)
+import Svg exposing (Svg, svg, g)
+import Svg.Attributes exposing (width, height, transform, cx, cy, r, fill)
 import AnimationFrame
 import Color exposing (Color)
+import Color.Convert exposing (colorToCssRgb)
 
 
 type alias Model =
@@ -56,22 +57,25 @@ update msg model =
 --
 
 
-ring : Float -> Float -> Int -> Float -> Color -> Collage.Form
+ring : Float -> Float -> Int -> Float -> Color -> Svg msg
 ring ringRadius circleRadius n angle color =
     let
         circle theta =
-            Collage.circle circleRadius
-                |> filled color
-                |> move ( ringRadius * cos theta, ringRadius * sin theta )
+            Svg.circle
+                [ cx <| toString <| ringRadius * cos theta
+                , cy <| toString <| ringRadius * sin theta
+                , r <| toString circleRadius
+                , fill <| colorToCssRgb color
+                ]
+                []
     in
         List.range 0 n
             |> List.map (\k -> 360 * toFloat k / toFloat n |> degrees)
             |> List.map circle
-            |> group
-            |> rotate angle
+            |> g [ transform <| "rotate(" ++ toString angle ++ ")" ]
 
 
-view : Model -> Html Msg
+view : Model -> Svg Msg
 view model =
     let
         n i =
@@ -87,7 +91,7 @@ view model =
                 7
 
         angle i =
-            model.angle * toFloat (i % 3 * 2 - 1) |> degrees
+            model.angle * toFloat (i % 3 * 2 - 1)
 
         color i =
             Color.red
@@ -97,8 +101,15 @@ view model =
     in
         List.range 1 15
             |> List.map aRing
-            |> collage (floor model.width) (floor model.height)
-            |> Element.toHtml
+            |> g
+                [ transform <|
+                    "translate("
+                        ++ toString (model.width / 2)
+                        ++ ","
+                        ++ toString (model.height / 2)
+                        ++ ")"
+                ]
+            |> \g -> svg [ width <| toString model.width, height <| toString model.height ] [ g ]
 
 
 

@@ -16,13 +16,13 @@ type alias Model =
     { width : Float
     , height : Float
     , t : Float
-    , vertexes : List Vertex
+    , vertices : List Vertex
     }
 
 
 type Msg
     = Tick Float
-    | SetVertexes (List Vertex)
+    | SetVertices (List Vertex)
     | Key KeyCode
 
 
@@ -40,14 +40,14 @@ init width height =
     ( { width = width
       , height = height
       , t = 0
-      , vertexes = []
+      , vertices = []
       }
-    , randomizeVertexes width height 9
+    , randomizeVertices width height 9
     )
 
 
-randomizeVertexes : Float -> Float -> Int -> Cmd Msg
-randomizeVertexes wd ht n =
+randomizeVertices : Float -> Float -> Int -> Cmd Msg
+randomizeVertices wd ht n =
     let
         radius =
             Random.float (min wd ht / 6) (min wd ht / 4)
@@ -85,7 +85,7 @@ randomizeVertexes wd ht n =
                     )
     in
         Random.list n vertex
-            |> Random.generate SetVertexes
+            |> Random.generate SetVertices
 
 
 
@@ -110,11 +110,11 @@ update msg model =
         Tick t ->
             ( { model | t = t }, Cmd.none )
 
-        SetVertexes vertexes ->
-            ( { model | vertexes = vertexes }, Cmd.none )
+        SetVertices vertices ->
+            ( { model | vertices = vertices }, Cmd.none )
 
         Key 32 ->
-            ( model, randomizeVertexes model.width model.height 9 )
+            ( model, randomizeVertices model.width model.height 9 )
 
         Key _ ->
             ( model, Cmd.none )
@@ -155,11 +155,11 @@ pairs xs =
 view : Model -> Svg Msg
 view model =
     let
-        vertexes =
-            List.map (vertexParameters model.t) model.vertexes
+        vertices =
+            List.map (vertexParameters model.t) model.vertices
 
         edges =
-            pairs vertexes
+            pairs vertices
 
         gradients =
             edges
@@ -190,7 +190,7 @@ view model =
     in
         [ Svg.defs [] gradients
         , edges |> List.indexedMap line |> g []
-        , vertexes |> List.map point |> g []
+        , vertices |> List.map point |> g []
         ]
             |> svg [ width <| toString model.width, height <| toString model.height ]
 

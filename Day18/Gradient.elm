@@ -1,27 +1,28 @@
 module Day18.Gradient exposing (gradient, gradientStroke)
 
 import Svg exposing (Svg, linearGradient, defs, stop)
-import Svg.Attributes exposing (id, x1, y1, x2, y2, stopColor, offset)
+import Svg.Attributes exposing (id, x1, y1, x2, y2, stopColor, offset, gradientUnits)
 import Color exposing (Color)
 import Color.Convert exposing (colorToCssRgb)
 
 
-gradient : String -> List Color -> Svg msg
-gradient name colors =
+gradient : String -> ( ( Float, Float, Color ), ( Float, Float, Color ) ) -> Svg msg
+gradient name ( ( xa, ya, ca ), ( xb, yb, cb ) ) =
     let
-        n =
-            List.length colors
-
-        percentiles =
-            List.range 0 n |> List.map (\k -> 100 * toFloat k / toFloat n)
-
-        stops : Float -> Color -> Svg msg
-        stops prcnt color =
-            stop [ offset <| toString prcnt ++ "%", stopColor <| colorToCssRgb color ] []
+        stops =
+            [ stop [ offset "0%", stopColor <| colorToCssRgb ca ] []
+            , stop [ offset "100%", stopColor <| colorToCssRgb cb ] []
+            ]
     in
-        List.map2 stops percentiles colors
-            |> linearGradient [ id name, x1 <| "0%", y1 <| "0%", x2 <| "100%", y2 <| "0%" ]
-            |> \grad -> defs [] [ grad ]
+        linearGradient
+            [ id name
+            , x1 <| toString xa
+            , y1 <| toString ya
+            , x2 <| toString xb
+            , y2 <| toString yb
+            , gradientUnits "userSpaceOnUse"
+            ]
+            stops
 
 
 gradientStroke : String -> Svg.Attribute msg

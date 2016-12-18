@@ -8,6 +8,7 @@ import Color exposing (Color)
 import Color.Convert exposing (colorToCssRgb)
 import Random
 import AnimationFrame
+import Random.Extra
 
 
 type alias Model =
@@ -57,6 +58,11 @@ randomizeVertexes wd ht n =
 
         w =
             Random.float 0.001 0.002
+                |> Random.andThen
+                    (\absValue ->
+                        Random.Extra.sample [ absValue, -absValue ]
+                            |> Random.map (Maybe.withDefault absValue)
+                    )
 
         phase =
             Random.float 0 (degrees 360)

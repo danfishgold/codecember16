@@ -1,4 +1,4 @@
-module Pentagram exposing (..)
+module RotatingPolygon exposing (..)
 
 import Html exposing (program)
 import Svg exposing (Svg, svg, g, defs, circle, line)
@@ -28,6 +28,7 @@ type alias Vertex =
     , cy : Float
     , r : Float
     , w : Float
+    , phase : Float
     }
 
 
@@ -36,26 +37,47 @@ init width height =
     ( { width = width
       , height = height
       , t = 0
-      , vertexes =
-            [ Vertex 200 200 50 0.001
-            , Vertex 230 190 100 0.0025
-            , Vertex 150 300 20 0.002
-            ]
+      , vertexes = []
       }
-    , randomizeVertexes 5
+    , randomizeVertexes width height 9
     )
 
 
-randomizeVertexes : Int -> Cmd Msg
-randomizeVertexes n =
+randomizeVertexes : Float -> Float -> Int -> Cmd Msg
+randomizeVertexes wd ht n =
     let
         radius =
-            Random.float
+            Random.float (min wd ht / 6) (min wd ht / 4)
 
-        edge =
-            3
+        x r =
+            Random.float (2 * r) (wd - 2 * r)
+
+        y r =
+            Random.float (2 * r) (ht - 2 * r)
+
+        w =
+            Random.float 0.001 0.002
+
+        phase =
+            Random.float 0 (degrees 360)
+
+        makeVertex r x y w ph =
+            Vertex x y r w ph
+
+        vertex =
+            radius
+                |> Random.andThen
+                    (\r ->
+                        Random.map4
+                            (makeVertex r)
+                            (x r)
+                            (y r)
+                            w
+                            phase
+                    )
     in
-        Cmd.none
+        Random.list n vertex
+            |> Random.generate SetVertexes
 
 
 
@@ -85,16 +107,11 @@ update msg model =
 --
 
 
-color : Float -> Color
-color theta =
-    Color.hsl theta 1 0.5
-
-
 vertexParameters : Float -> Vertex -> ( Float, Float, Color )
 vertexParameters t v =
     let
         theta =
-            v.w * t
+            v.w * t + v.phase
     in
         ( v.cx + v.r * cos theta, v.cx + v.r * sin theta, Color.hsl theta 1 0.5 )
 
@@ -138,7 +155,7 @@ view model =
             Svg.circle
                 [ cx <| toString x
                 , cy <| toString y
-                , r <| "3"
+                , r <| "2"
                 , fill <| colorToCssRgb c
                 ]
                 []
@@ -150,7 +167,7 @@ view model =
                 , x2 <| toString xb
                 , y2 <| toString yb
                 , gradientStroke <| toString i
-                , strokeWidth "3"
+                , strokeWidth "4"
                 ]
                 []
     in

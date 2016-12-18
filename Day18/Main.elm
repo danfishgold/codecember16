@@ -9,6 +9,7 @@ import Color.Convert exposing (colorToCssRgb)
 import Random
 import AnimationFrame
 import Random.Extra
+import Keyboard exposing (KeyCode)
 
 
 type alias Model =
@@ -22,6 +23,7 @@ type alias Model =
 type Msg
     = Tick Float
     | SetVertexes (List Vertex)
+    | Key KeyCode
 
 
 type alias Vertex =
@@ -92,7 +94,10 @@ randomizeVertexes wd ht n =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    AnimationFrame.times Tick
+    Sub.batch
+        [ AnimationFrame.times Tick
+        , Keyboard.ups Key
+        ]
 
 
 
@@ -107,6 +112,12 @@ update msg model =
 
         SetVertexes vertexes ->
             ( { model | vertexes = vertexes }, Cmd.none )
+
+        Key 32 ->
+            ( model, randomizeVertexes model.width model.height 9 )
+
+        Key _ ->
+            ( model, Cmd.none )
 
 
 

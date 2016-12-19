@@ -63,8 +63,8 @@ subscriptions model =
         , Time.every (0.01 * second)
             (\t ->
                 Mouse
-                    ( model.width / 2 + model.width / 8 * cos (t / 200)
-                    , model.height / 2 + model.height / 8 * sin (t / 200)
+                    ( model.width / 2 + model.width / 6 * cos (t / 300)
+                    , model.height / 2 + model.height / 6 * sin (t / 300)
                     )
             )
         ]

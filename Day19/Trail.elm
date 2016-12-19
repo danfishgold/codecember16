@@ -2,24 +2,25 @@ module Day19.Trail exposing (Trail, random, update, view)
 
 import Random
 import Random.Extra exposing (oneIn, constant, combine)
+import Random.Char
 import Svg exposing (Svg, g, text, text_)
 import Svg.Attributes exposing (x, y, fontFamily, fontSize, fill)
 import Color exposing (Color)
 import Color.Convert exposing (colorToCssRgb)
 
 
-characters : List String
+characters : List Char
 characters =
-    [ "a", "b", "c", "d" ]
+    [ 'a', 'b', 'c', 'd' ]
 
 
-randomLetter : Random.Generator String
+randomLetter : Random.Generator Char
 randomLetter =
     Random.Extra.sample characters |> Random.map (Maybe.withDefault "")
 
 
 type alias Trail =
-    { letters : List String
+    { letters : List Char
     , pace : Int
     , x : Int
     , y : Int
@@ -96,7 +97,7 @@ view font letterSize trail =
                 , x <| toString <| toFloat x0 * letterSize
                 , y <| toString <| toFloat (y0 - k) * letterSize
                 ]
-                [ text letter ]
+                [ text <| String.fromChar letter ]
     in
         trail.letters
             |> List.indexedMap (letterView trail.x trail.y)

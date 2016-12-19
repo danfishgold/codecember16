@@ -1,11 +1,13 @@
 module Gravity exposing (..)
 
 import Html exposing (Html, program)
-import Collage exposing (collage, circle, filled)
+import Collage exposing (collage, circle, filled, move)
 import Element
 import Color exposing (Color)
 import Mouse
 import AnimationFrame
+import Random
+import Day2.Random exposing (ryb1)
 
 
 type alias Model =
@@ -20,6 +22,7 @@ type alias Ball =
     { x : Float
     , y : Float
     , v : Float
+    , radius : Float
     , bounced : Bool
     , color : Color
     }
@@ -28,14 +31,14 @@ type alias Ball =
 type Msg
     = Tick Float
     | Add Ball
-    | Mouse Mouse.Position
+    | Mouse ( Float, Float )
 
 
 init : Float -> Float -> ( Model, Cmd Msg )
 init width height =
     ( { width = width
       , height = height
-      , g = 1
+      , g = 0.001
       , balls = []
       }
     , Cmd.none
@@ -50,7 +53,7 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ AnimationFrame.diffs Tick
-        , Mouse.moves Mouse
+        , Mouse.moves (\{ x, y } -> Mouse ( toFloat x, toFloat y ))
         ]
 
 
@@ -58,11 +61,59 @@ subscriptions model =
 --
 
 
+randomBall : Float -> Float -> Random.Generator Ball
+randomBall x y =
+    let
+        ball r c v =
+            { x = x, y = y, v = v, radius = r, color = c, bounced = False }
+    in
+        Random.map3 ball
+            (Random.float 2 5)
+            (ryb1 1 0.5)
+            (Random.float 0 0.2)
+
+
+updateBall : Float -> Float -> Ball -> Maybe Ball
+updateBall g dt ({ v, y } as ball) =
+    let
+        yNew =
+            y + dt * v - 1 / 2 * dt * dt * g
+
+        vNew =
+            v - dt * g
+    in
+        if yNew > ball.radius then
+            Just { ball | y = yNew, v = vNew }
+        else if not ball.bounced then
+            Just { ball | v = -vNew * 0.5, y = 2 * ball.radius - yNew, bounced = True }
+        else if yNew > -ball.radius then
+            Just { ball | y = yNew }
+        else
+            Nothing
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        _ ->
-            ( model, Cmd.none )
+        Tick dt ->
+            ( { model
+                | balls =
+                    model.balls
+                        |> List.filterMap (updateBall model.g dt)
+              }
+            , Cmd.none
+            )
+
+        Mouse ( x, y ) ->
+            ( model
+            , if 0 <= x && x <= model.width && 0 <= y && y <= model.height then
+                Random.generate Add (randomBall x (model.height - y))
+              else
+                Cmd.none
+            )
+
+        Add ball ->
+            ( { model | balls = ball :: model.balls }, Cmd.none )
 
 
 
@@ -71,9 +122,13 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    []
-        |> collage (floor model.width) (floor model.height)
-        |> Element.toHtml
+    let
+        ball { x, y, radius, color } =
+            circle radius |> filled color |> move ( x - model.width / 2, y - model.height / 2 )
+    in
+        List.map ball model.balls
+            |> collage (floor model.width) (floor model.height)
+            |> Element.toHtml
 
 
 

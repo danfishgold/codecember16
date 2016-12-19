@@ -1,9 +1,11 @@
 module Gravity exposing (..)
 
 import Html exposing (Html, program)
-import Collage exposing (collage, circle, filled, move)
-import Element
+import Svg exposing (Svg, svg, circle)
+import Svg.Keyed exposing (node)
+import Svg.Attributes exposing (width, height, cx, cy, r, fill)
 import Color exposing (Color)
+import Color.Convert exposing (colorToCssRgb)
 import Mouse
 import AnimationFrame
 import Random
@@ -16,6 +18,7 @@ type alias Model =
     , height : Float
     , g : Float
     , balls : List Ball
+    , id : Int
     }
 
 
@@ -26,6 +29,7 @@ type alias Ball =
     , radius : Float
     , bounced : Bool
     , color : Color
+    , id : String
     }
 
 
@@ -39,8 +43,9 @@ init : Float -> Float -> ( Model, Cmd Msg )
 init width height =
     ( { width = width
       , height = height
-      , g = 0.001
+      , g = 0.0005
       , balls = []
+      , id = 0
       }
     , Cmd.none
     )
@@ -69,11 +74,11 @@ subscriptions model =
 --
 
 
-randomBall : Float -> Float -> Random.Generator Ball
-randomBall x y =
+randomBall : String -> Float -> Float -> Random.Generator Ball
+randomBall id x y =
     let
         ball r c v =
-            { x = x, y = y, v = v, radius = r, color = c, bounced = False }
+            { x = x, y = y, v = v, radius = r, color = c, bounced = False, id = id }
     in
         Random.map3 ball
             (Random.float 2 5)
@@ -113,9 +118,9 @@ update msg model =
             )
 
         Mouse ( x, y ) ->
-            ( model
+            ( { model | id = model.id + 1 }
             , if 0 <= x && x <= model.width && 0 <= y && y <= model.height then
-                Random.generate Add (randomBall x (model.height - y))
+                Random.generate Add (randomBall (toString model.id) x (model.height - y))
               else
                 Cmd.none
             )
@@ -128,15 +133,25 @@ update msg model =
 --
 
 
-view : Model -> Html Msg
+view : Model -> Svg Msg
 view model =
     let
-        ball { x, y, radius, color } =
-            circle radius |> filled color |> move ( x - model.width / 2, y - model.height / 2 )
+        ball { id, x, y, radius, color } =
+            ( id
+            , circle
+                [ cx <| toString <| x
+                , cy <| toString <| model.height - y
+                , r <| toString radius
+                , fill <| colorToCssRgb color
+                ]
+                []
+            )
     in
         List.map ball model.balls
-            |> collage (floor model.width) (floor model.height)
-            |> Element.toHtml
+            |> node "svg"
+                [ width <| toString model.width
+                , height <| toString model.height
+                ]
 
 
 

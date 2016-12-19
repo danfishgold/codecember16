@@ -8,6 +8,7 @@ import Mouse
 import AnimationFrame
 import Random
 import Day2.Random exposing (ryb1)
+import Time exposing (second)
 
 
 type alias Model =
@@ -54,6 +55,13 @@ subscriptions model =
     Sub.batch
         [ AnimationFrame.diffs Tick
         , Mouse.moves (\{ x, y } -> Mouse ( toFloat x, toFloat y ))
+        , Time.every (0.01 * second)
+            (\t ->
+                Mouse
+                    ( model.width / 2 + model.width / 8 * cos (t / 200)
+                    , model.height / 2 + model.height / 8 * sin (t / 200)
+                    )
+            )
         ]
 
 

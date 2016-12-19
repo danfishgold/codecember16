@@ -1,8 +1,8 @@
 module Matrix exposing (..)
 
 import Html exposing (program)
-import Svg exposing (Svg, svg, g, text, text_)
-import Svg.Attributes exposing (width, height)
+import Svg exposing (Svg, svg, rect, g, text, text_)
+import Svg.Attributes exposing (width, height, x, y, fill)
 import Time exposing (Time, second, every)
 import Day19.Trail as Trail exposing (Trail)
 import Random exposing (generate)
@@ -48,7 +48,7 @@ init width height =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    every (0.1 * second) Tick
+    every (0.01 * second) Tick
 
 
 
@@ -71,11 +71,11 @@ update msg model =
             in
                 ( { model | time = time }
                 , Cmd.batch
-                    [ if List.length model.trails < model.count then
+                    [ if List.length trails < model.count then
                         generate AddTrail (Trail.random wd model.trailLength)
                       else
                         Cmd.none
-                    , model.trails |> List.map (Trail.update model.time) |> combine |> generate SetTrails
+                    , trails |> List.map (Trail.update model.time) |> combine |> generate SetTrails
                     ]
                 )
 
@@ -92,8 +92,18 @@ update msg model =
 
 view : Model -> Svg Msg
 view model =
-    model.trails
+    [ rect
+        [ x <| "0"
+        , y <| "0"
+        , width <| toString model.width
+        , height <| toString model.height
+        , fill "black"
+        ]
+        []
+    , model.trails
         |> List.map (Trail.view model.fontFamily model.fontSize)
+        |> g []
+    ]
         |> svg [ width <| toString model.width, height <| toString model.height ]
 
 

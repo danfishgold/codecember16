@@ -16,7 +16,7 @@ characters =
 
 randomLetter : Random.Generator Char
 randomLetter =
-    Random.Extra.sample characters |> Random.map (Maybe.withDefault "")
+    Random.Char.latinExtendedA
 
 
 type alias Trail =

@@ -74,12 +74,12 @@ makePlanets count sunMass =
             Random.map3 Planet
                 (Random.float 0.1 0.2 |> Random.map ((*) sunMass))
                 (Random.float (3 * sqrt sunMass) 1)
-                (Random.Extra.rangeLengthList 0 10 moon)
+                (Random.Extra.rangeLengthList 0 3 moon)
 
         moon =
             Random.map2 Moon
                 (Random.float 0.01 0.02 |> Random.map ((*) sunMass))
-                (Random.float 0.01 0.02)
+                (Random.float 0.05 0.13)
     in
         Random.list count planet
             |> Random.generate SetPlanets
@@ -96,7 +96,7 @@ update msg model =
             ( { model | planets = planets }, Cmd.none )
 
         Tick dt ->
-            ( { model | time = model.time + dt }, Cmd.none )
+            ( { model | time = model.time + dt / 500 }, Cmd.none )
 
         Key 32 ->
             ( model, makePlanets model.count model.sunMass )
@@ -131,13 +131,42 @@ view ({ time, planets, sunMass } as model) =
         circ color x y rad =
             circle color (centerX + scale * x) (centerY + scale * y) (scale * rad)
 
+        bg =
+            Svg.rect
+                [ width <| toString model.width
+                , height <| toString model.height
+                , fill "#ddd"
+                ]
+                []
+
         sun =
-            circ "white" 0 0 (sqrt sunMass)
+            circ "#eee" 0 0 (sqrt sunMass)
 
         tracks =
             planets |> List.map (\p -> circ "none" 0 0 (p.r)) |> g []
+
+        xyrad axisMass { r, m } =
+            let
+                w =
+                    sqrt <| sunMass / r ^ 3
+            in
+                ( r * cos (w * time), r * sin (w * time), sqrt m )
+
+        planet p =
+            let
+                ( x, y, rad ) =
+                    xyrad sunMass p
+
+                moon m =
+                    let
+                        ( mx, my, mrad ) =
+                            xyrad p.m m
+                    in
+                        circ "#123" (x + mx) (y + my) mrad
+            in
+                g [] [ circ "#888" x y rad, List.map moon p.moons |> g [] ]
     in
-        [ sun, tracks ]
+        [ bg, sun, tracks, List.map planet planets |> g [] ]
             |> svg [ width <| toString model.width, height <| toString model.height ]
 
 
@@ -148,7 +177,7 @@ view ({ time, planets, sunMass } as model) =
 main : Program Never Model Msg
 main =
     program
-        { init = init 500 500 4 0.01
+        { init = init 500 500 3 0.01
         , subscriptions = subscriptions
         , update = update
         , view = view

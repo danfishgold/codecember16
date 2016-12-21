@@ -13,22 +13,23 @@ type alias Model =
     { width : Float
     , height : Float
     , planets : List Planet
-    , sunMass : Float
+    , sunRadius : Float
     , count : Int
     , time : Float
     }
 
 
-type alias Moon =
-    -- mass and distance from axis
-    { m : Float, r : Float }
+type alias Object =
+    { r : Float
+    , d : Float
+    , w : Float
+    , phase : Float
+    }
 
 
 type alias Planet =
-    -- mass, distance from axis, and moons
-    { m : Float
-    , r : Float
-    , moons : List Moon
+    { props : Object
+    , moons : List Object
     }
 
 
@@ -39,15 +40,15 @@ type Msg
 
 
 init : Float -> Float -> Int -> Float -> ( Model, Cmd Msg )
-init width height count sunMass =
+init width height count sunRadius =
     ( { width = width
       , height = height
       , count = count
       , planets = []
-      , sunMass = sunMass
+      , sunRadius = sunRadius
       , time = 0
       }
-    , makePlanets count sunMass
+    , makePlanets count sunRadius
     )
 
 
@@ -67,21 +68,52 @@ subscriptions model =
 --
 
 
-makePlanets : Int -> Float -> Cmd Msg
-makePlanets count sunMass =
-    let
-        planet =
-            Random.map3 Planet
-                (Random.float 0.1 0.2 |> Random.map ((*) sunMass))
-                (Random.float (3 * sqrt sunMass) 1)
-                (Random.Extra.rangeLengthList 0 3 moon)
+diffs : List Float -> List Float
+diffs xs =
+    case xs of
+        hd :: nk :: tl ->
+            (nk - hd) :: diffs (nk :: tl)
 
-        moon =
-            Random.map2 Moon
-                (Random.float 0.01 0.02 |> Random.map ((*) sunMass))
-                (Random.float 0.05 0.13)
+        _ ->
+            []
+
+
+makePlanets : Int -> Float -> Cmd Msg
+makePlanets count sunRadius =
+    let
+        planetProps =
+            Random.map4 Object
+                -- rad, dist, w, phase
+                (Random.float 0.15 0.3 |> Random.map ((*) sunRadius))
+                (Random.float (1.5 * sunRadius) 0.9)
+                (Random.float 0.0005 0.0015)
+                (Random.float 0 360 |> Random.map degrees)
+
+        moon { r } =
+            Random.map4 Object
+                (Random.float 0.02 0.07 |> Random.map ((*) sunRadius))
+                (Random.float 1.7 2.3 |> Random.map ((*) r))
+                (Random.float 0.005 0.001)
+                (Random.float 0 360 |> Random.map degrees)
+
+        planet props =
+            moon props
+                |> Random.Extra.rangeLengthList 0 4
+                |> Random.map (Planet props)
+
+        minRad =
+            List.map (.props >> .r)
+                >> List.minimum
+                >> Maybe.withDefault 0
+
+        farEnough planets =
+            planets
+                |> List.map (.props >> .d)
+                |> diffs
+                |> List.all (\d -> d > 2 * minRad planets)
     in
-        Random.list count planet
+        Random.list count (planetProps |> Random.andThen planet)
+            |> Random.Extra.filter farEnough
             |> Random.generate SetPlanets
 
 
@@ -96,10 +128,10 @@ update msg model =
             ( { model | planets = planets }, Cmd.none )
 
         Tick dt ->
-            ( { model | time = model.time + dt / 500 }, Cmd.none )
+            ( { model | time = model.time + dt }, Cmd.none )
 
         Key 32 ->
-            ( model, makePlanets model.count model.sunMass )
+            ( model, makePlanets model.count model.sunRadius )
 
         Key _ ->
             ( model, Cmd.none )
@@ -123,7 +155,7 @@ circle color x y rad =
 
 
 view : Model -> Svg Msg
-view ({ time, planets, sunMass } as model) =
+view ({ time, planets, sunRadius } as model) =
     let
         ( centerX, centerY, scale ) =
             ( model.width / 2, model.height / 2, min model.width model.height / 2 )
@@ -140,31 +172,29 @@ view ({ time, planets, sunMass } as model) =
                 []
 
         sun =
-            circ "#eee" 0 0 (sqrt sunMass)
+            circ "#eee" 0 0 sunRadius
 
         tracks =
-            planets |> List.map (\p -> circ "none" 0 0 (p.r)) |> g []
+            planets |> List.map (\p -> circ "none" 0 0 (p.props.d)) |> g []
 
-        xyrad axisMass { r, m } =
-            let
-                w =
-                    sqrt <| sunMass / r ^ 3
-            in
-                ( r * cos (w * time), r * sin (w * time), sqrt m )
+        xy { d, w, phase } =
+            ( d * cos (w * time + phase)
+            , d * sin (w * time + phase)
+            )
 
         planet p =
             let
-                ( x, y, rad ) =
-                    xyrad sunMass p
+                ( px, py ) =
+                    xy p.props
 
                 moon m =
                     let
-                        ( mx, my, mrad ) =
-                            xyrad p.m m
+                        ( mx, my ) =
+                            xy m
                     in
-                        circ "#123" (x + mx) (y + my) mrad
+                        circ "#123" (px + mx) (py + my) m.r
             in
-                g [] [ circ "#888" x y rad, List.map moon p.moons |> g [] ]
+                g [] [ circ "#888" px py p.props.r, List.map moon p.moons |> g [] ]
     in
         [ bg, sun, tracks, List.map planet planets |> g [] ]
             |> svg [ width <| toString model.width, height <| toString model.height ]
@@ -177,7 +207,7 @@ view ({ time, planets, sunMass } as model) =
 main : Program Never Model Msg
 main =
     program
-        { init = init 500 500 3 0.01
+        { init = init 500 500 3 0.2
         , subscriptions = subscriptions
         , update = update
         , view = view

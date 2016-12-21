@@ -172,7 +172,7 @@ view ({ time, planets, sunRadius } as model) =
                 []
 
         sun =
-            circ "#eee" 0 0 sunRadius
+            circ "#bbb" 0 0 sunRadius
 
         tracks =
             planets |> List.map (\p -> circ "none" 0 0 (p.props.d)) |> g []
@@ -192,7 +192,7 @@ view ({ time, planets, sunRadius } as model) =
                         ( mx, my ) =
                             xy m
                     in
-                        circ "#123" (px + mx) (py + my) m.r
+                        circ "#ddd" (px + mx) (py + my) m.r
             in
                 g [] [ circ "#888" px py p.props.r, List.map moon p.moons |> g [] ]
     in

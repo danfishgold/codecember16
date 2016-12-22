@@ -9,6 +9,11 @@ import Svg.Attributes exposing (width, height, cx, cy, r, stroke, strokeWidth, f
 import AnimationFrame
 
 
+radiusResolution : Float
+radiusResolution =
+    0.05
+
+
 type alias Point =
     ( Float, Float )
 
@@ -37,8 +42,8 @@ init : Float -> Float -> ( Model, Cmd Msg )
 init width height =
     ( { width = width
       , height = height
-      , bigR = 0.55
-      , smallR = 0.85
+      , bigR = 0.8
+      , smallR = 0.8
       , points = []
       , time = 0
       , v = 1 / 300
@@ -205,9 +210,9 @@ view model =
             [ text "live"
             , input [ type_ "checkbox", onInput (always ChangeLive) ] []
             , text "Big radius"
-            , input [ onValue SetBigR, type_ "range", Attrs.min "0", Attrs.max "1", Attrs.step "0.05" ] []
+            , input [ onValue SetBigR, type_ "range", Attrs.min "0", Attrs.max "1", Attrs.step <| toString radiusResolution ] []
             , text "Small radius"
-            , input [ onValue SetSmallR, type_ "range", Attrs.min "0", Attrs.max "1", Attrs.step "0.05" ] []
+            , input [ onValue SetSmallR, type_ "range", Attrs.min "0", Attrs.max "1", Attrs.step <| toString radiusResolution ] []
             , svgView model
             ]
 

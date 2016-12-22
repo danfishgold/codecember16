@@ -90,7 +90,20 @@ centers { bigR, smallR, v } time =
 
 maxTime : Model -> Float
 maxTime { bigR, v } =
-    2 * pi * 10 / v
+    let
+        gcd n m =
+            if m == 0 then
+                n
+            else
+                gcd m (n % m)
+
+        ( k, l ) =
+            ( floor <| bigR / radiusResolution, floor <| (1 - bigR) / radiusResolution )
+
+        n =
+            k // (gcd k l)
+    in
+        2 * pi * toFloat n / v
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )

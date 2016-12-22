@@ -11,7 +11,7 @@ import AnimationFrame
 
 radiusResolution : Float
 radiusResolution =
-    0.05
+    0.025
 
 
 type alias Point =
@@ -46,7 +46,7 @@ init width height =
       , smallR = 0.8
       , points = []
       , time = 0
-      , v = 1 / 300
+      , v = 1 / 200
       , live = True
       }
     , Cmd.none
@@ -88,6 +88,21 @@ centers { bigR, smallR, v } time =
         ( ( xCirc, yCirc ), ( xDot, yDot ) )
 
 
+{-|
+   solve for lowest n:
+     n * 6/4 = int
+   => n = 4 / 2 = 4 / gcd(6, 4)
+   The resulting integer would be 4 / gcd(6, 4) * 6/4 = 6 / gcd(6, 4) = 3
+   Meaning, nominator / gcd (nominator, denominator)
+
+   We want both theta1 = 2pi k and theta2 = 2pi m
+     time = 2pi k / v = 2pi m / v * r/(1-r)
+   this means we're looking for integers k, m, s.t. k = m * r/(1-r)
+
+   therefore, k = r / gcd (r, 1-r)
+   and t = 2pi / v * r / gcd (r, 1-r)
+
+-}
 maxTime : Model -> Float
 maxTime { bigR, v } =
     let
@@ -97,13 +112,13 @@ maxTime { bigR, v } =
             else
                 gcd m (n % m)
 
-        ( k, l ) =
-            ( floor <| bigR / radiusResolution, floor <| (1 - bigR) / radiusResolution )
+        ( nom, denom ) =
+            ( round <| bigR / radiusResolution, round <| (1 - bigR) / radiusResolution )
 
-        n =
-            k // (gcd k l)
+        k =
+            nom // gcd nom denom
     in
-        2 * pi * toFloat n / v
+        2 * pi * toFloat k / v
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )

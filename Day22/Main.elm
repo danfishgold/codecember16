@@ -2,7 +2,7 @@ module Spirograph exposing (..)
 
 import Html exposing (Html, program)
 import Html exposing (div, input, button, text)
-import Html.Attributes as Attrs exposing (type_)
+import Html.Attributes as Attrs exposing (type_, style, defaultValue)
 import Html.Events exposing (onInput, onClick)
 import Svg exposing (Svg, svg, polyline, circle)
 import Svg.Attributes exposing (width, height, cx, cy, r, stroke, strokeWidth, fill, points)
@@ -171,7 +171,7 @@ svgView : Model -> Svg Msg
 svgView ({ time, bigR, smallR } as model) =
     let
         ( xCenter, yCenter, scale ) =
-            ( model.width / 2, model.height / 2, min model.width model.height / 3 )
+            ( model.width / 2, model.height / 2, min model.width model.height / 2.2 )
 
         ( ( xCirc, yCirc ), ( xDot, yDot ) ) =
             centers model model.time
@@ -233,9 +233,18 @@ view model =
         onValue msg =
             onInput (String.toFloat >> Result.withDefault 0 >> msg)
     in
-        div []
-            [ text "live"
-            , input [ type_ "checkbox", onInput (always ChangeLive) ] []
+        div
+            [ style
+                [ ( "display", "flex" )
+                , ( "flex-direction", "column" )
+                , ( "align-items", "center" )
+                , ( "margin", "20px auto" )
+                ]
+            ]
+            [ div [ style [ ( "display", "flex" ), ( "align-items", "center" ) ] ]
+                [ input [ type_ "checkbox", onInput (always ChangeLive) ] []
+                , text "live"
+                ]
             , text "Big radius"
             , input
                 [ onValue SetBigR

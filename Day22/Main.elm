@@ -2,6 +2,7 @@ module Spirograph exposing (..)
 
 import Html exposing (Html, program)
 import Html exposing (div, input, button, text)
+import Html.Attributes as Attrs exposing (type_)
 import Html.Events exposing (onInput, onClick)
 import Svg exposing (Svg, svg, polyline, circle)
 import Svg.Attributes exposing (width, height, cx, cy, r, stroke, strokeWidth, fill, points)
@@ -19,14 +20,17 @@ type alias Model =
     , smallR : Float
     , points : List Point
     , time : Float
+    , v : Float
+    , live : Bool
     }
 
 
 type Msg
     = SetBigR Float
     | SetSmallR Float
-    | Reset
+    | ChangeLive
     | Tick Float
+    | Reset
 
 
 init : Float -> Float -> ( Model, Cmd Msg )
@@ -37,6 +41,8 @@ init width height =
       , smallR = 0.85
       , points = []
       , time = 0
+      , v = 1 / 300
+      , live = True
       }
     , Cmd.none
     )
@@ -48,19 +54,19 @@ init width height =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    AnimationFrame.diffs Tick
+    if model.live then
+        AnimationFrame.diffs Tick
+    else
+        Sub.none
 
 
 
 --
 
 
-centers : Model -> ( Point, Point )
-centers { time, bigR, smallR } =
+centers : Model -> Float -> ( Point, Point )
+centers { bigR, smallR, v } time =
     let
-        v =
-            1 / 300
-
         ( t, t_ ) =
             ( time * v, -(1 - bigR) / bigR * time * v )
 
@@ -77,19 +83,52 @@ centers { time, bigR, smallR } =
         ( ( xCirc, yCirc ), ( xDot, yDot ) )
 
 
+maxTime : Model -> Float
+maxTime { bigR, v } =
+    2 * pi * 10 / v
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Tick dt ->
-            ( { model
-                | time = model.time + min 32 dt
-                , points = centers model |> Tuple.second |> \pt -> pt :: model.points
-              }
-            , Cmd.none
-            )
+            if model.live then
+                ( { model
+                    | time = model.time + min 32 dt
+                    , points =
+                        if model.time < maxTime model then
+                            centers model model.time |> Tuple.second |> \pt -> pt :: model.points
+                        else
+                            model.points
+                  }
+                , Cmd.none
+                )
+            else
+                ( model, Cmd.none )
 
-        _ ->
-            ( model, Cmd.none )
+        ChangeLive ->
+            update Reset { model | live = not model.live }
+
+        SetBigR r ->
+            update Reset { model | bigR = r }
+
+        SetSmallR r ->
+            update Reset { model | smallR = r }
+
+        Reset ->
+            if model.live then
+                ( { model | time = 0, points = [] }, Cmd.none )
+            else
+                ( { model
+                    | points =
+                        maxTime model
+                            / 16
+                            |> ceiling
+                            |> List.range 0
+                            |> List.map ((*) 16 >> toFloat >> centers model >> Tuple.second)
+                  }
+                , Cmd.none
+                )
 
 
 
@@ -103,7 +142,7 @@ svgView ({ time, bigR, smallR } as model) =
             ( model.width / 2, model.height / 2, min model.width model.height / 3 )
 
         ( ( xCirc, yCirc ), ( xDot, yDot ) ) =
-            centers model
+            centers model model.time
 
         path =
             polyline
@@ -148,8 +187,12 @@ svgView ({ time, bigR, smallR } as model) =
                 ]
                 []
     in
-        [ container, circ, dot, path ]
-            |> svg [ width <| toString model.width, height <| toString model.height ]
+        svg [ width <| toString model.width, height <| toString model.height ]
+            (if model.live then
+                [ container, circ, dot, path ]
+             else
+                [ path ]
+            )
 
 
 view : Model -> Html Msg
@@ -159,9 +202,12 @@ view model =
             onInput (String.toFloat >> Result.withDefault 0 >> msg)
     in
         div []
-            [ input [ onValue SetBigR ] []
-            , input [ onValue SetSmallR ] []
-            , button [ onClick Reset ] [ text "Reset" ]
+            [ text "live"
+            , input [ type_ "checkbox", onInput (always ChangeLive) ] []
+            , text "Big radius"
+            , input [ onValue SetBigR, type_ "range", Attrs.min "0", Attrs.max "1", Attrs.step "0.05" ] []
+            , text "Small radius"
+            , input [ onValue SetSmallR, type_ "range", Attrs.min "0", Attrs.max "1", Attrs.step "0.05" ] []
             , svgView model
             ]
 

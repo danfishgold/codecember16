@@ -40,17 +40,16 @@ type Msg
 
 init : Float -> Float -> ( Model, Cmd Msg )
 init width height =
-    ( { width = width
-      , height = height
-      , bigR = 0.8
-      , smallR = 0.8
-      , points = []
-      , time = 0
-      , v = 1 / 200
-      , live = True
-      }
-    , Cmd.none
-    )
+    update Reset
+        { width = width
+        , height = height
+        , bigR = 0.35
+        , smallR = 0.35
+        , points = []
+        , time = 0
+        , v = 1 / 200
+        , live = False
+        }
 
 
 
@@ -238,9 +237,25 @@ view model =
             [ text "live"
             , input [ type_ "checkbox", onInput (always ChangeLive) ] []
             , text "Big radius"
-            , input [ onValue SetBigR, type_ "range", Attrs.min "0", Attrs.max "1", Attrs.step <| toString radiusResolution ] []
+            , input
+                [ onValue SetBigR
+                , type_ "range"
+                , Attrs.min "0"
+                , Attrs.max "1"
+                , Attrs.step <| toString radiusResolution
+                , defaultValue "0.8"
+                ]
+                []
             , text "Small radius"
-            , input [ onValue SetSmallR, type_ "range", Attrs.min "0", Attrs.max "1", Attrs.step <| toString radiusResolution ] []
+            , input
+                [ onValue SetSmallR
+                , type_ "range"
+                , Attrs.min "0"
+                , Attrs.max "1"
+                , Attrs.step <| toString radiusResolution
+                , defaultValue "0.8"
+                ]
+                []
             , svgView model
             ]
 

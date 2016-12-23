@@ -31,10 +31,17 @@ type alias Model =
     }
 
 
+type Speed
+    = Instantaneous
+    | Fast
+    | Medium
+    | Slow
+
+
 type Msg
     = SetBigR Float
     | SetSmallR Float
-    | ChangeLive
+    | SetSpeed Speed
     | Tick Float
     | Reset
 
@@ -138,8 +145,19 @@ update msg model =
             else
                 model
 
-        ChangeLive ->
-            update Reset { model | live = not model.live }
+        SetSpeed speed ->
+            case speed of
+                Instantaneous ->
+                    update Reset { model | live = False }
+
+                Fast ->
+                    update Reset { model | live = True, v = 1 / 200 }
+
+                Medium ->
+                    update Reset { model | live = True, v = 1 / 300 }
+
+                Slow ->
+                    update Reset { model | live = True, v = 1 / 400 }
 
         SetBigR r ->
             update Reset { model | bigR = r }
@@ -235,6 +253,18 @@ view model =
     let
         onValue msg =
             onInput (String.toFloat >> Result.withDefault 0 >> msg)
+
+        radio msg name title checked =
+            div [ style [ ( "display", "flex" ), ( "align-items", "center" ) ] ]
+                [ input
+                    [ type_ "radio"
+                    , Attrs.name name
+                    , onClick msg
+                    , Attrs.checked checked
+                    ]
+                    []
+                , text title
+                ]
     in
         div
             [ style
@@ -244,9 +274,11 @@ view model =
                 , ( "margin", "20px auto" )
                 ]
             ]
-            [ div [ style [ ( "display", "flex" ), ( "align-items", "center" ) ] ]
-                [ input [ type_ "checkbox", onClick ChangeLive ] []
-                , text "live"
+            [ div [ style [ ( "display", "flex" ) ] ]
+                [ radio (SetSpeed Instantaneous) "v" "Instantaneous" True
+                , radio (SetSpeed Fast) "v" "Fast" False
+                , radio (SetSpeed Medium) "v" "Medium" False
+                , radio (SetSpeed Slow) "v" "Slow" False
                 ]
             , text "Big radius"
             , input

@@ -245,7 +245,7 @@ view model =
                 ]
             ]
             [ div [ style [ ( "display", "flex" ), ( "align-items", "center" ) ] ]
-                [ input [ type_ "checkbox", onInput (always ChangeLive) ] []
+                [ input [ type_ "checkbox", onClick ChangeLive ] []
                 , text "live"
                 ]
             , text "Big radius"

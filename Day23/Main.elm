@@ -2,7 +2,7 @@ module Braids exposing (..)
 
 import Svg exposing (Svg, svg, g, line)
 import Svg.Attributes exposing (width, height, x1, y1, x2, y2, stroke, strokeWidth)
-import Color
+import Color exposing (Color)
 import Color.Gradient exposing (gradient)
 import Color.Interpolate as Space
 import Color.Convert exposing (colorToCssRgb)
@@ -23,10 +23,15 @@ type alias Step =
     Int
 
 
+type Z
+    = Over
+    | Under
+
+
 braid3 : Model
 braid3 =
     { count = 3
-    , transitions = List.repeat 5 ([ ( 0, 1 ), ( 0, 2 ), ( 1, 2 ) ]) |> List.concat
+    , transitions = List.repeat 5 ([ ( 0, 1 ), ( 2, 0 ), ( 1, 2 ) ]) |> List.concat
     }
 
 
@@ -35,6 +40,18 @@ braid2 =
     { count = 2
     , transitions = List.repeat 5 ([ ( 0, 1 ), ( 1, 0 ) ]) |> List.concat
     }
+
+
+
+--
+
+
+rangeZ : ( Step, Step, Index, Index, Z ) -> comparable
+rangeZ ( _, _, _, _, z ) =
+    if z == Over then
+        1
+    else
+        -1
 
 
 
@@ -65,38 +82,38 @@ push i x array =
         update i (extend x) array
 
 
-itemColumns : Model -> Array (Array ( Step, Index ))
+itemColumns : Model -> Array (Array ( Step, Index, Z ))
 itemColumns { count, transitions } =
     let
         initial =
             List.range 0 (count - 1)
-                |> List.map (\i -> Array.fromList [ ( 0, i ) ])
+                |> List.map (\i -> Array.fromList [ ( 0, i, Over ) ])
                 |> Array.fromList
 
         lastCol i columns =
             Array.get i columns
                 |> Maybe.andThen last
-                |> Maybe.map Tuple.second
+                |> Maybe.map (\( _, col, _ ) -> col)
                 |> Maybe.withDefault i
 
         swap ( step, ( i, j ) ) columns =
             columns
-                |> push i ( step, lastCol j columns )
-                |> push j ( step, lastCol i columns )
+                |> push i ( step, lastCol j columns, Over )
+                |> push j ( step, lastCol i columns, Under )
     in
         transitions
             |> List.indexedMap (\i transition -> ( i + 1, transition ))
             |> List.foldl swap initial
 
 
-ranges : Int -> Int -> List ( Step, Index ) -> List ( Step, Step, Index, Index )
+ranges : Int -> Int -> List ( Step, Index, Z ) -> List ( Step, Step, Index, Index, Z )
 ranges offset maxStep itemColumns =
     case itemColumns of
-        ( t1, i1 ) :: ( t2, i2 ) :: rest ->
-            ( t1 - offset, t2 - 1, i1, i2 ) :: ranges 0 maxStep (( t2, i2 ) :: rest)
+        ( t1, i1, _ ) :: ( t2, i2, z2 ) :: rest ->
+            ( t1 - offset, t2 - 1, i1, i2, z2 ) :: ranges 0 maxStep (( t2, i2, z2 ) :: rest)
 
-        [ ( t, i ) ] ->
-            [ ( t - offset, maxStep, i, i ) ]
+        [ ( t, i, z ) ] ->
+            [ ( t - offset, maxStep, i, i, z ) ]
 
         [] ->
             []
@@ -116,13 +133,13 @@ view braidWidth stepHeight ({ count, transitions } as model) =
             List.length transitions
 
         wd =
-            40 + braidWidth * toFloat count + spacing * toFloat (count + 1)
+            braidWidth * toFloat count + spacing * toFloat (count + 1)
 
         ht =
-            toFloat (steps * 2 + 1) * stepHeight
+            toFloat (steps + 4) * stepHeight
 
         x column =
-            20 + (braidWidth + spacing) * toFloat column
+            braidWidth / 2 + (braidWidth + spacing) * toFloat column
 
         y step =
             stepHeight * toFloat (step + 2)
@@ -143,27 +160,30 @@ view braidWidth stepHeight ({ count, transitions } as model) =
                 ]
                 []
 
+        columnRanges : List ( Color, ( Int, Int, Int, Int, Z ) )
         columnRanges =
             itemColumns model
-                |> Debug.log "columns"
-                |> Array.map (Array.toList >> ranges 1 steps)
                 |> Array.toList
-                |> Debug.log "ranges"
+                |> List.map Array.toList
+                |> List.map (ranges 1 steps)
+                |> List.map2 (\c ranges -> List.map ((,) c) ranges) colors
+                |> List.concat
 
-        verticals color ranges =
-            ranges
-                |> List.filter (\( s1, s2, _, _ ) -> s1 /= s2)
-                |> List.map (\( s1, s2, i, _ ) -> line color s1 s2 i i)
+        vertical ( color, ( s1, s2, i, _, _ ) ) =
+            line color s1 s2 i i
 
-        diagonals color ranges =
-            ranges
-                |> List.map (\( _, s, i1, i2 ) -> line color s (s + 1) i1 i2)
-
-        lines color ranges =
-            g [] (verticals color ranges ++ diagonals color ranges)
+        diagonal ( color, ( _, s, i1, i2, _ ) ) =
+            line color s (s + 1) i1 i2
     in
-        List.map2 lines colors columnRanges
-            |> svg [ width <| toString wd, height <| toString ht ]
+        (columnRanges
+            |> List.sortBy (\( c, range ) -> rangeZ range)
+            |> \ranges -> List.map vertical ranges ++ List.map diagonal ranges
+        )
+            |> svg
+                [ width <| toString wd
+                , height <| toString ht
+                , style [ ( "padding", "20px" ) ]
+                ]
 
 
 

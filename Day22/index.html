@@ -9345,7 +9345,7 @@ var _user$project$Spirograph$svgView = function (_p8) {
 var _user$project$Spirograph$radiusResolution = 2.5e-2;
 var _user$project$Spirograph$maxTime = function (_p15) {
 	var _p16 = _p15;
-	var _p18 = _p16.bigR;
+	var _p18 = _p16.r;
 	var _p17 = {
 		ctor: '_Tuple2',
 		_0: _elm_lang$core$Basics$round(_p18 / _user$project$Spirograph$radiusResolution),
@@ -9371,10 +9371,14 @@ var _user$project$Spirograph$maxTime = function (_p15) {
 	var k = (nom / A2(gcd, nom, denom)) | 0;
 	return ((2 * _elm_lang$core$Basics$pi) * _elm_lang$core$Basics$toFloat(k)) / _p16.v;
 };
-var _user$project$Spirograph$Model = F8(
-	function (a, b, c, d, e, f, g, h) {
-		return {width: a, height: b, bigR: c, smallR: d, points: e, time: f, v: g, live: h};
+var _user$project$Spirograph$Model = F9(
+	function (a, b, c, d, e, f, g, h, i) {
+		return {width: a, height: b, bigR: c, smallR: d, points: e, time: f, maxTime: g, v: h, live: i};
 	});
+var _user$project$Spirograph$Slow = {ctor: 'Slow'};
+var _user$project$Spirograph$Medium = {ctor: 'Medium'};
+var _user$project$Spirograph$Fast = {ctor: 'Fast'};
+var _user$project$Spirograph$Instantaneous = {ctor: 'Instantaneous'};
 var _user$project$Spirograph$Reset = {ctor: 'Reset'};
 var _user$project$Spirograph$update = F2(
 	function (msg, model) {
@@ -9383,85 +9387,102 @@ var _user$project$Spirograph$update = F2(
 			var _p19 = msg;
 			switch (_p19.ctor) {
 				case 'Tick':
-					return model.live ? {
-						ctor: '_Tuple2',
-						_0: _elm_lang$core$Native_Utils.update(
-							model,
-							{
-								time: model.time + A2(_elm_lang$core$Basics$min, 32, _p19._0),
-								points: (_elm_lang$core$Native_Utils.cmp(
-									model.time,
-									_user$project$Spirograph$maxTime(model)) < 0) ? function (pt) {
-									return {ctor: '::', _0: pt, _1: model.points};
-								}(
-									_elm_lang$core$Tuple$second(
-										A2(_user$project$Spirograph$centers, model, model.time))) : model.points
-							}),
-						_1: _elm_lang$core$Platform_Cmd$none
-					} : {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
-				case 'ChangeLive':
-					var _v7 = _user$project$Spirograph$Reset,
-						_v8 = _elm_lang$core$Native_Utils.update(
+					return model.live ? _elm_lang$core$Native_Utils.update(
 						model,
-						{live: !model.live});
-					msg = _v7;
-					model = _v8;
-					continue update;
+						{
+							time: model.time + A2(_elm_lang$core$Basics$min, 32, _p19._0),
+							points: (_elm_lang$core$Native_Utils.cmp(model.time, model.maxTime) < 1) ? function (pt) {
+								return {ctor: '::', _0: pt, _1: model.points};
+							}(
+								_elm_lang$core$Tuple$second(
+									A2(_user$project$Spirograph$centers, model, model.time))) : model.points
+						}) : model;
+				case 'SetSpeed':
+					var _p20 = _p19._0;
+					switch (_p20.ctor) {
+						case 'Instantaneous':
+							var _v8 = _user$project$Spirograph$Reset,
+								_v9 = _elm_lang$core$Native_Utils.update(
+								model,
+								{live: false});
+							msg = _v8;
+							model = _v9;
+							continue update;
+						case 'Fast':
+							var _v10 = _user$project$Spirograph$Reset,
+								_v11 = _elm_lang$core$Native_Utils.update(
+								model,
+								{live: true, v: 1 / 200});
+							msg = _v10;
+							model = _v11;
+							continue update;
+						case 'Medium':
+							var _v12 = _user$project$Spirograph$Reset,
+								_v13 = _elm_lang$core$Native_Utils.update(
+								model,
+								{live: true, v: 1 / 300});
+							msg = _v12;
+							model = _v13;
+							continue update;
+						default:
+							var _v14 = _user$project$Spirograph$Reset,
+								_v15 = _elm_lang$core$Native_Utils.update(
+								model,
+								{live: true, v: 1 / 400});
+							msg = _v14;
+							model = _v15;
+							continue update;
+					}
 				case 'SetBigR':
-					var _v9 = _user$project$Spirograph$Reset,
-						_v10 = _elm_lang$core$Native_Utils.update(
+					var _v16 = _user$project$Spirograph$Reset,
+						_v17 = _elm_lang$core$Native_Utils.update(
 						model,
 						{bigR: _p19._0});
-					msg = _v9;
-					model = _v10;
+					msg = _v16;
+					model = _v17;
 					continue update;
 				case 'SetSmallR':
-					var _v11 = _user$project$Spirograph$Reset,
-						_v12 = _elm_lang$core$Native_Utils.update(
+					var _v18 = _user$project$Spirograph$Reset,
+						_v19 = _elm_lang$core$Native_Utils.update(
 						model,
 						{smallR: _p19._0});
-					msg = _v11;
-					model = _v12;
+					msg = _v18;
+					model = _v19;
 					continue update;
 				default:
-					return model.live ? {
-						ctor: '_Tuple2',
-						_0: _elm_lang$core$Native_Utils.update(
-							model,
-							{
-								time: 0,
-								points: {ctor: '[]'}
-							}),
-						_1: _elm_lang$core$Platform_Cmd$none
-					} : {
-						ctor: '_Tuple2',
-						_0: _elm_lang$core$Native_Utils.update(
-							model,
-							{
-								points: A2(
-									_elm_lang$core$List$map,
-									function (_p20) {
-										return _elm_lang$core$Tuple$second(
-											A2(
-												_user$project$Spirograph$centers,
-												model,
-												_elm_lang$core$Basics$toFloat(
-													A2(
-														F2(
-															function (x, y) {
-																return x * y;
-															}),
-														16,
-														_p20))));
-									},
-									A2(
-										_elm_lang$core$List$range,
-										0,
-										_elm_lang$core$Basics$ceiling(
-											_user$project$Spirograph$maxTime(model) / 16)))
-							}),
-						_1: _elm_lang$core$Platform_Cmd$none
-					};
+					var maxT = _user$project$Spirograph$maxTime(
+						{r: model.bigR, v: model.v});
+					return model.live ? _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							time: 0,
+							points: {ctor: '[]'},
+							maxTime: maxT
+						}) : _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							points: A2(
+								_elm_lang$core$List$map,
+								function (_p21) {
+									return _elm_lang$core$Tuple$second(
+										A2(
+											_user$project$Spirograph$centers,
+											model,
+											_elm_lang$core$Basics$toFloat(
+												A2(
+													F2(
+														function (x, y) {
+															return x * y;
+														}),
+													16,
+													_p21))));
+								},
+								A2(
+									_elm_lang$core$List$range,
+									0,
+									_elm_lang$core$Basics$ceiling(maxT / 16))),
+							maxTime: maxT
+						});
 			}
 		}
 	});
@@ -9477,6 +9498,7 @@ var _user$project$Spirograph$init = F2(
 				smallR: 0.35,
 				points: {ctor: '[]'},
 				time: 0,
+				maxTime: 0,
 				v: 1 / 200,
 				live: false
 			});
@@ -9487,7 +9509,9 @@ var _user$project$Spirograph$Tick = function (a) {
 var _user$project$Spirograph$subscriptions = function (model) {
 	return model.live ? _elm_lang$animation_frame$AnimationFrame$diffs(_user$project$Spirograph$Tick) : _elm_lang$core$Platform_Sub$none;
 };
-var _user$project$Spirograph$ChangeLive = {ctor: 'ChangeLive'};
+var _user$project$Spirograph$SetSpeed = function (a) {
+	return {ctor: 'SetSpeed', _0: a};
+};
 var _user$project$Spirograph$SetSmallR = function (a) {
 	return {ctor: 'SetSmallR', _0: a};
 };
@@ -9495,14 +9519,61 @@ var _user$project$Spirograph$SetBigR = function (a) {
 	return {ctor: 'SetBigR', _0: a};
 };
 var _user$project$Spirograph$view = function (model) {
+	var radio = F4(
+		function (msg, name, title, checked) {
+			return A2(
+				_elm_lang$html$Html$div,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$style(
+						{
+							ctor: '::',
+							_0: {ctor: '_Tuple2', _0: 'display', _1: 'flex'},
+							_1: {
+								ctor: '::',
+								_0: {ctor: '_Tuple2', _0: 'align-items', _1: 'center'},
+								_1: {ctor: '[]'}
+							}
+						}),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$input,
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$type_('radio'),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$name(name),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$html$Html_Events$onClick(msg),
+									_1: {
+										ctor: '::',
+										_0: _elm_lang$html$Html_Attributes$checked(checked),
+										_1: {ctor: '[]'}
+									}
+								}
+							}
+						},
+						{ctor: '[]'}),
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$html$Html$text(title),
+						_1: {ctor: '[]'}
+					}
+				});
+		});
 	var onValue = function (msg) {
 		return _elm_lang$html$Html_Events$onInput(
-			function (_p21) {
+			function (_p22) {
 				return msg(
 					A2(
 						_elm_lang$core$Result$withDefault,
 						0,
-						_elm_lang$core$String$toFloat(_p21)));
+						_elm_lang$core$String$toFloat(_p22)));
 			});
 	};
 	return A2(
@@ -9539,33 +9610,45 @@ var _user$project$Spirograph$view = function (model) {
 						{
 							ctor: '::',
 							_0: {ctor: '_Tuple2', _0: 'display', _1: 'flex'},
-							_1: {
-								ctor: '::',
-								_0: {ctor: '_Tuple2', _0: 'align-items', _1: 'center'},
-								_1: {ctor: '[]'}
-							}
+							_1: {ctor: '[]'}
 						}),
 					_1: {ctor: '[]'}
 				},
 				{
 					ctor: '::',
-					_0: A2(
-						_elm_lang$html$Html$input,
-						{
-							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$type_('checkbox'),
-							_1: {
-								ctor: '::',
-								_0: _elm_lang$html$Html_Events$onInput(
-									_elm_lang$core$Basics$always(_user$project$Spirograph$ChangeLive)),
-								_1: {ctor: '[]'}
-							}
-						},
-						{ctor: '[]'}),
+					_0: A4(
+						radio,
+						_user$project$Spirograph$SetSpeed(_user$project$Spirograph$Instantaneous),
+						'v',
+						'Instantaneous',
+						true),
 					_1: {
 						ctor: '::',
-						_0: _elm_lang$html$Html$text('live'),
-						_1: {ctor: '[]'}
+						_0: A4(
+							radio,
+							_user$project$Spirograph$SetSpeed(_user$project$Spirograph$Fast),
+							'v',
+							'Fast',
+							false),
+						_1: {
+							ctor: '::',
+							_0: A4(
+								radio,
+								_user$project$Spirograph$SetSpeed(_user$project$Spirograph$Medium),
+								'v',
+								'Medium',
+								false),
+							_1: {
+								ctor: '::',
+								_0: A4(
+									radio,
+									_user$project$Spirograph$SetSpeed(_user$project$Spirograph$Slow),
+									'v',
+									'Slow',
+									false),
+								_1: {ctor: '[]'}
+							}
+						}
 					}
 				}),
 			_1: {
@@ -9649,9 +9732,20 @@ var _user$project$Spirograph$view = function (model) {
 };
 var _user$project$Spirograph$main = _elm_lang$html$Html$program(
 	{
-		init: A2(_user$project$Spirograph$init, 500, 500),
+		init: {
+			ctor: '_Tuple2',
+			_0: A2(_user$project$Spirograph$init, 500, 500),
+			_1: _elm_lang$core$Platform_Cmd$none
+		},
 		subscriptions: _user$project$Spirograph$subscriptions,
-		update: _user$project$Spirograph$update,
+		update: F2(
+			function (msg, model) {
+				return {
+					ctor: '_Tuple2',
+					_0: A2(_user$project$Spirograph$update, msg, model),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			}),
 		view: _user$project$Spirograph$view
 	})();
 var Elm = {};

@@ -25,20 +25,28 @@ type alias Model =
     , smallR : Float
     , points : List Point
     , time : Float
+    , maxTime : Float
     , v : Float
     , live : Bool
     }
 
 
+type Speed
+    = Instantaneous
+    | Fast
+    | Medium
+    | Slow
+
+
 type Msg
     = SetBigR Float
     | SetSmallR Float
-    | ChangeLive
+    | SetSpeed Speed
     | Tick Float
     | Reset
 
 
-init : Float -> Float -> ( Model, Cmd Msg )
+init : Float -> Float -> Model
 init width height =
     update Reset
         { width = width
@@ -47,6 +55,7 @@ init width height =
         , smallR = 0.35
         , points = []
         , time = 0
+        , maxTime = 0
         , v = 1 / 200
         , live = False
         }
@@ -102,8 +111,8 @@ centers { bigR, smallR, v } time =
    and t = 2pi / v * r / gcd (r, 1-r)
 
 -}
-maxTime : Model -> Float
-maxTime { bigR, v } =
+maxTime : { r : Float, v : Float } -> Float
+maxTime { r, v } =
     let
         gcd n m =
             if m == 0 then
@@ -112,7 +121,7 @@ maxTime { bigR, v } =
                 gcd m (n % m)
 
         ( nom, denom ) =
-            ( round <| bigR / radiusResolution, round <| (1 - bigR) / radiusResolution )
+            ( round <| r / radiusResolution, round <| (1 - r) / radiusResolution )
 
         k =
             nom // gcd nom denom
@@ -120,26 +129,35 @@ maxTime { bigR, v } =
         2 * pi * toFloat k / v
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> Model
 update msg model =
     case msg of
         Tick dt ->
             if model.live then
-                ( { model
+                { model
                     | time = model.time + min 32 dt
                     , points =
-                        if model.time < maxTime model then
+                        if model.time <= model.maxTime then
                             centers model model.time |> Tuple.second |> \pt -> pt :: model.points
                         else
                             model.points
-                  }
-                , Cmd.none
-                )
+                }
             else
-                ( model, Cmd.none )
+                model
 
-        ChangeLive ->
-            update Reset { model | live = not model.live }
+        SetSpeed speed ->
+            case speed of
+                Instantaneous ->
+                    update Reset { model | live = False }
+
+                Fast ->
+                    update Reset { model | live = True, v = 1 / 200 }
+
+                Medium ->
+                    update Reset { model | live = True, v = 1 / 300 }
+
+                Slow ->
+                    update Reset { model | live = True, v = 1 / 400 }
 
         SetBigR r ->
             update Reset { model | bigR = r }
@@ -148,19 +166,22 @@ update msg model =
             update Reset { model | smallR = r }
 
         Reset ->
-            if model.live then
-                ( { model | time = 0, points = [] }, Cmd.none )
-            else
-                ( { model
-                    | points =
-                        maxTime model
-                            / 16
-                            |> ceiling
-                            |> List.range 0
-                            |> List.map ((*) 16 >> toFloat >> centers model >> Tuple.second)
-                  }
-                , Cmd.none
-                )
+            let
+                maxT =
+                    maxTime { r = model.bigR, v = model.v }
+            in
+                if model.live then
+                    { model | time = 0, points = [], maxTime = maxT }
+                else
+                    { model
+                        | points =
+                            maxT
+                                / 16
+                                |> ceiling
+                                |> List.range 0
+                                |> List.map ((*) 16 >> toFloat >> centers model >> Tuple.second)
+                        , maxTime = maxT
+                    }
 
 
 
@@ -232,6 +253,18 @@ view model =
     let
         onValue msg =
             onInput (String.toFloat >> Result.withDefault 0 >> msg)
+
+        radio msg name title checked =
+            div [ style [ ( "display", "flex" ), ( "align-items", "center" ) ] ]
+                [ input
+                    [ type_ "radio"
+                    , Attrs.name name
+                    , onClick msg
+                    , Attrs.checked checked
+                    ]
+                    []
+                , text title
+                ]
     in
         div
             [ style
@@ -241,9 +274,11 @@ view model =
                 , ( "margin", "20px auto" )
                 ]
             ]
-            [ div [ style [ ( "display", "flex" ), ( "align-items", "center" ) ] ]
-                [ input [ type_ "checkbox", onInput (always ChangeLive) ] []
-                , text "live"
+            [ div [ style [ ( "display", "flex" ) ] ]
+                [ radio (SetSpeed Instantaneous) "v" "Instantaneous" True
+                , radio (SetSpeed Fast) "v" "Fast" False
+                , radio (SetSpeed Medium) "v" "Medium" False
+                , radio (SetSpeed Slow) "v" "Slow" False
                 ]
             , text "Big radius"
             , input
@@ -276,8 +311,8 @@ view model =
 main : Program Never Model Msg
 main =
     program
-        { init = init 500 500
+        { init = ( init 500 500, Cmd.none )
         , subscriptions = subscriptions
-        , update = update
+        , update = \msg model -> ( update msg model, Cmd.none )
         , view = view
         }

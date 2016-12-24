@@ -57,11 +57,15 @@ braid4 : Model
 braid4 =
     { count = 4
     , transitions =
-        List.repeat 3
-            ([ [ ( 1, 2 ) ]
-             , [ ( 3, 1 ), ( 0, 2 ) ]
+        List.repeat 2
+            ([ [ ( 2, 1 ) ]
+             , [ ( 1, 3 ), ( 0, 2 ) ]
              , [ ( 3, 0 ) ]
              , [ ( 0, 1 ), ( 2, 3 ) ]
+             , [ ( 1, 2 ) ]
+             , [ ( 3, 1 ), ( 2, 0 ) ]
+             , [ ( 0, 3 ) ]
+             , [ ( 1, 0 ), ( 3, 2 ) ]
              ]
             )
             |> List.concat
@@ -72,7 +76,7 @@ braid2 : Model
 braid2 =
     { count = 2
     , transitions =
-        List.repeat 5
+        List.repeat 7
             ([ [ ( 0, 1 ) ]
              , [ ( 1, 0 ) ]
              ]

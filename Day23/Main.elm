@@ -13,7 +13,7 @@ import Array exposing (Array)
 
 type alias Model =
     { count : Int
-    , transitions : List ( Index, Index )
+    , transitions : List (List ( Index, Index ))
     }
 
 
@@ -42,14 +42,42 @@ type alias Segment =
 braid3 : Model
 braid3 =
     { count = 3
-    , transitions = List.repeat 5 ([ ( 0, 1 ), ( 2, 0 ), ( 1, 2 ) ]) |> List.concat
+    , transitions =
+        List.repeat 5
+            ([ [ ( 0, 1 ) ]
+             , [ ( 2, 0 ) ]
+             , [ ( 1, 2 ) ]
+             ]
+            )
+            |> List.concat
+    }
+
+
+braid4 : Model
+braid4 =
+    { count = 4
+    , transitions =
+        List.repeat 3
+            ([ [ ( 1, 2 ) ]
+             , [ ( 3, 1 ), ( 0, 2 ) ]
+             , [ ( 3, 0 ) ]
+             , [ ( 0, 1 ), ( 2, 3 ) ]
+             ]
+            )
+            |> List.concat
     }
 
 
 braid2 : Model
 braid2 =
     { count = 2
-    , transitions = List.repeat 5 ([ ( 0, 1 ), ( 1, 0 ) ]) |> List.concat
+    , transitions =
+        List.repeat 5
+            ([ [ ( 0, 1 ) ]
+             , [ ( 1, 0 ) ]
+             ]
+            )
+            |> List.concat
     }
 
 
@@ -96,25 +124,29 @@ push i x array =
 itemColumns : Model -> Array (Array ( Step, Index, Z ))
 itemColumns { count, transitions } =
     let
+        -- initially, every column at zero
         initial =
             List.range 0 (count - 1)
                 |> List.map (\i -> Array.fromList [ ( 0, i, Over ) ])
                 |> Array.fromList
 
+        -- get the last column of the ith braid
         lastCol i columns =
             Array.get i columns
                 |> Maybe.andThen last
                 |> Maybe.map (\( _, col, _ ) -> col)
                 |> Maybe.withDefault i
 
+        -- swap braids i and j at step
         swap ( step, ( i, j ) ) columns =
             columns
                 |> push i ( step, lastCol j columns, Over )
                 |> push j ( step, lastCol i columns, Under )
     in
         transitions
-            |> List.indexedMap (\i transition -> ( i + 1, transition ))
-            |> List.foldl swap initial
+            |> List.indexedMap (\i transitions -> List.map (\transition -> ( i + 1, transition )) transitions)
+            |> List.concat
+            |> List.foldl (swap) initial
 
 
 segments : Int -> Int -> List ( Step, Index, Z ) -> List Segment
@@ -217,6 +249,7 @@ view braidWidth stepHeight ({ count, transitions } as model) =
 main : Html Never
 main =
     div []
-        [ braid3 |> view 15 30
+        [ braid4 |> view 15 30
+        , braid3 |> view 15 30
         , braid2 |> view 15 30
         ]

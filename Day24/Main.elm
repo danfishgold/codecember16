@@ -42,7 +42,7 @@ init width height =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    every (0.1 * second) Tick
 
 
 
@@ -51,21 +51,24 @@ subscriptions model =
 
 randomAction : Model -> Cmd Msg
 randomAction model =
-    sample
-        [ \() ->
-            Tree.rootIndexes model.tree
-                |> sample
-                |> Random.map (Maybe.withDefault [])
-                |> Random.map Retract
-        , \() ->
+    let
+        randomLeafIdx =
             Tree.leafIndexes model.tree
                 |> sample
                 |> Random.map (Maybe.withDefault [])
-                |> Random.map Expand
-        ]
-        |> Random.map (Maybe.withDefault <| Debug.crash "UGHH")
-        |> Random.andThen (\lazy -> lazy ())
-        |> Random.generate identity
+    in
+        Random.Extra.frequency
+            [ ( 0.2
+              , randomLeafIdx
+                    |> Random.map (\idx -> List.take (List.length idx - 1) idx)
+                    |> Random.map Retract
+              )
+            , ( 0.8
+              , randomLeafIdx
+                    |> Random.map Expand
+              )
+            ]
+            |> Random.generate identity
 
 
 setNodes : List ( Tree.Index, Tree a ) -> Tree a -> Tree a

@@ -7,9 +7,9 @@ import Random
 import Random.Extra exposing (sample)
 import Color exposing (Color)
 import Color.Convert exposing (colorToCssRgb)
-import Day2.Random exposing (ryb2v2)
+import Day2.Random exposing (ryb1, ryb2v2)
 import Time exposing (Time, every, second)
-import Day24.Tree as Tree exposing (Tree)
+import Day24.Tree as Tree exposing (Tree(..))
 
 
 type alias Model =
@@ -23,14 +23,14 @@ type Msg
     = Tick Time
     | Expand Tree.Index
     | Retract Tree.Index
-    | SetNodes (List ( Tree.Index, Tree Color ))
+    | SetNode ( Tree.Index, Tree Color )
 
 
 init : Float -> Float -> ( Model, Cmd Msg )
 init width height =
     ( { width = width
       , height = height
-      , tree = Tree.Leaf Color.gray
+      , tree = Leaf Color.gray
       }
     , Cmd.none
     )
@@ -86,13 +86,18 @@ update msg model =
             ( model, randomAction model )
 
         Expand idx ->
-            ( model, Cmd.none )
+            let
+                node ( c1, c2, c3, c4 ) =
+                    Tree (Leaf c1) (Leaf c2) (Leaf c3) (Leaf c4)
+                        |> \node -> ( idx, node )
+            in
+                ( model, ryb2v2 1 0.5 45 |> Random.map node |> Random.generate SetNode )
 
         Retract idx ->
-            ( model, Cmd.none )
+            ( model, ryb1 1 0.5 |> Random.map (\c -> ( idx, Leaf c )) |> Random.generate SetNode )
 
-        SetNodes nodes ->
-            ( { model | tree = setNodes nodes model.tree }, Cmd.none )
+        SetNode ( idx, node ) ->
+            ( { model | tree = model.tree |> Tree.set idx node |> Maybe.withDefault model.tree }, Cmd.none )
 
 
 

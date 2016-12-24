@@ -1,5 +1,7 @@
 module Braids exposing (..)
 
+import Html exposing (Html, div)
+import Html.Attributes exposing (style)
 import Svg exposing (Svg, svg, g, line)
 import Svg.Attributes exposing (width, height, x1, y1, x2, y2, stroke, strokeWidth)
 import Color exposing (Color)
@@ -145,8 +147,7 @@ view braidWidth stepHeight ({ count, transitions } as model) =
             stepHeight * toFloat (step + 2)
 
         colors =
-            -- gradient Space.RGB [ Color.red, Color.green ] count
-            [ Color.red, Color.blue, Color.green ]
+            gradient Space.HSL [ Color.red, Color.green ] count
 
         line c s1 s2 i1 i2 =
             Svg.line
@@ -190,6 +191,9 @@ view braidWidth stepHeight ({ count, transitions } as model) =
 --
 
 
-main : Svg Never
+main : Html Never
 main =
-    braid3 |> view 10 20
+    div []
+        [ braid3 |> view 15 30
+        , braid2 |> view 15 30
+        ]

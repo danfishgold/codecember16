@@ -59,17 +59,13 @@ randomAction model =
                 |> List.filter (\idx -> List.length idx <= model.maxDepth)
                 |> sample
                 |> Random.map (Maybe.withDefault [])
+
+        oneLevelUp idx =
+            List.take (List.length idx - 1) idx
     in
         Random.Extra.frequency
-            [ ( 0.2
-              , randomLeafIdx
-                    |> Random.map (\idx -> List.take (List.length idx - 1) idx)
-                    |> Random.map Retract
-              )
-            , ( 0.8
-              , randomLeafIdx
-                    |> Random.map Expand
-              )
+            [ ( 1, randomLeafIdx |> Random.map oneLevelUp |> Random.map Retract )
+            , ( 12, randomLeafIdx |> Random.map Expand )
             ]
             |> Random.generate identity
 

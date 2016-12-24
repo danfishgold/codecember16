@@ -30,6 +30,15 @@ type Z
     | Under
 
 
+type alias Segment =
+    { first : Step
+    , last : Step
+    , column : Index
+    , nextColumn : Index
+    , z : Z
+    }
+
+
 braid3 : Model
 braid3 =
     { count = 3
@@ -48,8 +57,8 @@ braid2 =
 --
 
 
-rangeZ : ( Step, Step, Index, Index, Z ) -> comparable
-rangeZ ( _, _, _, _, z ) =
+segmentZ : Segment -> comparable
+segmentZ { z } =
     if z == Over then
         1
     else
@@ -108,14 +117,26 @@ itemColumns { count, transitions } =
             |> List.foldl swap initial
 
 
-ranges : Int -> Int -> List ( Step, Index, Z ) -> List ( Step, Step, Index, Index, Z )
-ranges offset maxStep itemColumns =
+segments : Int -> Int -> List ( Step, Index, Z ) -> List Segment
+segments offset maxStep itemColumns =
     case itemColumns of
         ( t1, i1, _ ) :: ( t2, i2, z2 ) :: rest ->
-            ( t1 - offset, t2 - 1, i1, i2, z2 ) :: ranges 0 maxStep (( t2, i2, z2 ) :: rest)
+            { first = t1 - offset
+            , last = t2 - 1
+            , column = i1
+            , nextColumn = i2
+            , z = z2
+            }
+                :: segments 0 maxStep (( t2, i2, z2 ) :: rest)
 
         [ ( t, i, z ) ] ->
-            [ ( t - offset, maxStep, i, i, z ) ]
+            [ { first = t - offset
+              , last = maxStep
+              , column = i
+              , nextColumn = i
+              , z = z
+              }
+            ]
 
         [] ->
             []
@@ -161,24 +182,24 @@ view braidWidth stepHeight ({ count, transitions } as model) =
                 ]
                 []
 
-        columnRanges : List ( Color, ( Int, Int, Int, Int, Z ) )
-        columnRanges =
+        columnSegments : List ( Color, Segment )
+        columnSegments =
             itemColumns model
                 |> Array.toList
                 |> List.map Array.toList
-                |> List.map (ranges 1 steps)
-                |> List.map2 (\c ranges -> List.map ((,) c) ranges) colors
+                |> List.map (segments 1 steps)
+                |> List.map2 (\c segs -> List.map ((,) c) segs) colors
                 |> List.concat
 
-        vertical ( color, ( s1, s2, i, _, _ ) ) =
-            line color s1 s2 i i
+        vertical ( color, seg ) =
+            line color seg.first seg.last seg.column seg.column
 
-        diagonal ( color, ( _, s, i1, i2, _ ) ) =
-            line color s (s + 1) i1 i2
+        diagonal ( color, seg ) =
+            line color seg.last (seg.last + 1) seg.column seg.nextColumn
     in
-        (columnRanges
-            |> List.sortBy (\( c, range ) -> rangeZ range)
-            |> \ranges -> List.map vertical ranges ++ List.map diagonal ranges
+        (columnSegments
+            |> List.sortBy (\( c, segment ) -> segmentZ segment)
+            |> \segs -> List.map vertical segs ++ List.map diagonal segs
         )
             |> svg
                 [ width <| toString wd

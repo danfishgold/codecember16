@@ -16,6 +16,7 @@ type alias Model =
     { width : Float
     , height : Float
     , tree : Tree Color
+    , maxDepth : Int
     }
 
 
@@ -31,6 +32,7 @@ init width height =
     ( { width = width
       , height = height
       , tree = Leaf Color.gray
+      , maxDepth = 6
       }
     , Cmd.none
     )
@@ -54,6 +56,7 @@ randomAction model =
     let
         randomLeafIdx =
             Tree.leafIndexes model.tree
+                |> List.filter (\idx -> List.length idx <= model.maxDepth)
                 |> sample
                 |> Random.map (Maybe.withDefault [])
     in

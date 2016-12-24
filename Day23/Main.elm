@@ -199,7 +199,9 @@ view braidWidth stepHeight ({ count, transitions } as model) =
     in
         (columnSegments
             |> List.sortBy (\( c, segment ) -> segmentZ segment)
-            |> \segs -> List.map vertical segs ++ List.map diagonal segs
+            |> \segs ->
+                (segs |> List.filter (\( _, { first, last } ) -> first /= last) |> List.map vertical)
+                    ++ List.map diagonal segs
         )
             |> svg
                 [ width <| toString wd

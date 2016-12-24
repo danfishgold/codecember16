@@ -1,9 +1,25 @@
-module Day24.Tree exposing (Tree(..), get, set, update, map, indexedMap)
+module Day24.Tree
+    exposing
+        ( Tree(..)
+        , Index
+        , size
+        , get
+        , set
+        , update
+        , map
+        , indexedMap
+        , leafIndexes
+        , rootIndexes
+        )
 
 
 type Tree a
     = Leaf a
     | Tree (Tree a) (Tree a) (Tree a) (Tree a)
+
+
+type alias Index =
+    List Int
 
 
 size : Tree a -> Int
@@ -16,7 +32,7 @@ size tree =
             1
 
 
-get : List Int -> Tree a -> Maybe a
+get : Index -> Tree a -> Maybe a
 get idx tree =
     case ( idx, tree ) of
         ( [], Leaf x ) ->
@@ -41,7 +57,7 @@ get idx tree =
             Nothing
 
 
-update : List Int -> (Tree a -> Tree a) -> Tree a -> Maybe (Tree a)
+update : Index -> (Tree a -> Tree a) -> Tree a -> Maybe (Tree a)
 update idx fn tree =
     case ( idx, tree ) of
         ( [], node ) ->
@@ -70,7 +86,7 @@ update idx fn tree =
             Nothing
 
 
-set : List Int -> Tree a -> Tree a -> Maybe (Tree a)
+set : Index -> Tree a -> Tree a -> Maybe (Tree a)
 set idx node tree =
     update idx (always node) tree
 
@@ -85,7 +101,7 @@ map fn tree =
             [ a, b, c, d ] |> List.concatMap (map fn)
 
 
-indexedMap : (List Int -> a -> b) -> Tree a -> List b
+indexedMap : (Index -> a -> b) -> Tree a -> List b
 indexedMap fn tree =
     let
         sub fn idx tree =
@@ -99,3 +115,38 @@ indexedMap fn tree =
                         |> List.concatMap identity
     in
         sub fn [] tree
+
+
+leafIndexes : Tree a -> List Index
+leafIndexes tree =
+    case tree of
+        Leaf _ ->
+            [ [] ]
+
+        Tree a b c d ->
+            [ a, b, c, d ]
+                |> List.indexedMap (\i sub -> leafIndexes sub |> List.map ((::) i))
+                |> List.concat
+
+
+isLeaf : Tree a -> Bool
+isLeaf tree =
+    case tree of
+        Leaf _ ->
+            True
+
+        _ ->
+            False
+
+
+rootIndexes : Tree a -> List Index
+rootIndexes tree =
+    case tree of
+        Leaf _ ->
+            []
+
+        Tree a b c d ->
+            [ a, b, c, d ]
+                |> List.indexedMap (\i sub -> rootIndexes sub |> List.map ((::) i))
+                |> List.concat
+                |> (++) []

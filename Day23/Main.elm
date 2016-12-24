@@ -3,7 +3,7 @@ module Braids exposing (..)
 import Html exposing (Html, div)
 import Html.Attributes exposing (style)
 import Svg exposing (Svg, svg, g, line)
-import Svg.Attributes exposing (width, height, x1, y1, x2, y2, stroke, strokeWidth)
+import Svg.Attributes exposing (width, height, x1, y1, x2, y2, stroke, strokeWidth, strokeLinecap)
 import Color exposing (Color)
 import Color.Gradient exposing (gradient)
 import Color.Interpolate as Space
@@ -148,7 +148,7 @@ itemColumns { count, transitions } =
                 |> push j ( step, lastCol i columns, Under )
     in
         transitions
-            |> List.indexedMap (\i transitions -> List.map (\transition -> ( i + 1, transition )) transitions)
+            |> List.indexedMap (\step -> List.map (\transition -> ( step + 1, transition )))
             |> List.concat
             |> List.foldl (swap) initial
 
@@ -210,7 +210,7 @@ view braidWidth stepHeight ({ count, transitions } as model) =
             Svg.line
                 [ stroke <| colorToCssRgb c
                 , strokeWidth <| toString braidWidth
-                , Svg.Attributes.strokeLinecap <| "round"
+                , strokeLinecap "round"
                 , x1 <| toString <| x i1
                 , x2 <| toString <| x i2
                 , y1 <| toString <| y s1

@@ -22,9 +22,10 @@ type alias Rule =
 
 rules : List Rule
 rules =
-    [ Rule separation 0.2 30
-    , Rule alignment 0.01 30
-    , Rule cohesion 3 30
+    [ Rule cohesion 3.0 100
+    , Rule alignment 0.01 20
+    , Rule separation 0.2 50
+      -- , Rule center 4 0
     ]
 
 
@@ -92,11 +93,7 @@ update : Msg -> Model -> Model
 update msg model =
     case msg of
         Tick dt ->
-            { model
-                | boids =
-                    model.boids
-                        |> updateBoids dt model.maxSpeed
-            }
+            { model | boids = model.boids |> updateBoids dt model.maxSpeed }
 
         SetBoids boids ->
             { model | boids = boids }
@@ -108,13 +105,8 @@ updateBoids dt maxSpeed boids =
         velocityFromRule boid { rule, weight, radius } =
             boids
                 |> neighborsWithin boid radius
-                |> \bs ->
-                    if List.isEmpty bs then
-                        ( 0, 0 )
-                    else
-                        bs
-                            |> rule boid
-                            |> Vector.mul weight
+                |> rule boid
+                |> Vector.mul weight
 
         applyRules boid =
             rules
@@ -155,27 +147,41 @@ neighborsWithin this rad boids =
 
 separation : Boid -> List Boid -> Vector
 separation { r, v } boids =
-    boids
-        |> List.map (.r >> Vector.sub r)
-        |> Vector.sum
-        |> Vector.normalizeOrZero 1
+    if List.isEmpty boids then
+        ( 0, 0 )
+    else
+        boids
+            |> List.map (.r >> Vector.sub r)
+            |> Vector.sum
+            |> Vector.normalizeOrZero 1
 
 
 alignment : Boid -> List Boid -> Vector
 alignment { r, v } boids =
-    boids
-        |> List.map .v
-        |> Vector.sum
-        |> Vector.normalizeOrZero 1
+    if List.isEmpty boids then
+        ( 0, 0 )
+    else
+        boids
+            |> List.map .v
+            |> Vector.sum
+            |> Vector.normalizeOrZero 1
 
 
 cohesion : Boid -> List Boid -> Vector
 cohesion { r, v } boids =
-    boids
-        |> List.map .r
-        |> Vector.sum
-        |> Vector.mul (1 / (toFloat <| List.length boids))
-        |> Vector.normalizeOrZero 1
+    if List.isEmpty boids then
+        ( 0, 0 )
+    else
+        boids
+            |> List.map .r
+            |> Vector.sum
+            |> Vector.mul (1 / (toFloat <| List.length boids))
+            |> Vector.normalizeOrZero 1
+
+
+center : Boid -> List Boid -> Vector
+center { r } _ =
+    Vector.sub ( 0, 0 ) r
 
 
 

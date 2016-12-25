@@ -23,8 +23,8 @@ type alias Rule =
 rules : List Rule
 rules =
     [ Rule separation 0.2 30
-    , Rule alignment 1 30
-    , Rule cohesion 30 30
+    , Rule alignment 0.01 30
+    , Rule cohesion 3 30
     ]
 
 
@@ -45,14 +45,10 @@ init : Float -> Float -> Float -> ( Model, Cmd Msg )
 init maxSpeed width height =
     ( { width = width
       , height = height
-      , boids =
-            [ Boid ( 0, 0 ) ( 0.2, 0 ) Color.black
-            , Boid ( 0.2, 0.2 ) ( 0.1, 0.0 ) Color.black
-            , Boid ( -0.2, 0.2 ) ( 0.13, 0.0 ) Color.black
-            ]
+      , boids = []
       , maxSpeed = maxSpeed
       }
-    , Random.generate SetBoids (Random.list 30 (randomBoid maxSpeed))
+    , Random.generate SetBoids (Random.list 50 (randomBoid maxSpeed))
     )
 
 
@@ -124,6 +120,7 @@ updateBoids dt maxSpeed boids =
             rules
                 |> List.map (velocityFromRule boid)
                 |> Vector.sum
+                |> Vector.normalizeOrZero (maxSpeed / 100)
                 |> \v -> { boid | v = Vector.add boid.v v |> Vector.capMagnitude maxSpeed }
 
         updateLocation dt boid =
@@ -207,7 +204,7 @@ view { width, height, boids } =
 main : Program Never Model Msg
 main =
     program
-        { init = init 0.002 500 500
+        { init = init 0.001 500 500
         , subscriptions = subscriptions
         , update = \msg model -> ( update msg model, Cmd.none )
         , view = view

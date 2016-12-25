@@ -6,6 +6,7 @@ import Element
 import AnimationFrame
 import Color exposing (Color)
 import Day25.Vector as Vector exposing (..)
+import Random
 
 
 type alias Boid =
@@ -21,9 +22,9 @@ type alias Rule =
 
 rules : List Rule
 rules =
-    [ Rule separation 1 30
+    [ Rule separation 0.2 30
     , Rule alignment 1 30
-    , Rule cohesion 1 30
+    , Rule cohesion 30 30
     ]
 
 
@@ -31,7 +32,7 @@ type alias Model =
     { width : Float
     , height : Float
     , boids : List Boid
-    , speed : Float
+    , maxSpeed : Float
     }
 
 
@@ -40,19 +41,42 @@ type Msg
     | Tick Float
 
 
-init : Float -> Float -> ( Model, Cmd Msg )
-init width height =
+init : Float -> Float -> Float -> ( Model, Cmd Msg )
+init maxSpeed width height =
     ( { width = width
       , height = height
       , boids =
             [ Boid ( 0, 0 ) ( 0.2, 0 ) Color.black
-            , Boid ( 20, 20 ) ( 0.1, 0.0 ) Color.black
-            , Boid ( -20, 20 ) ( 0.13, 0.0 ) Color.black
+            , Boid ( 0.2, 0.2 ) ( 0.1, 0.0 ) Color.black
+            , Boid ( -0.2, 0.2 ) ( 0.13, 0.0 ) Color.black
             ]
-      , speed = 0.2
+      , maxSpeed = maxSpeed
       }
-    , Cmd.none
+    , Random.generate SetBoids (Random.list 30 (randomBoid maxSpeed))
     )
+
+
+
+--
+
+
+randomBoid : Float -> Random.Generator Boid
+randomBoid maxSpeed =
+    let
+        v =
+            Random.map2 Vector.polar
+                (Random.float 0 maxSpeed)
+                (Random.float 0 360 |> Random.map degrees)
+
+        r =
+            Random.map2 (,)
+                (Random.float -0.5 0.5)
+                (Random.float -0.5 0.5)
+
+        boid r v =
+            Boid r v Color.black
+    in
+        Random.map2 boid r v
 
 
 
@@ -75,8 +99,7 @@ update msg model =
             { model
                 | boids =
                     model.boids
-                        |> updateBoids dt model.speed
-                        |> List.map (modPosition model.width model.height)
+                        |> updateBoids dt model.maxSpeed
             }
 
         SetBoids boids ->
@@ -84,7 +107,7 @@ update msg model =
 
 
 updateBoids : Float -> Float -> List Boid -> List Boid
-updateBoids dt magnitude boids =
+updateBoids dt maxSpeed boids =
     let
         velocityFromRule boid { rule, weight, radius } =
             boids
@@ -101,30 +124,29 @@ updateBoids dt magnitude boids =
             rules
                 |> List.map (velocityFromRule boid)
                 |> Vector.sum
-                |> Vector.normalizeOrZero magnitude
-                |> \v -> { boid | v = v |> Vector.onZero boid.v }
+                |> \v -> { boid | v = Vector.add boid.v v |> Vector.capMagnitude maxSpeed }
 
         updateLocation dt boid =
             { boid | r = add boid.r (mul dt boid.v) }
     in
-        boids |> List.map applyRules |> List.map (updateLocation dt)
+        boids |> List.map applyRules |> List.map (updateLocation dt) |> List.map modPosition
 
 
-modPosition : Float -> Float -> Boid -> Boid
-modPosition wd ht boid =
+modPosition : Boid -> Boid
+modPosition boid =
     let
-        modAxis len x =
-            if x > len / 2 then
-                modAxis len (x - len)
-            else if x < -len / 2 then
-                modAxis len (x + len)
+        mod x =
+            if x > 0.5 then
+                mod (x - 1)
+            else if x < -0.5 then
+                mod (x + 1)
             else
                 x
 
         ( x, y ) =
             boid.r
     in
-        { boid | r = ( modAxis wd x, modAxis ht y ) }
+        { boid | r = ( mod x, mod y ) }
 
 
 neighborsWithin : Boid -> Float -> List Boid -> List Boid
@@ -169,7 +191,7 @@ view { width, height, boids } =
         boidPolygon { r, v, c } =
             polygon [ ( -4, -4 ), ( 4, -4 ), ( 0, 8 ) ]
                 |> filled c
-                |> move r
+                |> move (vecMul r ( width, height ))
                 |> rotate (Vector.arg v)
     in
         boids
@@ -185,7 +207,7 @@ view { width, height, boids } =
 main : Program Never Model Msg
 main =
     program
-        { init = init 500 500
+        { init = init 0.002 500 500
         , subscriptions = subscriptions
         , update = \msg model -> ( update msg model, Cmd.none )
         , view = view

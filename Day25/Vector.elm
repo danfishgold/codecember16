@@ -63,3 +63,21 @@ onZero default vec =
         default
     else
         vec
+
+
+polar : Float -> Float -> Vector
+polar r theta =
+    ( r * cos theta, r * sin theta )
+
+
+capMagnitude : Float -> Vector -> Vector
+capMagnitude mag vec =
+    if norm2 vec > mag ^ 2 then
+        normalizeOrZero mag vec
+    else
+        vec
+
+
+vecMul : Vector -> Vector -> Vector
+vecMul ( a1, a2 ) ( b1, b2 ) =
+    ( a1 * b1, a2 * b2 )

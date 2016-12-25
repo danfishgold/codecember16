@@ -5,14 +5,20 @@ import Collage exposing (collage, polygon, filled, move, rotate)
 import Element
 import AnimationFrame
 import Color exposing (Color)
-
-
-type alias Point =
-    ( Float, Float )
+import Day25.Vector as Vector exposing (..)
 
 
 type alias Boid =
-    { r : Point, v : Point, c : Color }
+    { r : Vector, v : Vector, c : Color }
+
+
+type alias Rule =
+    List Boid -> Boid -> Boid
+
+
+rules : List ( Rule, Float, Int )
+rules =
+    []
 
 
 type alias Model =
@@ -54,15 +60,20 @@ update : Msg -> Model -> Model
 update msg model =
     case msg of
         Tick dt ->
-            { model | boids = List.map (updateBoid dt model.boids) model.boids }
+            { model | boids = model.boids |> updateVelocities |> updateLocations dt }
 
         SetBoids boids ->
             { model | boids = boids }
 
 
-updateBoid : Float -> List Boid -> Boid -> Boid
-updateBoid dt boids ({ r, v } as boid) =
-    boid
+updateVelocities : List Boid -> List Boid
+updateVelocities boids =
+    boids
+
+
+updateLocations : Float -> List Boid -> List Boid
+updateLocations dt boids =
+    boids |> List.map (\boid -> { boid | r = add boid.r (mul dt boid.v) })
 
 
 

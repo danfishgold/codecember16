@@ -1,4 +1,4 @@
-module Waves exposing (..)
+module Boids exposing (..)
 
 import Html exposing (Html, program)
 import Collage exposing (collage, polygon, filled, move, rotate)
@@ -13,18 +13,25 @@ type alias Boid =
 
 
 type alias Rule =
-    List Boid -> Boid -> Boid
+    { rule : Boid -> List Boid -> Vector
+    , weight : Float
+    , radius : Float
+    }
 
 
-rules : List ( Rule, Float, Int )
+rules : List Rule
 rules =
-    []
+    [ Rule separation 1 30
+    , Rule alignment 1 30
+    , Rule cohesion 1 30
+    ]
 
 
 type alias Model =
     { width : Float
     , height : Float
     , boids : List Boid
+    , speed : Float
     }
 
 
@@ -37,7 +44,12 @@ init : Float -> Float -> ( Model, Cmd Msg )
 init width height =
     ( { width = width
       , height = height
-      , boids = []
+      , boids =
+            [ Boid ( 0, 0 ) ( 0.2, 0 ) Color.black
+            , Boid ( 20, 20 ) ( 0.1, 0.0 ) Color.black
+            , Boid ( -20, 20 ) ( 0.13, 0.0 ) Color.black
+            ]
+      , speed = 0.2
       }
     , Cmd.none
     )
@@ -60,20 +72,91 @@ update : Msg -> Model -> Model
 update msg model =
     case msg of
         Tick dt ->
-            { model | boids = model.boids |> updateVelocities |> updateLocations dt }
+            { model
+                | boids =
+                    model.boids
+                        |> updateBoids dt model.speed
+                        |> List.map (modPosition model.width model.height)
+            }
 
         SetBoids boids ->
             { model | boids = boids }
 
 
-updateVelocities : List Boid -> List Boid
-updateVelocities boids =
+updateBoids : Float -> Float -> List Boid -> List Boid
+updateBoids dt magnitude boids =
+    let
+        velocityFromRule boid { rule, weight, radius } =
+            boids
+                |> neighborsWithin boid radius
+                |> \bs ->
+                    if List.isEmpty bs then
+                        ( 0, 0 )
+                    else
+                        bs
+                            |> rule boid
+                            |> Vector.mul weight
+
+        applyRules boid =
+            rules
+                |> List.map (velocityFromRule boid)
+                |> Vector.sum
+                |> Vector.normalizeOrZero magnitude
+                |> \v -> { boid | v = v |> Vector.onZero boid.v }
+
+        updateLocation dt boid =
+            { boid | r = add boid.r (mul dt boid.v) }
+    in
+        boids |> List.map applyRules |> List.map (updateLocation dt)
+
+
+modPosition : Float -> Float -> Boid -> Boid
+modPosition wd ht boid =
+    let
+        modAxis len x =
+            if x > len / 2 then
+                modAxis len (x - len)
+            else if x < -len / 2 then
+                modAxis len (x + len)
+            else
+                x
+
+        ( x, y ) =
+            boid.r
+    in
+        { boid | r = ( modAxis wd x, modAxis ht y ) }
+
+
+neighborsWithin : Boid -> Float -> List Boid -> List Boid
+neighborsWithin this rad boids =
     boids
+        |> List.filter ((/=) this)
+        |> List.filter (\other -> Vector.dist2 other.r this.r <= rad ^ 2)
 
 
-updateLocations : Float -> List Boid -> List Boid
-updateLocations dt boids =
-    boids |> List.map (\boid -> { boid | r = add boid.r (mul dt boid.v) })
+separation : Boid -> List Boid -> Vector
+separation { r, v } boids =
+    boids
+        |> List.map (.r >> Vector.sub r)
+        |> Vector.sum
+        |> Vector.normalizeOrZero 1
+
+
+alignment : Boid -> List Boid -> Vector
+alignment { r, v } boids =
+    boids
+        |> List.map .v
+        |> Vector.sum
+        |> Vector.normalizeOrZero 1
+
+
+cohesion : Boid -> List Boid -> Vector
+cohesion { r, v } boids =
+    boids
+        |> List.map .r
+        |> Vector.sum
+        |> Vector.mul (1 / (toFloat <| List.length boids))
+        |> Vector.normalizeOrZero 1
 
 
 
@@ -81,10 +164,18 @@ updateLocations dt boids =
 
 
 view : Model -> Html Msg
-view { width, height } =
-    []
-        |> collage (floor width) (floor height)
-        |> Element.toHtml
+view { width, height, boids } =
+    let
+        boidPolygon { r, v, c } =
+            polygon [ ( -4, -4 ), ( 4, -4 ), ( 0, 8 ) ]
+                |> filled c
+                |> move r
+                |> rotate (Vector.arg v)
+    in
+        boids
+            |> List.map boidPolygon
+            |> collage (floor width) (floor height)
+            |> Element.toHtml
 
 
 

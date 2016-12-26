@@ -28,10 +28,10 @@ car i x =
     in
         { x = x
         , v = 0
-        , alpha = 2 + 0.3 * sin (toFloat i)
-        , vMax = 0.0002
-        , aMax = 0.06 / sec
-        , aMin = -14 / sec
+        , alpha = 200
+        , vMax = 0.0001
+        , aMax = 0.0001 * sec
+        , aMin = -0.005 * sec
         }
 
 
@@ -97,10 +97,10 @@ update msg model =
             )
 
         AddObstacle ->
-            ( { model | obstacle = True |> Debug.log "in" }, Cmd.none )
+            ( { model | obstacle = True }, Cmd.none )
 
         RemoveObstacle ->
-            ( { model | obstacle = False |> Debug.log "in" }, Cmd.none )
+            ( { model | obstacle = False }, Cmd.none )
 
 
 updateCar : Float -> Car -> { a | x : Float } -> Car
@@ -116,7 +116,7 @@ updateCar dt ({ x, v, alpha } as car) next =
                     b
 
             xDesired =
-                modAfter x next.x - alpha * v - 0.05 |> min (x + dt * car.vMax) |> max x
+                modAfter x next.x - alpha * v - 0.01 |> min (x + dt * car.vMax) |> max x
 
             a =
                 2 / (dt ^ 2) * (xDesired - x - v * dt) |> min car.aMax |> max car.aMin
@@ -168,7 +168,7 @@ view model =
                 []
 
         ( ringRad, ringWidth ) =
-            ( min model.width model.height |> \l -> l / 3, 30 )
+            ( min model.width model.height |> \l -> l / 3, 15 )
 
         ring =
             circle 0 0 ringRad "none" "gray" ringWidth
@@ -198,7 +198,7 @@ view model =
 main : Program Never Model Msg
 main =
     program
-        { init = init 500 500 10
+        { init = init 500 500 32
         , subscriptions = subscriptions
         , update = update
         , view = view

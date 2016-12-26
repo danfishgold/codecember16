@@ -30,7 +30,7 @@ car i x =
         , v = 0
         , alpha = 2 + 0.3 * sin (toFloat i)
         , vMax = 0.0002
-        , aMax = 7 / sec
+        , aMax = 0.06 / sec
         , aMin = -14 / sec
         }
 
@@ -78,16 +78,29 @@ update msg model =
     case msg of
         Tick dt ->
             ( { model
-                | cars = model.cars |> List.sortBy .x |> mapPairs (updateCar dt)
+                | cars =
+                    let
+                        cars =
+                            List.sortBy .x model.cars
+                    in
+                        case cars of
+                            [] ->
+                                []
+
+                            first :: rest ->
+                                if model.obstacle then
+                                    cars ++ [ car 0 0 ] |> mapPairs (updateCar dt)
+                                else
+                                    cars ++ [ first ] |> mapPairs (updateCar dt)
               }
             , Cmd.none
             )
 
         AddObstacle ->
-            ( { model | obstacle = True }, Cmd.none )
+            ( { model | obstacle = True |> Debug.log "in" }, Cmd.none )
 
         RemoveObstacle ->
-            ( { model | obstacle = False }, Cmd.none )
+            ( { model | obstacle = False |> Debug.log "in" }, Cmd.none )
 
 
 updateCar : Float -> Car -> { a | x : Float } -> Car
@@ -125,21 +138,12 @@ updateCar dt ({ x, v, alpha } as car) next =
 
 mapPairs : (a -> a -> b) -> List a -> List b
 mapPairs fn xs =
-    let
-        withoutOverflow xs =
-            case xs of
-                fst :: snd :: rest ->
-                    fn fst snd :: withoutOverflow (snd :: rest)
+    case xs of
+        fst :: snd :: rest ->
+            fn fst snd :: mapPairs fn (snd :: rest)
 
-                _ ->
-                    []
-    in
-        case xs of
-            fst :: rest ->
-                withoutOverflow ((List.drop (List.length xs - 1) xs) ++ xs)
-
-            [] ->
-                []
+        _ ->
+            []
 
 
 
@@ -167,13 +171,22 @@ view model =
             ( min model.width model.height |> \l -> l / 3, 30 )
 
         ring =
-            g [ onMouseOver AddObstacle, onMouseOut RemoveObstacle ] [ circle 0 0 ringRad "none" "gray" ringWidth ]
+            circle 0 0 ringRad "none" "gray" ringWidth
 
         car { x } =
             circle (ringRad * cos (x * 2 * pi)) (ringRad * sin (x * 2 * pi)) (ringWidth / 3) "black" "none" 0
+
+        obstacle =
+            circle ringRad 0 3 "red" "none" 0
     in
-        [ ring
-        , model.cars |> List.map car |> g []
+        [ g [ onMouseOver AddObstacle, onMouseOut RemoveObstacle ]
+            [ ring
+            , model.cars |> List.map car |> g []
+            , if model.obstacle then
+                obstacle
+              else
+                Svg.text ""
+            ]
         ]
             |> svg [ width <| toString model.width, height <| toString model.height ]
 

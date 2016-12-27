@@ -6,6 +6,18 @@ import Svg.Attributes exposing (fill, stroke, strokeWidth, points)
 import Color.Convert exposing (colorToCssRgb)
 import Dict exposing (Dict)
 import Set exposing (Set)
+import Array exposing (Array)
+
+
+colors : Array Color
+colors =
+    Array.fromList
+        [ Color.red
+        , Color.blue
+        , Color.green
+        , Color.purple
+        , Color.brown
+        ]
 
 
 type alias Area =
@@ -33,7 +45,7 @@ type Shape
 
 
 
---
+-- BORDER BUSINESS
 
 
 triplets : (a -> a -> a -> b) -> List a -> List b
@@ -116,7 +128,102 @@ shapeAround color shape ( x, y ) =
 
 
 
---
+-- MERGING
+
+
+reverseBorder : Border -> Border
+reverseBorder border =
+    border |> Dict.map (\_ ( before, after ) -> ( after, before ))
+
+
+isEncased : Area -> Area -> Bool
+isEncased a b =
+    Dict.diff a.border b.border
+        |> Dict.keys
+        |> Set.fromList
+        |> \notInBorder -> Set.diff notInBorder b.inner |> Set.isEmpty
+
+
+mergeIntersection : Corner -> Area -> Area -> ( Area, Area )
+mergeIntersection p a b =
+    let
+        ( aBefore, aAfter ) =
+            Dict.get p a.border |> crashOnNothing "point not in first area"
+
+        ( bBefore, bAfter ) =
+            Dict.get p b.border |> crashOnNothing "point not in second area"
+    in
+        if Dict.member aBefore b.border then
+            mergeIntersection aBefore a b
+        else if aAfter == bAfter then
+            mergeIntersection p a { b | border = reverseBorder b.border }
+        else if aAfter == bBefore then
+            ( a, b )
+        else if Set.member aAfter b.inner then
+            ( a, b )
+        else
+            ( a, b )
+
+
+addToAreas : List Area -> Area -> List Area
+addToAreas areas newArea =
+    case areas of
+        [] ->
+            [ newArea ]
+
+        area :: rest ->
+            case merge area newArea of
+                Just merged ->
+                    addToAreas rest merged
+
+                Nothing ->
+                    area :: addToAreas rest newArea
+
+
+merge : Area -> Area -> Maybe Area
+merge a b =
+    if isEncased a b then
+        Just b
+    else if isEncased b a then
+        Just a
+    else
+        let
+            mutualBorder =
+                Dict.intersect a.border b.border |> Dict.keys
+        in
+            if List.isEmpty mutualBorder then
+                Nothing
+            else
+                let
+                    isStartOfIntersectionInA p =
+                        a.border
+                            |> Dict.get p
+                            |> crashOnNothing "point not in first area"
+                            |> Tuple.first
+                            |> \aBefore ->
+                                not (Dict.member aBefore b.border)
+
+                    intersectionStarts =
+                        mutualBorder |> List.filter isStartOfIntersectionInA
+                in
+                    -- Just (glueMutualBorders a b mutualBorder)
+                    Nothing
+
+
+glueMutualBorders : Area -> Area -> List Corner -> Area
+glueMutualBorders a b mutualBorder =
+    let
+        c =
+            { inner = Set.union a.inner b.inner
+            , color = a.color
+            , border = Dict.empty
+            }
+    in
+        a
+
+
+
+-- VIEW
 
 
 view : Int -> Color -> Area -> Svg msg

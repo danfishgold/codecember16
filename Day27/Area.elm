@@ -56,7 +56,54 @@ shapeAround color shape ( x, y ) =
 
 addToAreas : List Area -> Area -> List Area
 addToAreas areas newArea =
-    newArea :: areas
+    let
+        colorI =
+            List.length areas % Array.length colors
+
+        color =
+            Array.get colorI colors |> Maybe.withDefault newArea.color
+
+        tryMerging existing area =
+            case existing of
+                [] ->
+                    [ area ]
+
+                first :: rest ->
+                    case merge first area of
+                        Just merged ->
+                            tryMerging rest merged
+
+                        Nothing ->
+                            first :: tryMerging rest area
+    in
+        tryMerging areas { newArea | color = color }
+
+
+merge : Area -> Area -> Maybe Area
+merge a b =
+    let
+        deltas =
+            [ ( 0, 0 ), ( 0, 1 ), ( 0, -1 ), ( 1, 0 ), ( -1, 0 ) ]
+
+        moveBy ( dx, dy ) set =
+            set |> Set.map (\( x, y ) -> ( x + dx, y + dy ))
+
+        ( setToShift, setToStay ) =
+            if Set.size a.points < Set.size b.points then
+                ( a.points, b.points )
+            else
+                ( b.points, a.points )
+
+        doesIntersect delta =
+            Set.intersect (moveBy delta setToShift) setToStay |> Set.isEmpty |> not
+
+        anyIntersection =
+            List.any doesIntersect deltas
+    in
+        if anyIntersection then
+            Just <| { points = Set.union setToShift setToStay, color = a.color }
+        else
+            Nothing
 
 
 

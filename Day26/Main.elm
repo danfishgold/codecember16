@@ -5,34 +5,20 @@ import Svg exposing (Svg, svg, g)
 import Svg.Attributes exposing (width, height, cx, cy, r, fill, stroke, strokeWidth)
 import Svg.Events exposing (onMouseOver, onMouseOut)
 import AnimationFrame
+import Time exposing (Time, second)
 
 
 type alias Car =
     { x : Float
     , v : Float
-    , alpha : Float
-    , vMax : Float
+    , len : Float
+    , s0 : Float
+    , v0 : Float
     , aMax : Float
-    , aMin : Float
+    , reactionTime : Float
+    , deceleration : Float
+    , delta : Float
     }
-
-
-car : Int -> Float -> Car
-car i x =
-    let
-        min =
-            1 / 60
-
-        sec =
-            min / 60
-    in
-        { x = x
-        , v = 0
-        , alpha = 200
-        , vMax = 0.0001
-        , aMax = 0.0001 * sec
-        , aMin = -0.005 * sec
-        }
 
 
 type alias Model =
@@ -44,7 +30,7 @@ type alias Model =
 
 
 type Msg
-    = Tick Float
+    = Tick Time
     | AddObstacle
     | RemoveObstacle
 
@@ -53,11 +39,32 @@ init : Float -> Float -> Int -> ( Model, Cmd Msg )
 init width height count =
     ( { width = width
       , height = height
-      , cars = List.range 1 count |> List.map (\i -> toFloat i / toFloat count) |> List.indexedMap car
+      , cars = List.range 1 count |> List.map (\i -> toFloat i / toFloat count) |> List.map car
       , obstacle = False
       }
     , Cmd.none
     )
+
+
+car : Float -> Car
+car x =
+    let
+        sec =
+            second
+
+        m =
+            1 / 500
+    in
+        { x = x
+        , v = 0
+        , len = 2 * m
+        , s0 = 3 * m
+        , v0 = 60 * m / sec
+        , aMax = 24 * m / sec ^ 2
+        , reactionTime = 0.5 * sec
+        , deceleration = 12 * m / sec ^ 2
+        , delta = 4
+        }
 
 
 main : Program Never Model Msg
@@ -99,9 +106,11 @@ update msg model =
 
                             first :: rest ->
                                 if model.obstacle then
-                                    cars ++ [ car 0 0 ] |> mapPairs (updateCar dt)
+                                    cars ++ [ car 0 ] |> mapPairs (updateCar dt)
                                 else
-                                    cars ++ [ first ] |> mapPairs (updateCar dt)
+                                    cars
+                                        ++ [ first ]
+                                        |> mapPairs (updateCar dt)
               }
             , Cmd.none
             )
@@ -113,8 +122,8 @@ update msg model =
             ( { model | obstacle = False }, Cmd.none )
 
 
-updateCar : Float -> Car -> { a | x : Float } -> Car
-updateCar dt ({ x, v, alpha } as car) next =
+updateCar : Time -> Car -> { a | x : Float, v : Float, len : Float } -> Car
+updateCar dt ({ x, v, v0, aMax, s0, reactionTime, deceleration, delta } as car) next =
     if dt /= 0 then
         let
             modAfter a b =
@@ -125,17 +134,21 @@ updateCar dt ({ x, v, alpha } as car) next =
                 else
                     b
 
-            xDesired =
-                modAfter x next.x - alpha * v - 0.01 |> min (x + dt * car.vMax) |> max x
+            s =
+                modAfter x (next.x - next.len) - x
+
+            s_ =
+                s0 + v * reactionTime + v * (v - next.v) / (2 * sqrt (aMax * deceleration))
 
             a =
-                2 / (dt ^ 2) * (xDesired - x - v * dt) |> min car.aMax |> max car.aMin
+                aMax
+                    * (1 - (v / v0) ^ delta - (s_ / s) ^ 2)
 
             v1 =
-                v + dt * a |> min car.vMax |> max 0
+                v + dt * a
 
             x1 =
-                x + v * dt + a * dt ^ 2 / 2 |> modAfter 0
+                x + v * dt |> modAfter 0
         in
             { car | x = x1, v = v1 }
     else

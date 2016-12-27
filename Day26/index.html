@@ -8725,10 +8725,12 @@ var _user$project$Jam$mapPairs = F2(
 var _user$project$Jam$updateCar = F3(
 	function (dt, _p2, next) {
 		var _p3 = _p2;
-		var _p6 = _p3.x;
-		var _p5 = _p3.v;
-		var _p4 = _p3;
+		var _p7 = _p3.x;
+		var _p6 = _p3.v;
+		var _p5 = _p3;
+		var _p4 = _p3.aMax;
 		if (!_elm_lang$core$Native_Utils.eq(dt, 0)) {
+			var s_ = (_p3.s0 + (_p6 * _p3.reactionTime)) + ((_p6 * (_p6 - next.v)) / (2 * _elm_lang$core$Basics$sqrt(_p4 * _p3.deceleration)));
 			var modAfter = F2(
 				function (a, b) {
 					modAfter:
@@ -8752,68 +8754,38 @@ var _user$project$Jam$updateCar = F3(
 						}
 					}
 				});
-			var xDesired = A2(
-				_elm_lang$core$Basics$max,
-				_p6,
-				A2(
-					_elm_lang$core$Basics$min,
-					_p6 + (dt * _p4.vMax),
-					(A2(modAfter, _p6, next.x) - (_p3.alpha * _p5)) - 1.0e-2));
-			var a = A2(
-				_elm_lang$core$Basics$max,
-				_p4.aMin,
-				A2(
-					_elm_lang$core$Basics$min,
-					_p4.aMax,
-					(2 / Math.pow(dt, 2)) * ((xDesired - _p6) - (_p5 * dt))));
-			var v1 = A2(
-				_elm_lang$core$Basics$max,
-				0,
-				A2(_elm_lang$core$Basics$min, _p4.vMax, _p5 + (dt * a)));
-			var x1 = A2(
-				modAfter,
-				0,
-				(_p6 + (_p5 * dt)) + ((a * Math.pow(dt, 2)) / 2));
+			var s = A2(modAfter, _p7, next.x - next.len) - _p7;
+			var a = _p4 * ((1 - Math.pow(_p6 / _p3.v0, _p3.delta)) - Math.pow(s_ / s, 2));
+			var v1 = _p6 + (dt * a);
+			var x1 = A2(modAfter, 0, _p7 + (_p6 * dt));
 			return _elm_lang$core$Native_Utils.update(
-				_p4,
+				_p5,
 				{x: x1, v: v1});
 		} else {
-			return _p4;
+			return _p5;
 		}
 	});
-var _user$project$Jam$car = F2(
-	function (i, x) {
-		var min = 1 / 60;
-		var sec = min / 60;
-		return {x: x, v: 0, alpha: 200, vMax: 1.0e-4, aMax: 1.0e-4 * sec, aMin: -5.0e-3 * sec};
-	});
-var _user$project$Jam$init = F3(
-	function (width, height, count) {
-		return {
-			ctor: '_Tuple2',
-			_0: {
-				width: width,
-				height: height,
-				cars: A2(
-					_elm_lang$core$List$indexedMap,
-					_user$project$Jam$car,
-					A2(
-						_elm_lang$core$List$map,
-						function (i) {
-							return _elm_lang$core$Basics$toFloat(i) / _elm_lang$core$Basics$toFloat(count);
-						},
-						A2(_elm_lang$core$List$range, 1, count))),
-				obstacle: false
-			},
-			_1: _elm_lang$core$Platform_Cmd$none
-		};
-	});
+var _user$project$Jam$car = function (x) {
+	var m = 1 / 500;
+	var sec = _elm_lang$core$Time$second;
+	return {
+		x: x,
+		v: 0,
+		len: 2 * m,
+		s0: 3 * m,
+		v0: (60 * m) / sec,
+		aMax: (24 * m) / Math.pow(sec, 2),
+		reactionTime: 0.5 * sec,
+		deceleration: (12 * m) / Math.pow(sec, 2),
+		delta: 4
+	};
+};
 var _user$project$Jam$update = F2(
 	function (msg, model) {
-		var _p7 = msg;
-		switch (_p7.ctor) {
+		var _p8 = msg;
+		switch (_p8.ctor) {
 			case 'Tick':
-				var _p9 = _p7._0;
+				var _p10 = _p8._0;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -8826,29 +8798,29 @@ var _user$project$Jam$update = F2(
 										return _.x;
 									},
 									model.cars);
-								var _p8 = cars;
-								if (_p8.ctor === '[]') {
+								var _p9 = cars;
+								if (_p9.ctor === '[]') {
 									return {ctor: '[]'};
 								} else {
 									return model.obstacle ? A2(
 										_user$project$Jam$mapPairs,
-										_user$project$Jam$updateCar(_p9),
+										_user$project$Jam$updateCar(_p10),
 										A2(
 											_elm_lang$core$Basics_ops['++'],
 											cars,
 											{
 												ctor: '::',
-												_0: A2(_user$project$Jam$car, 0, 0),
+												_0: _user$project$Jam$car(0),
 												_1: {ctor: '[]'}
 											})) : A2(
 										_user$project$Jam$mapPairs,
-										_user$project$Jam$updateCar(_p9),
+										_user$project$Jam$updateCar(_p10),
 										A2(
 											_elm_lang$core$Basics_ops['++'],
 											cars,
 											{
 												ctor: '::',
-												_0: _p8._0,
+												_0: _p9._0,
 												_1: {ctor: '[]'}
 											}));
 								}
@@ -8874,9 +8846,30 @@ var _user$project$Jam$update = F2(
 				};
 		}
 	});
-var _user$project$Jam$Car = F6(
-	function (a, b, c, d, e, f) {
-		return {x: a, v: b, alpha: c, vMax: d, aMax: e, aMin: f};
+var _user$project$Jam$init = F3(
+	function (width, height, count) {
+		return {
+			ctor: '_Tuple2',
+			_0: {
+				width: width,
+				height: height,
+				cars: A2(
+					_elm_lang$core$List$map,
+					_user$project$Jam$car,
+					A2(
+						_elm_lang$core$List$map,
+						function (i) {
+							return _elm_lang$core$Basics$toFloat(i) / _elm_lang$core$Basics$toFloat(count);
+						},
+						A2(_elm_lang$core$List$range, 1, count))),
+				obstacle: false
+			},
+			_1: _elm_lang$core$Platform_Cmd$none
+		};
+	});
+var _user$project$Jam$Car = F9(
+	function (a, b, c, d, e, f, g, h, i) {
+		return {x: a, v: b, len: c, s0: d, v0: e, aMax: f, reactionTime: g, deceleration: h, delta: i};
 	});
 var _user$project$Jam$Model = F4(
 	function (a, b, c, d) {
@@ -8885,7 +8878,7 @@ var _user$project$Jam$Model = F4(
 var _user$project$Jam$RemoveObstacle = {ctor: 'RemoveObstacle'};
 var _user$project$Jam$AddObstacle = {ctor: 'AddObstacle'};
 var _user$project$Jam$view = function (model) {
-	var _p10 = {
+	var _p11 = {
 		ctor: '_Tuple2',
 		_0: function (l) {
 			return l / 3;
@@ -8893,11 +8886,11 @@ var _user$project$Jam$view = function (model) {
 			A2(_elm_lang$core$Basics$min, model.width, model.height)),
 		_1: 15
 	};
-	var ringRad = _p10._0;
-	var ringWidth = _p10._1;
-	var _p11 = {ctor: '_Tuple2', _0: model.width / 2, _1: model.height / 2};
-	var centerX = _p11._0;
-	var centerY = _p11._1;
+	var ringRad = _p11._0;
+	var ringWidth = _p11._1;
+	var _p12 = {ctor: '_Tuple2', _0: model.width / 2, _1: model.height / 2};
+	var centerX = _p12._0;
+	var centerY = _p12._1;
 	var circle = F6(
 		function (x, y, rad, fillColor, strokeColor, width) {
 			return A2(
@@ -8933,14 +8926,14 @@ var _user$project$Jam$view = function (model) {
 				},
 				{ctor: '[]'});
 		});
-	var ring = A6(circle, 0, 0, ringRad, 'none', 'gray', ringWidth);
-	var car = function (_p12) {
-		var _p13 = _p12;
-		var _p14 = _p13.x;
+	var ring = A6(circle, 0, 0, ringRad, 'none', 'lightgray', ringWidth);
+	var car = function (_p13) {
+		var _p14 = _p13;
+		var _p15 = _p14.x;
 		return A6(
 			circle,
-			ringRad * _elm_lang$core$Basics$cos((_p14 * 2) * _elm_lang$core$Basics$pi),
-			ringRad * _elm_lang$core$Basics$sin((_p14 * 2) * _elm_lang$core$Basics$pi),
+			ringRad * _elm_lang$core$Basics$cos((_p15 * 2) * _elm_lang$core$Basics$pi),
+			ringRad * _elm_lang$core$Basics$sin((_p15 * 2) * _elm_lang$core$Basics$pi),
 			ringWidth / 3,
 			'black',
 			'none',
@@ -9000,7 +8993,7 @@ var _user$project$Jam$subscriptions = function (model) {
 };
 var _user$project$Jam$main = _elm_lang$html$Html$program(
 	{
-		init: A3(_user$project$Jam$init, 500, 500, 32),
+		init: A3(_user$project$Jam$init, 500, 500, 35),
 		subscriptions: _user$project$Jam$subscriptions,
 		update: _user$project$Jam$update,
 		view: _user$project$Jam$view

@@ -171,7 +171,7 @@ view model =
             ( min model.width model.height |> \l -> l / 3, 15 )
 
         ring =
-            circle 0 0 ringRad "none" "gray" ringWidth
+            circle 0 0 ringRad "none" "lightgray" ringWidth
 
         car { x } =
             circle (ringRad * cos (x * 2 * pi)) (ringRad * sin (x * 2 * pi)) (ringWidth / 3) "black" "none" 0

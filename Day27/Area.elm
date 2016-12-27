@@ -144,27 +144,6 @@ isEncased a b =
         |> \notInBorder -> Set.diff notInBorder b.inner |> Set.isEmpty
 
 
-mergeIntersection : Corner -> Area -> Area -> ( Area, Area )
-mergeIntersection p a b =
-    let
-        ( aBefore, aAfter ) =
-            Dict.get p a.border |> crashOnNothing "point not in first area"
-
-        ( bBefore, bAfter ) =
-            Dict.get p b.border |> crashOnNothing "point not in second area"
-    in
-        if Dict.member aBefore b.border then
-            mergeIntersection aBefore a b
-        else if aAfter == bAfter then
-            mergeIntersection p a { b | border = reverseBorder b.border }
-        else if aAfter == bBefore then
-            ( a, b )
-        else if Set.member aAfter b.inner then
-            ( a, b )
-        else
-            ( a, b )
-
-
 addToAreas : List Area -> Area -> List Area
 addToAreas areas newArea =
     case areas of
@@ -188,26 +167,65 @@ merge a b =
         Just a
     else
         let
-            mutualBorder =
-                Dict.intersect a.border b.border |> Dict.keys
+            rangesInA =
+                intersectionRangesInA a b
         in
-            if List.isEmpty mutualBorder then
+            if List.isEmpty rangesInA then
                 Nothing
             else
-                let
-                    isStartOfIntersectionInA p =
-                        a.border
-                            |> Dict.get p
-                            |> crashOnNothing "point not in first area"
-                            |> Tuple.first
-                            |> \aBefore ->
-                                not (Dict.member aBefore b.border)
+                Nothing
 
-                    intersectionStarts =
-                        mutualBorder |> List.filter isStartOfIntersectionInA
-                in
-                    -- Just (glueMutualBorders a b mutualBorder)
-                    Nothing
+
+
+-- a, b, startInA, endInA, joint -> jointWithFixedBorder
+
+
+intersectionRangesInA : Area -> Area -> List ( Corner, Corner )
+intersectionRangesInA a b =
+    let
+        isStart p =
+            a.border
+                |> Dict.get p
+                |> crashOnNothing "point not in first area"
+                |> Tuple.first
+                |> \aBefore ->
+                    not (Dict.member aBefore b.border)
+
+        findEnd start =
+            let
+                next =
+                    Dict.get start a.border |> crashOnNothing "point not in first area" |> Tuple.second
+            in
+                if Dict.member next b.border then
+                    findEnd next
+                else
+                    next
+    in
+        Dict.intersect a.border b.border
+            |> Dict.keys
+            |> List.filter isStart
+            |> List.map (\start -> ( start, findEnd start ))
+
+
+mergeIntersection : Corner -> Area -> Area -> ( Area, Area )
+mergeIntersection p a b =
+    let
+        ( aBefore, aAfter ) =
+            Dict.get p a.border |> crashOnNothing "point not in first area"
+
+        ( bBefore, bAfter ) =
+            Dict.get p b.border |> crashOnNothing "point not in second area"
+    in
+        if Dict.member aBefore b.border then
+            mergeIntersection aBefore a b
+        else if aAfter == bAfter then
+            mergeIntersection p a { b | border = reverseBorder b.border }
+        else if aAfter == bBefore then
+            ( a, b )
+        else if Set.member aAfter b.inner then
+            ( a, b )
+        else
+            ( a, b )
 
 
 glueMutualBorders : Area -> Area -> List Corner -> Area

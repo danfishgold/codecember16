@@ -1,7 +1,9 @@
 module Areas exposing (..)
 
 import Html exposing (program)
-import Svg exposing (Svg, svg)
+import Html exposing (Html, div, button, text)
+import Html.Events exposing (onClick)
+import Svg exposing (svg)
 import Svg.Attributes exposing (width, height)
 import Color exposing (Color)
 import Mouse
@@ -81,7 +83,7 @@ update : Msg -> Model -> Model
 update msg model =
     case msg of
         Add area ->
-            { model | areas = area :: model.areas }
+            { model | areas = addToAreas model.areas area }
 
         MouseMove center ->
             if center /= model.mouseCenter then
@@ -112,7 +114,7 @@ update msg model =
 --
 
 
-view : Model -> Svg Msg
+view : Model -> Html Msg
 view { size, areas, mouseShape, mouseCenter } =
     let
         { rows, columns, scale } =
@@ -131,12 +133,19 @@ view { size, areas, mouseShape, mouseCenter } =
 
         areaViews =
             areas |> List.map (areaView Color.lightGray)
+
+        svg =
+            (areaViews ++ [ mouseAreaView ])
+                |> Svg.svg
+                    [ width <| toString <| scale * columns
+                    , height <| toString <| scale * rows
+                    ]
     in
-        (areaViews ++ [ mouseAreaView ])
-            |> svg
-                [ width <| toString <| scale * columns
-                , height <| toString <| scale * rows
-                ]
+        div []
+            [ svg
+            , button [ onClick <| MouseShape Square ] [ text "Square" ]
+            , button [ onClick <| MouseShape Cross ] [ text "Cross" ]
+            ]
 
 
 

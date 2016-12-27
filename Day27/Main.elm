@@ -42,7 +42,10 @@ init n m scale =
       , mouseDown = False
       , mouseCenter = Nothing
       , mouseShape = Square
-      , areas = []
+      , areas =
+            [ shapeAround Color.red ( 25, 25 ) Square
+            , shapeAround Color.blue ( 10, 25 ) Cross
+            ]
       }
     , Cmd.none
     )

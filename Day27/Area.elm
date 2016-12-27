@@ -55,11 +55,64 @@ triplets fn xs =
                 []
 
 
-makeBorder : List Corner -> Border
-makeBorder pts =
+borderFromList : List Corner -> Border
+borderFromList pts =
     pts
         |> triplets (\a b c -> ( b, ( a, c ) ))
         |> Dict.fromList
+
+
+crashOnNothing : String -> Maybe a -> a
+crashOnNothing msg x =
+    case x of
+        Nothing ->
+            Debug.crash msg
+
+        Just val ->
+            val
+
+
+listFromBorder : Border -> List Corner
+listFromBorder border =
+    let
+        p0 =
+            border
+                |> Dict.keys
+                |> List.head
+                |> crashOnNothing "empty area border"
+
+        next p =
+            border
+                |> Dict.get p
+                |> crashOnNothing "point not in area"
+                |> Tuple.second
+
+        fn p =
+            next p
+                |> \p1 ->
+                    if p1 == p0 then
+                        [ p ]
+                    else
+                        p :: fn p1
+    in
+        fn p0
+
+
+shapeAround : Color -> Center -> Shape -> Area
+shapeAround color ( x, y ) shape =
+    let
+        borderPoints =
+            case shape of
+                Square ->
+                    [ ( x, y ), ( x, y + 1 ), ( x + 1, y + 1 ), ( x + 1, y ) ]
+
+                Cross ->
+                    [ ( x, y ), ( x, y - 1 ), ( x + 1, y - 1 ), ( x + 1, y ), ( x + 2, y ), ( x + 2, y + 1 ), ( x + 1, y + 1 ), ( x + 1, y + 2 ), ( x, y + 2 ), ( x, y + 1 ), ( x - 1, y + 1 ), ( x - 1, y ) ]
+    in
+        { inner = Set.empty
+        , border = borderFromList borderPoints
+        , color = color
+        }
 
 
 
@@ -73,7 +126,7 @@ view scale fillColor { border, color } =
         , stroke <| colorToCssRgb color
         , strokeWidth "2"
         , border
-            |> Dict.keys
+            |> listFromBorder
             |> List.map (\( x, y ) -> toString (scale * x) ++ "," ++ toString (scale * y))
             |> String.join " "
             |> points

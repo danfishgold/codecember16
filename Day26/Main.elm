@@ -70,7 +70,7 @@ car x =
 main : Program Never Model Msg
 main =
     program
-        { init = init 500 500 25
+        { init = init 500 500 35
         , subscriptions = subscriptions
         , update = update
         , view = view

@@ -43,8 +43,8 @@ init n m scale =
       , mouseCenter = Nothing
       , mouseShape = Square
       , areas =
-            [ shapeAround Color.red ( 25, 25 ) Square
-            , shapeAround Color.blue ( 10, 25 ) Cross
+            [ shapeAround Color.red Square ( 25, 25 )
+            , shapeAround Color.blue Cross ( 10, 25 )
             ]
       }
     , Cmd.none
@@ -81,13 +81,28 @@ update : Msg -> Model -> Model
 update msg model =
     case msg of
         Add area ->
-            model
+            { model | areas = area :: model.areas }
 
         MouseMove center ->
-            { model | mouseCenter = center }
+            if center /= model.mouseCenter then
+                { model | mouseCenter = center } |> update (MouseDown model.mouseDown)
+            else
+                model
 
-        MouseDown isDown ->
-            { model | mouseDown = isDown }
+        MouseDown True ->
+            case model.mouseCenter of
+                Just center ->
+                    center
+                        |> shapeAround Color.black model.mouseShape
+                        |> Add
+                        |> (flip update)
+                            { model | mouseDown = True }
+
+                Nothing ->
+                    { model | mouseDown = True }
+
+        MouseDown False ->
+            { model | mouseDown = False }
 
         MouseShape shape ->
             { model | mouseShape = shape }
@@ -98,16 +113,26 @@ update msg model =
 
 
 view : Model -> Svg Msg
-view { size, areas } =
+view { size, areas, mouseShape, mouseCenter } =
     let
         { rows, columns, scale } =
             size
 
-        areaView area =
-            Area.view scale Color.lightGray area
+        areaView fill area =
+            Area.view scale fill area
+
+        mouseAreaView =
+            case mouseCenter of
+                Just center ->
+                    shapeAround Color.black mouseShape center |> areaView (Color.rgba 255 255 255 0)
+
+                Nothing ->
+                    Svg.text ""
+
+        areaViews =
+            areas |> List.map (areaView Color.lightGray)
     in
-        areas
-            |> List.map areaView
+        (areaViews ++ [ mouseAreaView ])
             |> svg
                 [ width <| toString <| scale * columns
                 , height <| toString <| scale * rows

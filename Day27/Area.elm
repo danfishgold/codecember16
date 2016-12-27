@@ -98,8 +98,8 @@ listFromBorder border =
         fn p0
 
 
-shapeAround : Color -> Center -> Shape -> Area
-shapeAround color ( x, y ) shape =
+shapeAround : Color -> Shape -> Center -> Area
+shapeAround color shape ( x, y ) =
     let
         borderPoints =
             case shape of

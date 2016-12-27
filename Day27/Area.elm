@@ -3,7 +3,7 @@ module Day27.Area exposing (..)
 import Color exposing (Color)
 import Svg exposing (Svg, polygon)
 import Svg.Attributes exposing (fill, x, y, width, height)
-import Color.Convert exposing (colorToCssRgb)
+import Color.Convert exposing (colorToCssRgba)
 import Set exposing (Set)
 import Array exposing (Array)
 
@@ -16,6 +16,8 @@ colors =
         , Color.green
         , Color.purple
         , Color.brown
+        , Color.orange
+        , Color.yellow
         ]
 
 
@@ -57,11 +59,14 @@ shapeAround color shape ( x, y ) =
 addToAreas : List Area -> Area -> List Area
 addToAreas areas newArea =
     let
+        existingColors =
+            areas |> List.map .color
+
         colorI =
             List.length areas % Array.length colors
 
         color =
-            Array.get colorI colors |> Maybe.withDefault newArea.color
+            colors |> Array.filter (\c -> List.member c existingColors |> not) |> Array.get 0 |> Maybe.withDefault (Array.get colorI colors |> Maybe.withDefault newArea.color)
 
         tryMerging existing area =
             case existing of
@@ -110,8 +115,8 @@ merge a b =
 -- VIEW
 
 
-view : Int -> Color -> Area -> Svg msg
-view scale fillColor { points, color } =
+view : Int -> Area -> Svg msg
+view scale { points, color } =
     let
         pixel ( x0, y0 ) =
             Svg.rect
@@ -119,7 +124,7 @@ view scale fillColor { points, color } =
                 , y <| toString <| scale * y0
                 , width <| toString scale
                 , height <| toString scale
-                , fill <| colorToCssRgb color
+                , fill <| colorToCssRgba color
                 ]
                 []
     in

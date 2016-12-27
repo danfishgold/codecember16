@@ -60,6 +60,16 @@ init width height count =
     )
 
 
+main : Program Never Model Msg
+main =
+    program
+        { init = init 500 500 25
+        , subscriptions = subscriptions
+        , update = update
+        , view = view
+        }
+
+
 
 --
 
@@ -189,17 +199,3 @@ view model =
             ]
         ]
             |> svg [ width <| toString model.width, height <| toString model.height ]
-
-
-
---
-
-
-main : Program Never Model Msg
-main =
-    program
-        { init = init 500 500 32
-        , subscriptions = subscriptions
-        , update = update
-        , view = view
-        }

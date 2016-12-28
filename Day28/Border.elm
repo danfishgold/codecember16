@@ -72,13 +72,13 @@ unitVector : DirectionNum -> ( Int, Int )
 unitVector dirNum =
     case directionFromInt dirNum of
         Up ->
-            ( 0, 1 )
+            ( 0, -1 )
 
         Right ->
             ( 1, 0 )
 
         Down ->
-            ( 0, -1 )
+            ( 0, 1 )
 
         Left ->
             ( -1, 0 )
@@ -91,13 +91,13 @@ edgeFromCenter dirNum ( x, y ) =
             ( ( x, y ), ( x + 1, y ) )
 
         Right ->
-            ( ( x + 1, y ), ( x + 1, y - 1 ) )
+            ( ( x + 1, y ), ( x + 1, y + 1 ) )
 
         Down ->
-            ( ( x + 1, y - 1 ), ( x, y - 1 ) )
+            ( ( x + 1, y + 1 ), ( x, y + 1 ) )
 
         Left ->
-            ( ( x, y - 1 ), ( x, y ) )
+            ( ( x, y + 1 ), ( x, y ) )
 
 
 rotateDir : Orientation -> DirectionNum -> DirectionNum
@@ -114,15 +114,12 @@ rotateDir orient dirNum =
 --
 
 
-foldResult : (state -> Result res state) -> (state -> res) -> state -> ( state, List res )
-foldResult stepFn resFromState initial =
-    case stepFn initial of
-        Err finalResult ->
-            ( initial, [ finalResult ] )
-
-        Ok state ->
-            foldResult stepFn resFromState state
-                |> \( finalState, nextResults ) -> ( finalState, (resFromState state) :: nextResults )
+either : Maybe a -> Maybe a -> Maybe a
+either x y =
+    if x == Nothing then
+        y
+    else
+        x
 
 
 
@@ -165,12 +162,11 @@ type alias StepData =
     { orientation : Maybe Orientation
     , point : Corner
     , dirNum : DirectionNum
-    , dict : BorderDict
     }
 
 
-borderStep : StepData -> Result Corner StepData
-borderStep ({ orientation, point, dirNum, dict } as step) =
+borderStep : BorderDict -> StepData -> Maybe StepData
+borderStep dict ({ orientation, point, dirNum } as step) =
     let
         nextPoint =
             case Dict.get ( point, dirNum ) dict of
@@ -180,43 +176,46 @@ borderStep ({ orientation, point, dirNum, dict } as step) =
                 Nothing ->
                     Debug.crash <| "current point (" ++ toString point ++ ") not on border"
 
-        newDirAndOrientation =
-            if Dict.member ( nextPoint, dirNum ) dict then
-                Just ( dirNum, orientation )
-            else
-                case orientation of
-                    Just orient ->
-                        if Dict.member ( nextPoint, rotateDir orient dirNum ) dict then
-                            Just ( rotateDir orient dirNum, Just orient )
-                        else
-                            Nothing
+        nextStep =
+            { step | point = nextPoint }
 
-                    Nothing ->
-                        let
-                            positiveDirNum =
-                                rotateDir Positive dirNum
-
-                            negativeDirNum =
-                                rotateDir Negative dirNum
-                        in
-                            if Dict.member ( nextPoint, positiveDirNum ) dict then
-                                Just ( positiveDirNum, Just Positive )
-                            else if Dict.member ( nextPoint, positiveDirNum ) dict then
-                                Just ( negativeDirNum, Just Negative )
-                            else
-                                Nothing
-
-        makeNextStep ( nextDirNum, newOrientation ) =
-            { step
-                | orientation = newOrientation
-                , point = nextPoint
-                , dirNum = nextDirNum
-                , dict = Dict.remove ( point, dirNum ) dict
-            }
+        handleOrientation orient =
+            let
+                nextDirNum =
+                    rotateDir orient dirNum
+            in
+                if Dict.member ( nextPoint, nextDirNum ) dict then
+                    Just { nextStep | dirNum = nextDirNum, orientation = Just orient }
+                else
+                    Nothing
     in
-        newDirAndOrientation
-            |> Maybe.map makeNextStep
-            |> Result.fromMaybe nextPoint
+        if Dict.member ( nextPoint, dirNum ) dict then
+            Just nextStep
+        else
+            case orientation of
+                Just orient ->
+                    handleOrientation orient
+
+                Nothing ->
+                    either (handleOrientation Positive) (handleOrientation Negative)
+
+
+border : StepData -> BorderDict -> ( List Corner, BorderDict )
+border initial dict =
+    let
+        newDict =
+            dict |> Dict.remove ( initial.point, initial.dirNum )
+    in
+        case borderStep dict initial of
+            Nothing ->
+                ( [ initial.point ], newDict )
+
+            Just step ->
+                let
+                    ( nextBorderPoints, nextDict ) =
+                        border step newDict
+                in
+                    ( initial.point :: nextBorderPoints, nextDict )
 
 
 borders : BorderDict -> List (List Corner)
@@ -228,16 +227,15 @@ borders borderDict =
         Just ( point, dirNum ) ->
             let
                 step =
-                    { dict = borderDict
-                    , point = point
+                    { point = point
                     , dirNum = dirNum
                     , orientation = Nothing
                     }
 
-                ( nextStep, border ) =
-                    foldResult borderStep .point step
+                ( aBorder, newDict ) =
+                    border step borderDict
             in
-                border :: borders nextStep.dict
+                aBorder :: borders newDict
 
 
 
@@ -255,9 +253,9 @@ view scale fillColor area =
 
         pointString ( x, y ) =
             ""
-                ++ toString (toFloat scale * (toFloat x + 0.5))
+                ++ toString (scale * x)
                 ++ ","
-                ++ toString (toFloat scale * (toFloat y + 0.5))
+                ++ toString (scale * y)
 
         borderView border =
             polygon

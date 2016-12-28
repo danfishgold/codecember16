@@ -13,11 +13,6 @@ type alias Corner =
     ( Int, Int )
 
 
-type Orientation
-    = Positive
-    | Negative
-
-
 type Direction
     = Up
     | Right
@@ -100,14 +95,9 @@ edgeFromCenter dirNum ( x, y ) =
             ( ( x, y + 1 ), ( x, y ) )
 
 
-rotateDir : Orientation -> DirectionNum -> DirectionNum
-rotateDir orient dirNum =
-    case orient of
-        Positive ->
-            (dirNum + 1) % 4
-
-        Negative ->
-            (dirNum - 1) % 4
+possibleDirections : DirectionNum -> List DirectionNum
+possibleDirections dirNum =
+    [ dirNum + 1, dirNum + 3, dirNum ] |> List.map (\i -> i % 4)
 
 
 
@@ -158,15 +148,8 @@ borderEdges innerBorderPoints =
             |> Dict.fromList
 
 
-type alias StepData =
-    { orientation : Maybe Orientation
-    , point : Corner
-    , dirNum : DirectionNum
-    }
-
-
-borderStep : BorderDict -> StepData -> Maybe StepData
-borderStep dict ({ orientation, point, dirNum } as step) =
+borderStep : BorderDict -> ( Corner, DirectionNum ) -> Maybe ( Corner, DirectionNum )
+borderStep dict ( point, dirNum ) =
     let
         nextPoint =
             case Dict.get ( point, dirNum ) dict of
@@ -176,46 +159,33 @@ borderStep dict ({ orientation, point, dirNum } as step) =
                 Nothing ->
                     Debug.crash <| "current point (" ++ toString point ++ ") not on border"
 
-        nextStep =
-            { step | point = nextPoint }
-
-        handleOrientation orient =
-            let
-                nextDirNum =
-                    rotateDir orient dirNum
-            in
-                if Dict.member ( nextPoint, nextDirNum ) dict then
-                    Just { nextStep | dirNum = nextDirNum, orientation = Just orient }
-                else
-                    Nothing
+        handleDirection nextDirNum =
+            if Dict.member ( nextPoint, nextDirNum ) dict then
+                Just ( nextPoint, nextDirNum )
+            else
+                Nothing
     in
-        if Dict.member ( nextPoint, dirNum ) dict then
-            Just nextStep
-        else
-            case orientation of
-                Just orient ->
-                    handleOrientation orient
-
-                Nothing ->
-                    either (handleOrientation Positive) (handleOrientation Negative)
+        possibleDirections dirNum
+            |> List.map handleDirection
+            |> List.foldl either Nothing
 
 
-border : StepData -> BorderDict -> ( List Corner, BorderDict )
-border initial dict =
+border : ( Corner, DirectionNum ) -> BorderDict -> ( List Corner, BorderDict )
+border ( point, dirNum ) dict =
     let
         newDict =
-            dict |> Dict.remove ( initial.point, initial.dirNum )
+            dict |> Dict.remove ( point, dirNum )
     in
-        case borderStep dict initial of
+        case borderStep dict ( point, dirNum ) of
             Nothing ->
-                ( [ initial.point ], newDict )
+                ( [ point ], newDict )
 
             Just step ->
                 let
                     ( nextBorderPoints, nextDict ) =
                         border step newDict
                 in
-                    ( initial.point :: nextBorderPoints, nextDict )
+                    ( point :: nextBorderPoints, nextDict )
 
 
 borders : BorderDict -> List (List Corner)
@@ -224,16 +194,10 @@ borders borderDict =
         Nothing ->
             []
 
-        Just ( point, dirNum ) ->
+        Just key ->
             let
-                step =
-                    { point = point
-                    , dirNum = dirNum
-                    , orientation = Nothing
-                    }
-
                 ( aBorder, newDict ) =
-                    border step borderDict
+                    border key borderDict
             in
                 aBorder :: borders newDict
 
@@ -261,6 +225,7 @@ view scale fillColor area =
             polygon
                 [ fill "none"
                 , stroke <| colorToCssRgba area.color
+                , strokeWidth "2"
                 , points <| String.join " " <| List.map pointString <| border
                 ]
                 []

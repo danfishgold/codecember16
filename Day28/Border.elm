@@ -244,8 +244,8 @@ borders borderDict =
 --
 
 
-view : Int -> Area -> Svg msg
-view scale area =
+view : Int -> Color.Color -> Area -> Svg msg
+view scale fillColor area =
     let
         allBorders =
             area.points
@@ -268,7 +268,7 @@ view scale area =
                 []
 
         areaView =
-            Area.view scale { area | color = Color.rgba 0 0 0 0 }
+            Area.view scale { area | color = fillColor }
     in
         g []
             (areaView :: List.map borderView (allBorders))

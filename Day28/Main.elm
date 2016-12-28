@@ -121,19 +121,19 @@ view { size, areas, mouseShape, mouseCenter } =
         { rows, columns, scale } =
             size
 
-        areaView area =
-            Area.view scale area
+        areaView fillColor area =
+            Border.view scale fillColor area
 
         mouseAreaView =
             case mouseCenter of
                 Just center ->
-                    shapeAround (Color.rgba 0 0 0 0.5) mouseShape center |> areaView
+                    shapeAround Color.black mouseShape center |> areaView (Color.rgba 0 0 0 0)
 
                 Nothing ->
                     Svg.text ""
 
         areaViews =
-            areas |> List.map areaView
+            areas |> List.map (areaView Color.lightGray)
 
         svg =
             (areaViews ++ [ mouseAreaView ])

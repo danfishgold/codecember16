@@ -16,7 +16,6 @@ type alias Corner =
 type Orientation
     = Positive
     | Negative
-    | Undetermined
 
 
 type Direction
@@ -28,6 +27,10 @@ type Direction
 
 type alias DirectionNum =
     Int
+
+
+type alias BorderDict =
+    Dict ( Corner, DirectionNum ) Corner
 
 
 directionToInt : Direction -> DirectionNum
@@ -97,12 +100,14 @@ edgeFromCenter dirNum ( x, y ) =
             ( ( x, y - 1 ), ( x, y ) )
 
 
-nextDir : Orientation -> DirectionNum -> DirectionNum
-nextDir orient dirNum =
-    if orient == Positive || orient == Undetermined then
-        (dirNum + 1) % 4
-    else
-        (dirNum - 1) % 4
+rotateDir : Orientation -> DirectionNum -> DirectionNum
+rotateDir orient dirNum =
+    case orient of
+        Positive ->
+            (dirNum + 1) % 4
+
+        Negative ->
+            (dirNum - 1) % 4
 
 
 
@@ -128,7 +133,7 @@ innerBorder points =
             |> List.foldl Set.union Set.empty
 
 
-borderEdges : Set ( Center, DirectionNum ) -> Dict ( Corner, DirectionNum ) Corner
+borderEdges : Set ( Center, DirectionNum ) -> BorderDict
 borderEdges innerBorderPoints =
     let
         edge ( pt, dirNum ) =
@@ -141,9 +146,71 @@ borderEdges innerBorderPoints =
             |> Dict.fromList
 
 
+type alias StepData =
+    { orientation : Maybe Orientation
+    , point : Corner
+    , dirNum : DirectionNum
+    , dict : BorderDict
+    }
+
+
+aBorder : StepData -> Result Corner StepData
+aBorder ({ orientation, point, dirNum, dict } as step) =
+    let
+        nextPoint =
+            case Dict.get ( point, dirNum ) dict of
+                Just pt ->
+                    pt
+
+                Nothing ->
+                    Debug.crash <| "current point (" ++ toString point ++ ") not on border"
+
+        newDirAndOrientation =
+            if Dict.member ( nextPoint, dirNum ) dict then
+                Just ( dirNum, orientation )
+            else
+                case orientation of
+                    Just orient ->
+                        if Dict.member ( nextPoint, rotateDir orient dirNum ) dict then
+                            Just ( rotateDir orient dirNum, Just orient )
+                        else
+                            Nothing
+
+                    Nothing ->
+                        let
+                            positiveDirNum =
+                                rotateDir Positive dirNum
+
+                            negativeDirNum =
+                                rotateDir Negative dirNum
+                        in
+                            if Dict.member ( nextPoint, positiveDirNum ) dict then
+                                Just ( positiveDirNum, Just Positive )
+                            else if Dict.member ( nextPoint, positiveDirNum ) dict then
+                                Just ( negativeDirNum, Just Negative )
+                            else
+                                Nothing
+
+        makeNextStep ( nextDirNum, newOrientation ) =
+            { step
+                | orientation = newOrientation
+                , point = nextPoint
+                , dirNum = nextDirNum
+                , dict = Dict.remove ( point, dirNum ) dict
+            }
+    in
+        newDirAndOrientation
+            |> Maybe.map makeNextStep
+            |> Result.fromMaybe nextPoint
+
+
 borders : Set Center -> List (List Corner)
 borders points =
-    []
+    let
+        borderDict =
+            points |> innerBorder |> borderEdges
+    in
+        []
 
 
 

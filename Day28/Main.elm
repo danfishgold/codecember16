@@ -8,6 +8,7 @@ import Svg.Attributes exposing (width, height)
 import Color exposing (Color)
 import Mouse
 import Day27.Area as Area exposing (..)
+import Day28.Border as Border exposing (..)
 
 
 type alias Model =

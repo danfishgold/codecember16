@@ -114,6 +114,21 @@ rotateDir orient dirNum =
 --
 
 
+foldResult : (state -> Result res state) -> (state -> res) -> state -> ( state, List res )
+foldResult stepFn resFromState initial =
+    case stepFn initial of
+        Err finalResult ->
+            ( initial, [ finalResult ] )
+
+        Ok state ->
+            foldResult stepFn resFromState state
+                |> \( finalState, nextResults ) -> ( finalState, (resFromState state) :: nextResults )
+
+
+
+--
+
+
 innerBorder : Set Center -> Set ( Center, DirectionNum )
 innerBorder points =
     let
@@ -154,8 +169,8 @@ type alias StepData =
     }
 
 
-aBorder : StepData -> Result Corner StepData
-aBorder ({ orientation, point, dirNum, dict } as step) =
+borderStep : StepData -> Result Corner StepData
+borderStep ({ orientation, point, dirNum, dict } as step) =
     let
         nextPoint =
             case Dict.get ( point, dirNum ) dict of
@@ -204,13 +219,25 @@ aBorder ({ orientation, point, dirNum, dict } as step) =
             |> Result.fromMaybe nextPoint
 
 
-borders : Set Center -> List (List Corner)
-borders points =
-    let
-        borderDict =
-            points |> innerBorder |> borderEdges
-    in
-        []
+borders : BorderDict -> List (List Corner)
+borders borderDict =
+    case borderDict |> Dict.keys |> List.head of
+        Nothing ->
+            []
+
+        Just ( point, dirNum ) ->
+            let
+                step =
+                    { dict = borderDict
+                    , point = point
+                    , dirNum = dirNum
+                    , orientation = Nothing
+                    }
+
+                ( nextStep, border ) =
+                    foldResult borderStep .point step
+            in
+                border :: borders nextStep.dict
 
 
 
@@ -220,6 +247,12 @@ borders points =
 view : Int -> Area -> Svg msg
 view scale area =
     let
+        allBorders =
+            area.points
+                |> innerBorder
+                |> borderEdges
+                |> borders
+
         pointString ( x, y ) =
             ""
                 ++ toString (toFloat scale * (toFloat x + 0.5))
@@ -238,4 +271,4 @@ view scale area =
             Area.view scale { area | color = Color.rgba 0 0 0 0 }
     in
         g []
-            (areaView :: List.map borderView (borders area.points))
+            (areaView :: List.map borderView (allBorders))

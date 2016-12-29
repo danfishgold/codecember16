@@ -1,11 +1,10 @@
 module Waves exposing (..)
 
-import Html exposing (program)
-import Svg exposing (Svg, svg, circle, rect)
-import Svg.Attributes exposing (x, y, width, height, cx, cy, r, fill, stroke, strokeWidth)
+import Html exposing (Html, program)
+import Collage exposing (collage, rect, circle, move, filled, outlined, solid)
+import Element
 import Color
 import Color.Manipulate exposing (fadeOut)
-import Color.Convert exposing (colorToCssRgba)
 import Day29.Mouse as Mouse exposing (Position)
 import Time exposing (Time, second)
 import AnimationFrame
@@ -72,11 +71,18 @@ subscriptions model =
 update : Msg -> Model -> Model
 update msg model =
     case msg of
-        MouseDown pos ->
-            { model | mouseSource = Just ( pos, model.time ) }
-
-        MouseUp endPos ->
+        MouseDown ( x, y ) ->
             let
+                pos =
+                    ( x - model.width / 2, -y + model.height * 0.5 )
+            in
+                { model | mouseSource = Just ( pos, model.time ) }
+
+        MouseUp ( x, y ) ->
+            let
+                endPos =
+                    ( x - model.width / 2, -y + model.height * 0.5 )
+
                 newModel =
                     { model | mouseSource = Nothing }
             in
@@ -157,47 +163,36 @@ reflect t1 t2 waveSpeed ( origin, t0, lifetime ) reflector =
 --
 
 
-view : Model -> Svg Msg
+view : Model -> Html Msg
 view model =
     let
         reflector ( x, y ) =
-            circle
-                [ cx <| toString x
-                , cy <| toString y
-                , r "5"
-                , fill <| colorToCssRgba Color.red
-                ]
-                []
+            circle 5
+                |> filled Color.red
+                |> move ( x, y )
 
         wave ( ( x, y ), t0, lifetime ) =
             let
                 fo =
                     1 - (lifetime - (model.time - t0)) / model.waveLifetime
             in
-                circle
-                    [ cx <| toString x
-                    , cy <| toString y
-                    , r <| toString <| (model.time - t0) * model.waveSpeed
-                    , fill "none"
-                    , stroke <| colorToCssRgba (Color.red |> fadeOut fo)
-                    , strokeWidth "1"
-                    ]
-                    []
+                (model.time - t0)
+                    * model.waveSpeed
+                    |> circle
+                    |> outlined (Color.red |> fadeOut fo |> solid)
+                    |> move ( x, y )
 
         bg =
-            rect
-                [ x "0"
-                , y "0"
-                , width <| toString model.width
-                , height <| toString model.height
-                , fill "#fafafa"
-                , Mouse.down MouseDown
-                , Mouse.up MouseUp
-                ]
-                []
+            rect model.width model.height
+                |> filled (Color.rgb 250 250 250)
     in
-        (bg :: List.map reflector model.reflectors ++ List.map wave model.waves)
-            |> svg
-                [ width <| toString model.width
-                , height <| toString model.height
-                ]
+        Html.div
+            [ Mouse.down MouseDown
+            , Mouse.up MouseUp
+            ]
+            [ collage
+                (floor model.width)
+                (floor model.height)
+                (bg :: List.map reflector model.reflectors ++ List.map wave model.waves)
+                |> Element.toHtml
+            ]

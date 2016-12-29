@@ -16,11 +16,11 @@ type alias Model =
     , height : Float
     , mouseSource : Maybe ( Position, Time )
     , reflectors : List Position
-    , waves : List ( Position, Time )
+    , waves : List ( Position, Time, Float )
     , time : Time
     , generatorFrequency : Time
     , waveSpeed : Float
-    , waveDecayTime : Time
+    , waveLifetime : Time
     }
 
 
@@ -40,7 +40,7 @@ init width height =
       , time = 0
       , generatorFrequency = second
       , waveSpeed = 100 / second
-      , waveDecayTime = 4 * second
+      , waveLifetime = 4 * second
       }
     , Cmd.none
     )
@@ -93,10 +93,64 @@ update msg model =
 
         Tick dt ->
             let
-                newModel =
-                    { model | time = model.time + dt }
+                newTime =
+                    model.time + dt
+
+                filteredWaves =
+                    model.waves |> List.filter (\( _, t0, lifetime ) -> newTime - t0 <= lifetime)
+
+                reflectedWaves =
+                    filteredWaves
+                        |> List.map (reflect model.time newTime model.waveSpeed)
+                        |> List.map (model.reflectors |> flip List.filterMap)
+                        |> List.concat
+
+                newWaves =
+                    case model.mouseSource of
+                        Nothing ->
+                            []
+
+                        Just ( mouse, t0 ) ->
+                            let
+                                cycle =
+                                    (model.time - t0)
+                                        / model.generatorFrequency
+                                        |> ceiling
+                                        |> toFloat
+
+                                newWaveTime =
+                                    t0 + cycle * model.generatorFrequency
+                            in
+                                if cycle >= 1 && newTime >= newWaveTime then
+                                    [ ( mouse, newWaveTime, model.waveLifetime ) ]
+                                else
+                                    []
             in
-                newModel
+                { model
+                    | time = newTime
+                    , waves = newWaves ++ filteredWaves ++ reflectedWaves
+                }
+
+
+
+--
+
+
+dist : Position -> Position -> Float
+dist ( x1, y1 ) ( x2, y2 ) =
+    sqrt <| (x2 - x1) ^ 2 + (y2 - y1) ^ 2
+
+
+reflect : Time -> Time -> Float -> ( Position, Time, Float ) -> Position -> Maybe ( Position, Time, Float )
+reflect t1 t2 waveSpeed ( origin, t0, lifetime ) reflector =
+    let
+        reflectionTime =
+            dist origin reflector / waveSpeed
+    in
+        if reflectionTime > t1 - t0 && reflectionTime <= t2 - t0 then
+            Just ( reflector, t0 + reflectionTime, lifetime - reflectionTime )
+        else
+            Nothing
 
 
 
@@ -115,16 +169,17 @@ view model =
                 ]
                 []
 
-        wave ( ( x, y ), t0 ) =
+        wave ( ( x, y ), t0, lifetime ) =
             let
-                opac =
-                    (model.time - t0) / model.waveDecayTime
+                fo =
+                    1 - (lifetime - (model.time - t0)) / model.waveLifetime
             in
                 circle
                     [ cx <| toString x
                     , cy <| toString y
+                    , r <| toString <| (model.time - t0) * model.waveSpeed
                     , fill "none"
-                    , stroke <| colorToCssRgba (Color.red |> fadeOut opac)
+                    , stroke <| colorToCssRgba (Color.red |> fadeOut fo)
                     , strokeWidth "1"
                     ]
                     []

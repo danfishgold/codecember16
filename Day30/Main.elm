@@ -7,7 +7,7 @@ import Color exposing (Color)
 import Color.Convert exposing (colorToCssRgb)
 import Keyboard exposing (KeyCode)
 import Random
-import Random.Extra exposing (constant)
+import Random.Extra exposing (constant, sample, combine)
 
 
 type alias Model =
@@ -115,23 +115,56 @@ pairs xs =
             []
 
 
+dist : Point -> Point -> Float
+dist ( x1, y1 ) ( x2, y2 ) =
+    sqrt <| (x2 - x1) ^ 2 + (y2 - y1) ^ 2
+
+
+endPoint : Point -> Float -> Float -> Point
+endPoint ( x0, y0 ) r theta =
+    ( x0 + r * cos theta, y0 + r * sin theta )
+
+
 
 --
 
 
 refine : Lightning -> Random.Generator Lightning
 refine ( pts, lvl ) =
-    constant ( pts ++ pts ++ pts, lvl )
+    let
+        last =
+            firstAndLast pts |> Tuple.second
+
+        refinePair ( p1, p2 ) =
+            constant [ p1, p1, p1 ]
+    in
+        pts
+            |> pairs
+            |> List.map refinePair
+            |> combine
+            |> Random.map List.concat
+            |> Random.map (\pts -> ( pts ++ [ last ], lvl ))
 
 
 branchOut : Lightning -> Random.Generator Lightning
 branchOut ( pts, lvl ) =
-    case ( List.head pts, List.head <| List.drop (List.length pts - 1) pts ) of
-        ( Just first, Just last ) ->
-            constant ( [], lvl + 1 )
+    let
+        diam =
+            pts |> firstAndLast |> \( p1, p2 ) -> dist p1 p2
 
-        _ ->
-            constant ( [], lvl + 1 )
+        branchStart =
+            randomElement pts
+
+        branch start r theta =
+            ( [ start, endPoint start r theta ], lvl + 1 )
+    in
+        branchStart
+            |> Random.andThen
+                (\start ->
+                    Random.map2 (branch start)
+                        (Random.float 0.5 1 |> Random.map ((*) diam))
+                        (Random.float (pi) (2 * pi))
+                )
 
 
 

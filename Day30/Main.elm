@@ -120,6 +120,11 @@ dist ( x1, y1 ) ( x2, y2 ) =
     sqrt <| (x2 - x1) ^ 2 + (y2 - y1) ^ 2
 
 
+angle : Point -> Point -> Float
+angle ( x1, y1 ) ( x2, y2 ) =
+    atan2 (y2 - y1) (x2 - x1)
+
+
 endPoint : Point -> Float -> Float -> Point
 endPoint ( x0, y0 ) r theta =
     ( x0 + r * cos theta, y0 + r * sin theta )
@@ -136,7 +141,19 @@ refine ( pts, lvl ) =
             firstAndLast pts |> Tuple.second
 
         refinePair ( p1, p2 ) =
-            constant [ p1, p1, p1 ]
+            let
+                ( r, theta ) =
+                    ( dist p1 p2, angle p1 p2 )
+
+                mid p theta0 =
+                    Random.map2 (endPoint p)
+                        (Random.float (r / 4) (r / 3))
+                        (Random.float (theta0 - 0.5) (theta0 + 0.5))
+
+                refined mid1 mid2 =
+                    [ p1, mid1, mid2 ]
+            in
+                Random.map2 refined (mid p1 theta) (mid p2 (pi + theta))
     in
         pts
             |> pairs
@@ -163,7 +180,7 @@ branchOut ( pts, lvl ) =
                 (\start ->
                     Random.map2 (branch start)
                         (Random.float 0.5 1 |> Random.map ((*) diam))
-                        (Random.float (pi) (2 * pi))
+                        (Random.float (0) (pi))
                 )
 
 
@@ -183,7 +200,7 @@ update msg model =
         Add lightning ->
             ( { model | lightnings = lightning :: model.lightnings }
             , if level lightning < model.maxLevel then
-                Cmd.none
+                Random.generate Refine (branchOut lightning)
               else
                 Cmd.none
             )

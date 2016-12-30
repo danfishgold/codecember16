@@ -7,7 +7,8 @@ import Color exposing (Color)
 import Color.Convert exposing (colorToCssRgb)
 import Keyboard exposing (KeyCode)
 import Random
-import Random.Extra exposing (constant, sample, combine)
+import Random.Extra exposing (constant, sample, combine, rangeLengthList)
+import Task
 
 
 type alias Model =
@@ -43,8 +44,9 @@ type alias Level =
 
 type Msg
     = Key KeyCode
-    | Refine Lightning
     | Add Lightning
+    | BranchOut (List Lightning)
+    | Refine Lightning
 
 
 init : Float -> Float -> ( Model, Cmd Msg )
@@ -136,6 +138,11 @@ endPoint ( x0, y0 ) r theta =
     ( x0 + r * cos theta, y0 + r * sin theta )
 
 
+message : Msg -> Cmd Msg
+message msg =
+    Task.perform identity (Task.succeed msg)
+
+
 
 --
 
@@ -210,10 +217,15 @@ update msg model =
         Add lightning ->
             ( { model | lightnings = lightning :: model.lightnings }
             , if level lightning < model.maxLevel then
-                Random.generate Refine (branchOut model.width model.height lightning)
+                branchOut model.width model.height lightning
+                    |> rangeLengthList 1 2
+                    |> Random.generate BranchOut
               else
                 Cmd.none
             )
+
+        BranchOut branches ->
+            ( model, branches |> List.map (message << Refine) |> Cmd.batch )
 
         Refine lightning ->
             if pointCount lightning < 3 ^ model.iterations then

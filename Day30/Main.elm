@@ -262,13 +262,13 @@ color lvl =
             Color.white
 
         2 ->
-            Color.red
+            Color.white
 
         3 ->
-            Color.green
+            Color.lightBlue
 
         4 ->
             Color.blue
 
         _ ->
-            Color.purple
+            Color.darkBlue

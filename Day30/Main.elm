@@ -235,6 +235,7 @@ view model =
                     |> List.map (\( x, y ) -> toString x ++ "," ++ toString y)
                     |> String.join " "
                     |> points
+                , fill "none"
                 , stroke <| colorToCssRgb <| color level
                 , strokeWidth "1"
                 ]

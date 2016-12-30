@@ -54,8 +54,8 @@ init width height =
     { width = width
     , height = height
     , lightnings = []
-    , maxLevel = 6
-    , iterations = 4
+    , maxLevel = 5
+    , iterations = 5
     }
         |> restart
 

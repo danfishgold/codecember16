@@ -55,7 +55,13 @@ init width height =
     , maxLevel = 6
     , iterations = 4
     }
-        |> update (Refine ( [ ( width / 2, 0 ), ( width / 2, height ) ], 1 ))
+        |> restart
+
+
+restart : Model -> ( Model, Cmd Msg )
+restart ({ width, height } as model) =
+    Refine ( [ ( width / 2, 0 ), ( width / 2, height ) ], 1 )
+        |> flip update model
 
 
 main : Program Never Model Msg
@@ -163,14 +169,17 @@ refine ( pts, lvl ) =
             |> Random.map (\pts -> ( pts ++ [ last ], lvl ))
 
 
-branchOut : Lightning -> Random.Generator Lightning
-branchOut ( pts, lvl ) =
+branchOut : Float -> Float -> Lightning -> Random.Generator Lightning
+branchOut wd ht ( pts, lvl ) =
     let
         diam =
             pts |> firstAndLast |> \( p1, p2 ) -> dist p1 p2
 
         branchStart =
             randomElement pts
+
+        withinBounds ( x, y ) =
+            0 <= x && x <= wd && 0 <= y && y <= ht
 
         branch start r theta =
             ( [ start, endPoint start r theta ], lvl + 1 )
@@ -182,6 +191,7 @@ branchOut ( pts, lvl ) =
                         (Random.float 0.5 1 |> Random.map ((*) diam))
                         (Random.float (0) (pi))
                 )
+            |> Random.Extra.filter (\( pts, _ ) -> List.all withinBounds pts)
 
 
 
@@ -192,7 +202,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Key 32 ->
-            ( { model | lightnings = [] }, Cmd.none )
+            { model | lightnings = [] } |> restart
 
         Key _ ->
             ( model, Cmd.none )
@@ -200,7 +210,7 @@ update msg model =
         Add lightning ->
             ( { model | lightnings = lightning :: model.lightnings }
             , if level lightning < model.maxLevel then
-                Random.generate Refine (branchOut lightning)
+                Random.generate Refine (branchOut model.width model.height lightning)
               else
                 Cmd.none
             )

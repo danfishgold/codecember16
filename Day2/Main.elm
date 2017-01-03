@@ -71,7 +71,7 @@ view : Model -> Html Msg
 view colors =
     let
         d =
-            300
+            250
 
         n =
             List.length colors
@@ -113,26 +113,26 @@ view colors =
                 ]
     in
         div []
-            [ div []
+            [ colors
+                |> List.indexedMap (\i c -> square (properties i n) c)
+                |> svg
+                    [ width <| toString <| d * 2
+                    , height <| toString <| d * 2
+                    ]
+            , div []
                 [ button [ onClick One ] [ Html.text "1" ]
                 , button [ onClick OneVOne ] [ Html.text "1:1" ]
                 , button [ onClick OneVTwo ] [ Html.text "1:2" ]
                 , button [ onClick OneVThree ] [ Html.text "1:3" ]
                 , button [ onClick TwoVTwo ] [ Html.text "2:2" ]
                 ]
-            , colors
-                |> List.indexedMap (\i c -> square (properties i n) c)
-                |> svg
-                    [ width <| toString <| d * 2
-                    , height <| toString <| d * toFloat (ceiling (d / 2))
-                    ]
             ]
 
 
 main : Program Never Model Msg
 main =
     program
-        { init = ( [], Cmd.none )
+        { init = [] |> update OneVThree
         , update = update
         , view = view
         , subscriptions = always Sub.none

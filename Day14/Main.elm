@@ -1,4 +1,4 @@
-module Moiré exposing (..)
+module Moire exposing (..)
 
 import Html exposing (Html, program)
 import Svg exposing (Svg, svg, circle, g)

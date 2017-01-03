@@ -5,12 +5,10 @@ import Svg.Attributes exposing (points, fill, transform)
 import Svg.Attributes exposing (strokeWidth, stroke, strokeDasharray, x1, x2, y1, y2)
 import Svg.Attributes exposing (width, height)
 import Html exposing (program)
-import Window
 import Keyboard exposing (KeyCode)
 import Random
 import Random.Color
 import String
-import Task
 import Color exposing (Color)
 import Color.Convert exposing (colorToCssRgb)
 
@@ -21,14 +19,9 @@ type alias Model =
     , color3 : Color
     , lineColor : Color
     , shift : ( Float, Float )
-    , width : Float
+    , shapeWidth : Float
     , aspectRatio : Float
-    , window : WindowSize
     }
-
-
-type alias WindowSize =
-    { width : Float, height : Float }
 
 
 init : ( Model, Cmd Msg )
@@ -38,28 +31,15 @@ init =
       , color3 = Color.red
       , lineColor = Color.gray
       , shift = ( 0, 0 )
-      , width = 0.15
+      , shapeWidth = 0.15
       , aspectRatio = 1.5
-      , window = WindowSize 0 0
       }
-    , Cmd.batch
-        [ Task.perform WindowResize Window.size
-        , Random.generate SetModel (randomModel <| WindowSize 0 0)
-        ]
+    , Random.generate SetModel randomModel
     )
 
 
-pattern : WindowSize -> Int -> Model
-pattern window seed =
-    seed
-        |> Random.initialSeed
-        |> Random.step (randomModel window)
-        |> Tuple.first
-
-
 type Msg
-    = WindowResize Window.Size
-    | KeyPressed KeyCode
+    = KeyPressed KeyCode
     | SetModel Model
 
 
@@ -70,18 +50,8 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case (Debug.log "message" msg) of
-        WindowResize { width, height } ->
-            ( { model
-                | window =
-                    { width = toFloat width
-                    , height = toFloat height
-                    }
-              }
-            , Cmd.none
-            )
-
         KeyPressed 32 ->
-            ( model, Random.generate SetModel (randomModel model.window) )
+            ( model, Random.generate SetModel randomModel )
 
         KeyPressed _ ->
             ( model, Cmd.none )
@@ -96,8 +66,8 @@ update msg model =
 --
 
 
-randomModel : WindowSize -> Random.Generator Model
-randomModel window =
+randomModel : Random.Generator Model
+randomModel =
     let
         shift =
             Random.map2 (,)
@@ -123,9 +93,8 @@ randomModel window =
             , color3 = c3
             , lineColor = lc
             , shift = shift
-            , width = wd
+            , shapeWidth = wd
             , aspectRatio = ratio
-            , window = window
             }
     in
         Random.map4 model
@@ -141,10 +110,7 @@ randomModel window =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch
-        [ Keyboard.ups KeyPressed
-        , Window.resizes WindowResize
-        ]
+    Keyboard.ups KeyPressed
 
 
 
@@ -170,11 +136,11 @@ parallelogramColor model i j =
             model.color1
 
 
-translation : Model -> Int -> Int -> Svg.Attribute Msg
-translation { width, aspectRatio, shift, window } i j =
+translation : Model -> Float -> Float -> Int -> Int -> Svg.Attribute Msg
+translation { shapeWidth, aspectRatio, shift } width height i j =
     let
         wd =
-            width * window.width
+            shapeWidth * width
 
         dx =
             -wd * (Tuple.first shift) + (toFloat j - toFloat (i % 2) / 2) * wd
@@ -190,15 +156,15 @@ translation { width, aspectRatio, shift, window } i j =
             |> transform
 
 
-parallelogram : Model -> Int -> Int -> Svg Msg
-parallelogram ({ width, aspectRatio, window } as model) i j =
+parallelogram : Float -> Float -> Model -> Int -> Int -> Svg Msg
+parallelogram width height ({ shapeWidth, aspectRatio } as model) i j =
     let
         color =
             parallelogramColor model i j
                 |> colorToCssRgb
 
         wd =
-            width * window.width
+            shapeWidth * width
 
         pts =
             [ ( wd / 2, 0 )
@@ -212,21 +178,21 @@ parallelogram ({ width, aspectRatio, window } as model) i j =
         polygon
             [ points pts
             , fill color
-            , translation model i j
+            , translation model width height i j
             ]
             []
 
 
-lineGroup : Model -> Int -> Int -> Svg Msg
-lineGroup ({ width, aspectRatio, lineColor, window } as model) i j =
+lineGroup : Float -> Float -> Model -> Int -> Int -> Svg Msg
+lineGroup width height ({ shapeWidth, aspectRatio, lineColor } as model) i j =
     let
         ( wd, ht ) =
-            ( window.width * width / 4, window.width * width * aspectRatio / 4 )
+            ( width * shapeWidth / 4, height * shapeWidth * aspectRatio / 4 )
 
         lineProps =
             [ stroke <| colorToCssRgb lineColor
             , strokeWidth "1.5"
-            , translation model i j
+            , translation model width height i j
             , strokeDasharray "10, 5"
             ]
 
@@ -250,12 +216,12 @@ lineGroup ({ width, aspectRatio, lineColor, window } as model) i j =
             ]
 
 
-view : Model -> Svg Msg
-view ({ window, width, aspectRatio } as model) =
+view : Float -> Float -> Model -> Svg Msg
+view width height ({ shapeWidth, aspectRatio } as model) =
     let
         ( n, m ) =
-            ( ceiling (1 / width) + 2
-            , ceiling (1 / (width * aspectRatio / 2)) + 2
+            ( ceiling (1 / shapeWidth) + 2
+            , ceiling (1 / (shapeWidth * aspectRatio / 2)) + 2
             )
 
         row shape i =
@@ -268,12 +234,12 @@ view ({ window, width, aspectRatio } as model) =
                 |> g []
     in
         svg
-            [ Svg.Attributes.width <| toString <| window.width - 5
-            , Svg.Attributes.height <| toString <| window.height - 5
+            [ Svg.Attributes.width <| toString <| width
+            , Svg.Attributes.height <| toString <| height
             ]
             [ g []
-                [ repeat parallelogram
-                , repeat lineGroup
+                [ repeat (parallelogram width height)
+                , repeat (lineGroup width height)
                 ]
             ]
 
@@ -286,7 +252,7 @@ main : Program Never Model Msg
 main =
     program
         { init = init
-        , view = view
+        , view = view 500 500
         , update = update
         , subscriptions = subscriptions
         }

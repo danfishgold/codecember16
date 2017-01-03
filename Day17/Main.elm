@@ -1,6 +1,7 @@
 module Headache exposing (..)
 
 import Html exposing (program)
+import Helper exposing (project)
 import Svg exposing (Svg, svg, g)
 import Svg.Attributes exposing (width, height, transform, cx, cy, r, fill)
 import AnimationFrame
@@ -122,5 +123,5 @@ main =
         { init = init 500 500
         , subscriptions = subscriptions
         , update = update
-        , view = view
+        , view = view |> project 17
         }

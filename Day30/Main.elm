@@ -1,6 +1,7 @@
 module Lightning exposing (..)
 
 import Html exposing (program)
+import Helper exposing (project)
 import Svg exposing (Svg, svg, rect, polyline)
 import Svg.Attributes exposing (x, y, width, height, points, fill, stroke, strokeWidth)
 import Color exposing (Color)
@@ -72,7 +73,7 @@ main =
         { init = init 500 500
         , subscriptions = subscriptions
         , update = update
-        , view = view
+        , view = view |> project 30
         }
 
 

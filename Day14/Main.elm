@@ -1,6 +1,7 @@
 module Moire exposing (..)
 
 import Html exposing (Html, program)
+import Helper exposing (project)
 import Svg exposing (Svg, svg, circle, g)
 import Svg.Attributes as Attrs exposing (cx, cy, r, fill, transform)
 import Day14.Clip exposing (clip, clipPath)
@@ -131,5 +132,5 @@ main =
         { init = init 500 500
         , subscriptions = subscriptions
         , update = update
-        , view = view
+        , view = view |> project 14
         }

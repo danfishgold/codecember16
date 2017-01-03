@@ -1,6 +1,7 @@
 module Braids exposing (..)
 
 import Html exposing (Html, div)
+import Helper exposing (project)
 import Html.Attributes exposing (style)
 import Svg exposing (Svg, svg, g, line)
 import Svg.Attributes exposing (width, height, x1, y1, x2, y2, stroke, strokeWidth, strokeLinecap)
@@ -257,3 +258,4 @@ main =
         , braid3 |> view 15 30
         , braid2 |> view 15 30
         ]
+        |> \html -> project 23 (always html) <| ()

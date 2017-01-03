@@ -1,6 +1,7 @@
 module Starfield exposing (..)
 
 import Html exposing (Html, program)
+import Helper
 import Collage exposing (collage, rect, circle, move, filled)
 import Element
 import Color exposing (black, white)
@@ -136,5 +137,5 @@ main =
         { init = init
         , subscriptions = subscriptions
         , update = update
-        , view = view
+        , view = view |> Helper.project 10
         }

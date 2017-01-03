@@ -1,6 +1,7 @@
 module Palette exposing (..)
 
 import Html exposing (program)
+import Helper exposing (project)
 import Html exposing (Html, div, button, text)
 import Html.Events exposing (onClick)
 import Svg exposing (svg, g, rect, text, text_)
@@ -134,6 +135,6 @@ main =
     program
         { init = [] |> update OneVThree
         , update = update
-        , view = view
+        , view = view |> project 2
         , subscriptions = always Sub.none
         }

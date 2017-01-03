@@ -1,6 +1,7 @@
 module Anatoly exposing (..)
 
 import Html exposing (Html, program)
+import Helper exposing (project)
 import Time exposing (second, every, Time)
 import Color exposing (Color)
 import Random exposing (Generator, generate)
@@ -260,6 +261,6 @@ main =
     program
         { init = ( init 100, Cmd.none )
         , update = update
-        , view = view 5
+        , view = view 5 |> project 3
         , subscriptions = subscriptions
         }

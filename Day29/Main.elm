@@ -1,6 +1,7 @@
 module Waves exposing (..)
 
 import Html exposing (Html, program)
+import Helper exposing (project)
 import Collage exposing (collage, rect, circle, move, filled, outlined, solid)
 import Element
 import Color
@@ -51,7 +52,7 @@ main =
         { init = init 500 500
         , subscriptions = subscriptions
         , update = \msg model -> ( update msg model, Cmd.none )
-        , view = view
+        , view = view |> project 29
         }
 
 

@@ -1,6 +1,7 @@
 module Matrix exposing (..)
 
 import Html exposing (program)
+import Helper exposing (project)
 import Svg exposing (Svg, svg, rect, g, text, text_)
 import Svg.Attributes exposing (width, height, x, y, fill)
 import Time exposing (Time, second, every)
@@ -117,5 +118,5 @@ main =
         { init = init 500 500
         , subscriptions = subscriptions
         , update = update
-        , view = view
+        , view = view |> project 19
         }

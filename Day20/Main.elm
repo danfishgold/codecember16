@@ -1,6 +1,7 @@
 module Gravity exposing (..)
 
 import Html exposing (Html, program)
+import Helper exposing (project)
 import Svg exposing (Svg, svg, circle)
 import Svg.Keyed exposing (node)
 import Svg.Attributes exposing (width, height, cx, cy, r, fill)
@@ -164,5 +165,5 @@ main =
         { init = init 500 500
         , subscriptions = subscriptions
         , update = update
-        , view = view
+        , view = view |> project 20
         }

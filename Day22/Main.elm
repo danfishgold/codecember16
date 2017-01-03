@@ -1,6 +1,7 @@
 module Spirograph exposing (..)
 
 import Html exposing (Html, program)
+import Helper exposing (project)
 import Html exposing (div, input, button, text)
 import Html.Attributes as Attrs exposing (type_, style, defaultValue)
 import Html.Events exposing (onInput, onClick)
@@ -314,5 +315,5 @@ main =
         { init = ( init 500 500, Cmd.none )
         , subscriptions = subscriptions
         , update = \msg model -> ( update msg model, Cmd.none )
-        , view = view
+        , view = view |> project 22
         }

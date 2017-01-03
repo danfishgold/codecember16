@@ -1,6 +1,7 @@
 module Areas exposing (..)
 
 import Html exposing (program)
+import Helper exposing (project)
 import Html exposing (Html, div, button, text)
 import Html.Events exposing (onClick)
 import Svg exposing (svg)
@@ -157,5 +158,5 @@ main =
         { init = init 50 50 10
         , subscriptions = subscriptions
         , update = \msg model -> ( update msg model, Cmd.none )
-        , view = view
+        , view = view |> project 27
         }

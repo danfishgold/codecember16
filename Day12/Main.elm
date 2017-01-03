@@ -1,6 +1,7 @@
 module UrlParallax exposing (..)
 
 import Html exposing (program)
+import Helper
 import Html exposing (Html, div, text)
 import Window
 import Mouse
@@ -149,5 +150,5 @@ main =
         { init = init
         , subscriptions = subscriptions
         , update = update
-        , view = view
+        , view = view |> Helper.project 12
         }

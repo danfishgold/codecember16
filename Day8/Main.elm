@@ -1,6 +1,7 @@
 module Cradle exposing (..)
 
 import Html exposing (program)
+import Helper exposing (project)
 import Svg exposing (Svg, svg, polyline, circle)
 import Svg.Attributes exposing (width, height, points, stroke, strokeWidth, fill, style, cx, cy, r)
 import Pointer
@@ -299,5 +300,5 @@ main =
         { init = init
         , subscriptions = always Sub.none
         , update = \msg model -> ( update msg model, Cmd.none )
-        , view = view
+        , view = view |> project 8
         }

@@ -1,6 +1,7 @@
 module StarSystem exposing (..)
 
 import Html exposing (program)
+import Helper exposing (project)
 import Svg exposing (Svg, svg, g, circle)
 import Svg.Attributes exposing (width, height, cx, cy, r, stroke, strokeWidth, fill, transform)
 import AnimationFrame
@@ -210,5 +211,5 @@ main =
         { init = init 500 500 3 0.2
         , subscriptions = subscriptions
         , update = update
-        , view = view
+        , view = view |> project 21
         }

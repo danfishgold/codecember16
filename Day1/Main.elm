@@ -1,10 +1,11 @@
 module Argyle exposing (..)
 
+import Html exposing (program)
+import Helper exposing (project)
 import Svg exposing (Svg, svg, g, line, polygon)
 import Svg.Attributes exposing (points, fill, transform)
 import Svg.Attributes exposing (strokeWidth, stroke, strokeDasharray, x1, x2, y1, y2)
 import Svg.Attributes exposing (width, height)
-import Html exposing (program)
 import Keyboard exposing (KeyCode)
 import Random
 import Random.Color
@@ -252,7 +253,7 @@ main : Program Never Model Msg
 main =
     program
         { init = init
-        , view = view 500 500
+        , view = view 500 500 |> project 1
         , update = update
         , subscriptions = subscriptions
         }

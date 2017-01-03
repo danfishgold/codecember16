@@ -1,6 +1,7 @@
 module Automaton exposing (..)
 
 import Html exposing (program)
+import Helper exposing (project)
 import Html exposing (Html, div)
 import Html.Attributes exposing (style)
 import Svg exposing (Svg, svg, rect, g)
@@ -244,5 +245,5 @@ main =
         { init = init 70
         , subscriptions = subscriptions
         , update = update
-        , view = view 10
+        , view = view 10 |> project 5
         }

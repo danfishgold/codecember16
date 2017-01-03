@@ -1,6 +1,7 @@
 module Parallax exposing (..)
 
 import Html exposing (Html, program)
+import Helper
 import Collage exposing (collage, rect, circle, move, filled)
 import Element
 import Day2.Random
@@ -190,5 +191,5 @@ main =
         { init = init 40
         , subscriptions = subscriptions
         , update = update
-        , view = view
+        , view = view |> Helper.project 11
         }

@@ -1,6 +1,7 @@
 module Tiles exposing (..)
 
 import Html exposing (program)
+import Helper exposing (project)
 import Svg exposing (Svg, svg, g)
 import Svg.Attributes exposing (width, height, transform)
 import Day15.Polyomino as Poly exposing (Point, Letter(..))
@@ -186,5 +187,5 @@ main =
         { init = init 500 500
         , subscriptions = subscriptions
         , update = update
-        , view = view 8
+        , view = view 8 |> project 16
         }

@@ -1,6 +1,7 @@
 module Nicky exposing (..)
 
 import Html exposing (Html, program)
+import Helper exposing (project)
 
 
 -- import Svg exposing (Svg, svg, polygon)
@@ -192,5 +193,5 @@ main =
         { init = init
         , subscriptions = subscriptions
         , update = \msg model -> ( update msg model, Cmd.none )
-        , view = view
+        , view = view |> project 9
         }

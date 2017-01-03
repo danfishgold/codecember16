@@ -1,6 +1,7 @@
 module Frequency exposing (..)
 
 import Html exposing (program)
+import Helper exposing (project)
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (style)
 import AnimationFrame exposing (diffs)
@@ -167,5 +168,5 @@ main =
         { init = init events
         , subscriptions = subscriptions
         , update = update
-        , view = view "150px" "45px"
+        , view = view "150px" "45px" |> project 4
         }

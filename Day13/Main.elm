@@ -1,6 +1,7 @@
 module Main exposing (..)
 
 import Html exposing (program)
+import Helper exposing (project)
 import Svg exposing (Svg, svg, g, rect)
 import Svg.Attributes exposing (x, y, width, height, fill, transform)
 import Day13.Dvd as Dvd
@@ -154,5 +155,5 @@ main =
         { init = init 500 500
         , subscriptions = subscriptions
         , update = update
-        , view = view
+        , view = view |> project 13
         }

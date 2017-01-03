@@ -1,6 +1,7 @@
 module Boids exposing (..)
 
 import Html exposing (Html, program)
+import Helper exposing (project)
 import Collage exposing (collage, polygon, filled, move, rotate)
 import Element
 import AnimationFrame
@@ -213,5 +214,5 @@ main =
         { init = init 0.001 500 500
         , subscriptions = subscriptions
         , update = \msg model -> ( update msg model, Cmd.none )
-        , view = view
+        , view = view |> project 25
         }

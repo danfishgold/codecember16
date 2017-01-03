@@ -1,12 +1,13 @@
 module Borders exposing (..)
 
 import Html exposing (program)
+import Helper exposing (project)
 import Html exposing (Html, div, button, text)
 import Html.Events exposing (onClick)
 import Svg exposing (svg)
 import Svg.Attributes exposing (width, height)
 import Color exposing (Color)
-import Mouse
+import Pointer
 import Day27.Area as Area exposing (..)
 import Day28.Border as Border exposing (..)
 
@@ -61,18 +62,14 @@ init n m scale =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch
-        [ Mouse.moves (centerFromMouse model.size >> MouseMove)
-        , Mouse.downs <| always <| MouseDown True
-        , Mouse.ups <| always <| MouseDown False
-        ]
+    Sub.none
 
 
-centerFromMouse : Size -> Mouse.Position -> Maybe Center
-centerFromMouse { rows, columns, scale } { x, y } =
-    if 0 <= x && x <= scale * columns && 0 <= y && y <= scale * rows then
+centerFromMouse : Size -> Pointer.Position -> Maybe Center
+centerFromMouse { rows, columns, scale } ( x, y ) =
+    if 0 <= x && floor x <= scale * columns && 0 <= y && floor y <= scale * rows then
         Just
-            ( x // scale, y // scale )
+            ( floor x // scale, floor y // scale )
     else
         Nothing
 
@@ -141,6 +138,9 @@ view { size, areas, mouseShape, mouseCenter } =
                 |> Svg.svg
                     [ width <| toString <| scale * columns
                     , height <| toString <| scale * rows
+                    , Pointer.move (centerFromMouse size >> MouseMove)
+                    , Pointer.down <| always <| MouseDown True
+                    , Pointer.up <| always <| MouseDown False
                     ]
     in
         div []
@@ -160,5 +160,5 @@ main =
         { init = init 50 50 10
         , subscriptions = subscriptions
         , update = \msg model -> ( update msg model, Cmd.none )
-        , view = view
+        , view = view |> project 28
         }

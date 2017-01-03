@@ -1,6 +1,7 @@
 port module Loops exposing (..)
 
 import Html exposing (program)
+import Helper exposing (project)
 import Svg exposing (Svg, svg, path)
 import Svg.Attributes exposing (width, height, fill, d)
 import Color exposing (Color)
@@ -57,7 +58,7 @@ main =
         { init = init 100 100 400 1400 20
         , subscriptions = subscriptions
         , update = update
-        , view = view 5
+        , view = view 5 |> project 7
         }
 
 

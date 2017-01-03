@@ -1,7 +1,8 @@
 module Automaton exposing (..)
 
 import Html exposing (program)
-import Html exposing (Html, div)
+import Helper exposing (project)
+import Html exposing (Html, div, button, text)
 import Html.Attributes exposing (style)
 import Svg exposing (Svg, svg, rect, g)
 import Svg.Attributes exposing (x, y, width, height, fill, stroke, strokeWidth, transform)
@@ -29,6 +30,7 @@ message msg =
 type Msg
     = ShiftRule (List Int)
     | AddRowIfNeeded
+    | SetNumColors Int
 
 
 init : Int -> ( Model, Cmd Msg )
@@ -99,6 +101,9 @@ update msg model =
                     ( { model | levels = levels }, message AddRowIfNeeded )
             else
                 ( model, Cmd.none )
+
+        SetNumColors n ->
+            ( { model | colors = n }, Cmd.none )
 
 
 
@@ -231,7 +236,13 @@ view res model =
             , ( "align-items", "center" )
             ]
         ]
-        [ pyramid (res / 3) model, rules res model ]
+        [ pyramid (res / 3) model
+        , rules res model
+        , div []
+            [ button [ onClick <| SetNumColors 2 ] [ text "2 colors" ]
+            , button [ onClick <| SetNumColors 3 ] [ text "3 colors" ]
+            ]
+        ]
 
 
 
@@ -244,5 +255,5 @@ main =
         { init = init 120
         , subscriptions = subscriptions
         , update = update
-        , view = view 10
+        , view = view 10 |> project 5
         }

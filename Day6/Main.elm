@@ -1,6 +1,7 @@
 port module Poisson exposing (..)
 
 import Html exposing (programWithFlags)
+import Helper exposing (project)
 import Html exposing (Html, div, text)
 import Collage
 import Element
@@ -150,5 +151,5 @@ main =
         { init = init
         , subscriptions = subscriptions
         , update = update
-        , view = view
+        , view = view |> project 6
         }

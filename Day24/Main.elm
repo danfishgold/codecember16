@@ -1,6 +1,7 @@
 module Koalas exposing (..)
 
 import Html exposing (program)
+import Helper exposing (project)
 import Svg exposing (Svg, svg, rect)
 import Svg.Attributes exposing (x, y, width, height, fill)
 import Random
@@ -153,5 +154,5 @@ main =
         { init = init 500 500
         , subscriptions = subscriptions
         , update = update
-        , view = view
+        , view = view |> project 24
         }

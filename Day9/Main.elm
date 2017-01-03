@@ -1,6 +1,7 @@
 module Nicky exposing (..)
 
-import Html exposing (Html, program)
+import Html exposing (Html, program, div)
+import Helper exposing (project)
 
 
 -- import Svg exposing (Svg, svg, polygon)
@@ -10,7 +11,7 @@ import Html exposing (Html, program)
 import Collage exposing (polygon, group, filled, outlined, defaultLine)
 import Element
 import Color
-import Mouse
+import Pointer
 
 
 type alias Point =
@@ -47,7 +48,7 @@ init =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Mouse.moves <| \{ x, y } -> Mouse ( toFloat x, toFloat y )
+    Sub.none
 
 
 
@@ -179,6 +180,7 @@ view { mouse, polygons } =
         ]
             |> Collage.collage 500 500
             |> Element.toHtml
+            |> \canvas -> div [ Pointer.move Mouse ] [ canvas ]
 
 
 
@@ -191,5 +193,5 @@ main =
         { init = init
         , subscriptions = subscriptions
         , update = \msg model -> ( update msg model, Cmd.none )
-        , view = view
+        , view = view |> project 9
         }

@@ -1,12 +1,13 @@
 module Gravity exposing (..)
 
 import Html exposing (Html, program)
+import Helper exposing (project)
 import Svg exposing (Svg, svg, circle)
 import Svg.Keyed exposing (node)
 import Svg.Attributes exposing (width, height, cx, cy, r, fill)
 import Color exposing (Color)
 import Color.Convert exposing (colorToCssRgb)
-import Mouse
+import Pointer
 import AnimationFrame
 import Random
 import Day2.Random exposing (ryb1)
@@ -59,7 +60,6 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ AnimationFrame.diffs Tick
-        , Mouse.moves (\{ x, y } -> Mouse ( toFloat x, toFloat y ))
         , Time.every (0.01 * second)
             (\t ->
                 Mouse
@@ -151,6 +151,7 @@ view model =
             |> node "svg"
                 [ width <| toString model.width
                 , height <| toString model.height
+                , Pointer.move Mouse
                 ]
 
 
@@ -164,5 +165,5 @@ main =
         { init = init 500 500
         , subscriptions = subscriptions
         , update = update
-        , view = view
+        , view = view |> project 20
         }

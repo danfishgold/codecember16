@@ -1,6 +1,7 @@
 module RotatingPolygon exposing (..)
 
 import Html exposing (program)
+import Helper exposing (project)
 import Svg exposing (Svg, svg, g, defs, circle, line)
 import Svg.Attributes exposing (width, height, cx, cy, r, x1, y1, x2, y2, strokeWidth, fill)
 import Day18.Gradient exposing (gradient, gradientStroke)
@@ -205,5 +206,5 @@ main =
         { init = init 500 500
         , subscriptions = subscriptions
         , update = update
-        , view = view
+        , view = view |> project 18
         }

@@ -192,16 +192,16 @@ view braidWidth stepHeight ({ count, transitions } as model) =
         steps =
             List.length transitions
 
-        wd =
+        ht =
             braidWidth * toFloat count + spacing * toFloat (count + 1)
 
-        ht =
+        wd =
             toFloat (steps + 4) * stepHeight
 
-        x column =
+        y column =
             braidWidth / 2 + (braidWidth + spacing) * toFloat column
 
-        y step =
+        x step =
             stepHeight * toFloat (step + 2)
 
         colors =
@@ -212,10 +212,10 @@ view braidWidth stepHeight ({ count, transitions } as model) =
                 [ stroke <| colorToCssRgb c
                 , strokeWidth <| toString braidWidth
                 , strokeLinecap "round"
-                , x1 <| toString <| x i1
-                , x2 <| toString <| x i2
-                , y1 <| toString <| y s1
-                , y2 <| toString <| y s2
+                , y1 <| toString <| y i1
+                , y2 <| toString <| y i2
+                , x1 <| toString <| x s1
+                , x2 <| toString <| x s2
                 ]
                 []
 
@@ -253,7 +253,13 @@ view braidWidth stepHeight ({ count, transitions } as model) =
 
 main : Html Never
 main =
-    div []
+    div
+        [ style
+            [ ( "display", "flex" )
+            , ( "flex-direction", "column" )
+            , ( "align-items", "center" )
+            ]
+        ]
         [ braid4 |> view 15 30
         , braid3 |> view 15 30
         , braid2 |> view 15 30

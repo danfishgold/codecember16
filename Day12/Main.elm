@@ -121,10 +121,10 @@ update msg model =
                     url 70 model.objects f
             in
                 ( { model | fraction = f }
-                , if newUrl /= oldUrl then
-                    Navigation.modifyUrl (baseUrl ++ newUrl)
-                  else
-                    Cmd.none
+                , -- if newUrl /= oldUrl then
+                  --     Navigation.modifyUrl (baseUrl ++ newUrl)
+                  --   else
+                  Cmd.none
                 )
 
         None ->

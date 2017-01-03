@@ -23,8 +23,8 @@ link day =
             a [] []
 
         Just str ->
-            -- a [ href <| "http://fishgold.co/codecember16/Day" ++ toString day ]
-            a [ href <| "http://localhost:8000/Day" ++ toString day ++ "/Main.elm" ]
+            a [ href <| "http://fishgold.co/codecember16/Day" ++ toString day ]
+                -- a [ href <| "http://localhost:8000/Day" ++ toString day ++ "/Main.elm" ]
                 [ text <| "Day " ++ toString day ++ ": " ++ str ]
 
 

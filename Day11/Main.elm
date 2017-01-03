@@ -1,6 +1,6 @@
 module Parallax exposing (..)
 
-import Html exposing (Html, program)
+import Html exposing (Html, program, div)
 import Helper
 import Collage exposing (collage, rect, circle, move, filled)
 import Element

@@ -1,6 +1,6 @@
 module Nicky exposing (..)
 
-import Html exposing (Html, program)
+import Html exposing (Html, program, div)
 import Helper exposing (project)
 
 

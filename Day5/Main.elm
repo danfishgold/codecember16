@@ -236,7 +236,7 @@ view res model =
             , ( "align-items", "center" )
             ]
         ]
-        [ pyramid (res / 2) model
+        [ pyramid (res / 3) model
         , rules res model
         , div []
             [ button [ onClick <| SetNumColors 2 ] [ text "2 colors" ]
@@ -252,7 +252,7 @@ view res model =
 main : Program Never Model Msg
 main =
     program
-        { init = init 70
+        { init = init 120
         , subscriptions = subscriptions
         , update = update
         , view = view 10 |> project 5

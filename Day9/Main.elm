@@ -10,7 +10,7 @@ import Html exposing (Html, program)
 import Collage exposing (polygon, group, filled, outlined, defaultLine)
 import Element
 import Color
-import Mouse
+import Pointer
 
 
 type alias Point =
@@ -47,7 +47,7 @@ init =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Mouse.moves <| \{ x, y } -> Mouse ( toFloat x, toFloat y )
+    Sub.none
 
 
 
@@ -179,6 +179,7 @@ view { mouse, polygons } =
         ]
             |> Collage.collage 500 500
             |> Element.toHtml
+            |> \canvas -> div [ Pointer.move Mouse ] [ canvas ]
 
 
 

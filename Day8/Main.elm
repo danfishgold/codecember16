@@ -3,7 +3,7 @@ module Cradle exposing (..)
 import Html exposing (program)
 import Svg exposing (Svg, svg, polyline, circle)
 import Svg.Attributes exposing (width, height, points, stroke, strokeWidth, fill, style, cx, cy, r)
-import Mouse
+import Pointer
 
 
 type alias Point =
@@ -47,17 +47,16 @@ init =
 --
 
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
+events : Model -> List (Svg.Attribute Msg)
+events model =
     case model.mouse of
         Down _ ->
-            Mouse.ups <| \{ x, y } -> ChangedState <| Up ( toFloat x, toFloat y )
+            [ Pointer.up (ChangedState << Up) ]
 
         _ ->
-            Sub.batch
-                [ Mouse.downs <| \{ x, y } -> ChangedState <| Down ( toFloat x, toFloat y )
-                , Mouse.moves <| \{ x, y } -> ChangedState <| Moved (mousePosition model.mouse) ( toFloat x, toFloat y )
-                ]
+            [ Pointer.down (ChangedState << Down)
+            , Pointer.move (ChangedState << Moved (mousePosition model.mouse))
+            ]
 
 
 mousePosition : MouseState -> Point
@@ -273,7 +272,7 @@ view model =
                 ]
                 []
     in
-        svg [ width "500", height "500", style "pointer-events: none" ]
+        svg ([ width "500", height "500" ] ++ events model)
             ([ polyline
                 [ strokeWidth "2"
                 , stroke "black"
@@ -298,7 +297,7 @@ main : Program Never Model Msg
 main =
     program
         { init = init
-        , subscriptions = subscriptions
+        , subscriptions = always Sub.none
         , update = \msg model -> ( update msg model, Cmd.none )
         , view = view
         }

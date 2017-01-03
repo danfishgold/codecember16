@@ -5,7 +5,7 @@ import Collage exposing (collage, rect, circle, move, filled)
 import Element
 import Day2.Random
 import Random
-import Mouse
+import Pointer
 import Color exposing (Color)
 import Color.Manipulate exposing (lighten, darken)
 
@@ -38,7 +38,7 @@ type alias Rect =
 
 type Msg
     = SetRects (List Rect)
-    | Mouse Mouse.Position
+    | Mouse Pointer.Position
 
 
 init : Int -> ( Model, Cmd Msg )
@@ -59,7 +59,7 @@ init count =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Mouse.moves Mouse
+    Sub.none
 
 
 
@@ -95,11 +95,11 @@ update msg model =
         SetRects rects ->
             ( { model | rects = rects }, Cmd.none )
 
-        Mouse { x, y } ->
+        Mouse ( x, y ) ->
             let
                 eye =
-                    ( toFloat x / model.width - 0.5
-                    , -(toFloat y / model.height - 0.5)
+                    ( x / model.width - 0.5
+                    , -(y / model.height - 0.5)
                     )
             in
                 ( { model | eye = eye }, Cmd.none )
@@ -177,6 +177,7 @@ view { eye, width, height, rects } =
             |> List.map polygon
             |> Collage.collage (floor width) (floor height)
             |> Element.toHtml
+            |> \canvas -> div [ Pointer.move Mouse ] [ canvas ]
 
 
 

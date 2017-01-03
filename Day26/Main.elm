@@ -97,8 +97,14 @@ update msg model =
             ( { model
                 | cars =
                     let
+                        carSortValue { x, v, reactionTime } =
+                            if x + v * reactionTime > 1 then
+                                x - 1
+                            else
+                                x
+
                         cars =
-                            List.sortBy .x model.cars
+                            List.sortBy carSortValue model.cars
                     in
                         case cars of
                             [] ->

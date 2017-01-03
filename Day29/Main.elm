@@ -5,7 +5,7 @@ import Collage exposing (collage, rect, circle, move, filled, outlined, solid)
 import Element
 import Color
 import Color.Manipulate exposing (fadeOut)
-import Day29.Mouse as Mouse exposing (Position)
+import Pointer exposing (Position)
 import Time exposing (Time, second)
 import AnimationFrame
 
@@ -187,8 +187,8 @@ view model =
                 |> filled (Color.rgb 250 250 250)
     in
         Html.div
-            [ Mouse.down MouseDown
-            , Mouse.up MouseUp
+            [ Pointer.down MouseDown
+            , Pointer.up MouseUp
             ]
             [ collage
                 (floor model.width)

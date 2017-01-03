@@ -1,4 +1,4 @@
-module Day29.Mouse exposing (..)
+module Pointer exposing (..)
 
 import Json.Decode as Json
 import Html.Events exposing (on)
@@ -15,8 +15,8 @@ type alias Position =
 position : Json.Decoder Position
 position =
     Json.map2 (,)
-        (Json.field "clientX" Json.float)
-        (Json.field "clientY" Json.float)
+        (Json.field "offsetX" Json.float)
+        (Json.field "offsetY" Json.float)
 
 
 click : (Position -> msg) -> Attribute msg

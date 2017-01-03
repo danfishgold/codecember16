@@ -98,7 +98,11 @@ url n objects f0 =
             |> List.sortBy .z
             |> List.map (project f0)
             |> List.foldr addToString base
-            |> ((++) "http://localhost:8000/Day12/")
+
+
+baseUrl : String
+baseUrl =
+    "http://fishgold.co/codecember16/Day12/"
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -108,7 +112,19 @@ update msg model =
             ( { model | width = width }, Cmd.none )
 
         SetFraction f ->
-            ( { model | fraction = f }, Navigation.modifyUrl (url 70 model.objects f) )
+            let
+                oldUrl =
+                    url 70 model.objects model.fraction
+
+                newUrl =
+                    url 70 model.objects f
+            in
+                ( { model | fraction = f }
+                , if newUrl /= oldUrl then
+                    Navigation.modifyUrl (baseUrl ++ newUrl)
+                  else
+                    Cmd.none
+                )
 
         None ->
             ( model, Cmd.none )
@@ -120,7 +136,7 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div [] [ text "hey" ]
+    div [] [ text <| url 70 model.objects model.fraction ]
 
 
 

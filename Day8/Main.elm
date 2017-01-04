@@ -230,10 +230,7 @@ updateOnState state model =
             Moved p1 p2 ->
                 case ( model.previousClose, close ) of
                     ( prev, Edge i ) ->
-                        if prev == Edge i then
-                            { newModel | line = model.line |> moveBy i (delta p1 p2) }
-                        else
-                            { newModel | line = model.line |> moveTo i p2 }
+                        { newModel | line = model.line |> moveTo i p2 }
 
                     ( Middle i _, Middle j t ) ->
                         if i == j then

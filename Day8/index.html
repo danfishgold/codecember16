@@ -9293,42 +9293,30 @@ var _user$project$Cradle$updateOnState = F2(
 			case 'Down':
 				return newModel;
 			default:
-				var _p41 = _p36._1;
-				var _p40 = _p36._0;
+				var _p39 = _p36._1;
 				var _p37 = {ctor: '_Tuple2', _0: model.previousClose, _1: close};
 				_v16_2:
 				do {
 					if (_p37.ctor === '_Tuple2') {
 						switch (_p37._1.ctor) {
 							case 'Edge':
-								var _p38 = _p37._1._0;
-								return _elm_lang$core$Native_Utils.eq(
-									_p37._0,
-									_user$project$Cradle$Edge(_p38)) ? _elm_lang$core$Native_Utils.update(
+								return _elm_lang$core$Native_Utils.update(
 									newModel,
 									{
-										line: A3(
-											_user$project$Cradle$moveBy,
-											_p38,
-											A2(_user$project$Cradle$delta, _p40, _p41),
-											model.line)
-									}) : _elm_lang$core$Native_Utils.update(
-									newModel,
-									{
-										line: A3(_user$project$Cradle$moveTo, _p38, _p41, model.line)
+										line: A3(_user$project$Cradle$moveTo, _p37._1._0, _p39, model.line)
 									});
 							case 'Middle':
 								if (_p37._0.ctor === 'Middle') {
-									var _p39 = _p37._0._0;
-									return _elm_lang$core$Native_Utils.eq(_p39, _p37._1._0) ? _elm_lang$core$Native_Utils.update(
+									var _p38 = _p37._0._0;
+									return _elm_lang$core$Native_Utils.eq(_p38, _p37._1._0) ? _elm_lang$core$Native_Utils.update(
 										newModel,
 										{
 											line: A3(
 												_user$project$Cradle$insert,
-												_p39,
-												A3(_user$project$Cradle$fraction, _p37._1._1, _p40, _p41),
+												_p38,
+												A3(_user$project$Cradle$fraction, _p37._1._1, _p36._0, _p39),
 												model.line),
-											previousClose: _user$project$Cradle$Edge(_p39 + 1)
+											previousClose: _user$project$Cradle$Edge(_p38 + 1)
 										}) : newModel;
 								} else {
 									break _v16_2;
@@ -9345,27 +9333,27 @@ var _user$project$Cradle$updateOnState = F2(
 	});
 var _user$project$Cradle$update = F2(
 	function (msg, model) {
-		var _p42 = msg;
-		var _p43 = _p42._0;
+		var _p40 = msg;
+		var _p41 = _p40._0;
 		return function (model) {
 			return _elm_lang$core$Native_Utils.update(
 				model,
-				{mouse: _p43});
+				{mouse: _p41});
 		}(
-			A2(_user$project$Cradle$updateOnState, _p43, model));
+			A2(_user$project$Cradle$updateOnState, _p41, model));
 	});
 var _user$project$Cradle$ChangedState = function (a) {
 	return {ctor: 'ChangedState', _0: a};
 };
 var _user$project$Cradle$events = function (model) {
-	var _p44 = model.mouse;
-	if (_p44.ctor === 'Down') {
+	var _p42 = model.mouse;
+	if (_p42.ctor === 'Down') {
 		return {
 			ctor: '::',
 			_0: _user$project$Pointer$up(
-				function (_p45) {
+				function (_p43) {
 					return _user$project$Cradle$ChangedState(
-						_user$project$Cradle$Up(_p45));
+						_user$project$Cradle$Up(_p43));
 				}),
 			_1: {ctor: '[]'}
 		};
@@ -9373,19 +9361,19 @@ var _user$project$Cradle$events = function (model) {
 		return {
 			ctor: '::',
 			_0: _user$project$Pointer$down(
-				function (_p46) {
+				function (_p44) {
 					return _user$project$Cradle$ChangedState(
-						_user$project$Cradle$Down(_p46));
+						_user$project$Cradle$Down(_p44));
 				}),
 			_1: {
 				ctor: '::',
 				_0: _user$project$Pointer$move(
-					function (_p47) {
+					function (_p45) {
 						return _user$project$Cradle$ChangedState(
 							A2(
 								_user$project$Cradle$Moved,
 								_user$project$Cradle$mousePosition(model.mouse),
-								_p47));
+								_p45));
 					}),
 				_1: {ctor: '[]'}
 			}
@@ -9394,18 +9382,18 @@ var _user$project$Cradle$events = function (model) {
 };
 var _user$project$Cradle$view = function (model) {
 	var marker = F2(
-		function (color, _p48) {
-			var _p49 = _p48;
+		function (color, _p46) {
+			var _p47 = _p46;
 			return A2(
 				_elm_lang$svg$Svg$circle,
 				{
 					ctor: '::',
 					_0: _elm_lang$svg$Svg_Attributes$cx(
-						_elm_lang$core$Basics$toString(_p49._0)),
+						_elm_lang$core$Basics$toString(_p47._0)),
 					_1: {
 						ctor: '::',
 						_0: _elm_lang$svg$Svg_Attributes$cy(
-							_elm_lang$core$Basics$toString(_p49._1)),
+							_elm_lang$core$Basics$toString(_p47._1)),
 						_1: {
 							ctor: '::',
 							_0: _elm_lang$svg$Svg_Attributes$r('2'),
@@ -9456,15 +9444,15 @@ var _user$project$Cradle$view = function (model) {
 											' ',
 											A2(
 												_elm_lang$core$List$map,
-												function (_p50) {
-													var _p51 = _p50;
+												function (_p48) {
+													var _p49 = _p48;
 													return A2(
 														_elm_lang$core$Basics_ops['++'],
-														_elm_lang$core$Basics$toString(_p51._0),
+														_elm_lang$core$Basics$toString(_p49._0),
 														A2(
 															_elm_lang$core$Basics_ops['++'],
 															',',
-															_elm_lang$core$Basics$toString(_p51._1)));
+															_elm_lang$core$Basics$toString(_p49._1)));
 												},
 												model.line))),
 									_1: {ctor: '[]'}

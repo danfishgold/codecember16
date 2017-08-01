@@ -9,7 +9,6 @@ import Day15.View exposing (polygon)
 import Random
 import Keyboard exposing (KeyCode)
 import Color exposing (Color, white)
-import Day2.Random exposing (ryb1v3)
 
 
 type alias Tile =
@@ -20,25 +19,16 @@ type alias Model =
     { width : Float
     , height : Float
     , tile : Tile
-    , colors : ( Color, Color, Color, Color )
     }
 
 
 randomize : Cmd Msg
 randomize =
-    let
-        colors =
-            Random.generate SetColors (ryb1v3 1 0.5 35)
-
-        tile =
-            Random.generate SetTile (Poly.randomBN 3 7)
-    in
-        Cmd.batch [ colors, tile ]
+    Random.generate SetTile (Poly.randomBN 3 7)
 
 
 type Msg
     = SetTile Tile
-    | SetColors ( Color, Color, Color, Color )
     | Key KeyCode
 
 
@@ -47,7 +37,6 @@ init width height =
     ( { width = width
       , height = height
       , tile = ( [ D ], [ L ], [] )
-      , colors = ( white, white, white, white )
       }
     , randomize
     )
@@ -71,9 +60,6 @@ update msg model =
     case msg of
         SetTile tile ->
             ( { model | tile = tile |> Debug.log "tile" }, Cmd.none )
-
-        SetColors colors ->
-            ( { model | colors = colors }, Cmd.none )
 
         Key 32 ->
             ( model, randomize )
@@ -142,22 +128,19 @@ view scale model =
         word =
             Poly.bn model.tile
 
-        ( c1, c2, c3, c4 ) =
-            model.colors
-
         color i j =
             case ( i % 2 == 0, j % 2 == 0 ) of
                 ( True, True ) ->
-                    c1
+                    Color.white
 
                 ( True, False ) ->
-                    c2
+                    Color.lightGray
 
                 ( False, True ) ->
-                    c3
+                    Color.gray
 
                 ( False, False ) ->
-                    c4
+                    Color.darkGray
 
         poly i j =
             polygon scale (color i j) (p0 i j) word

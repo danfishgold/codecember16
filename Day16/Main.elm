@@ -59,7 +59,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         SetTile tile ->
-            ( { model | tile = tile |> Debug.log "tile" }, Cmd.none )
+            ( { model | tile = tile }, Cmd.none )
 
         Key 13 ->
             ( model, randomize )

@@ -291,11 +291,44 @@ view model =
 --
 
 
+description : String
+description =
+    """
+In 2014 I went to a hackathon with a friend.
+We made a tool that helped teach high-school students geometry using gamification (ugh.)
+I was in charge of the graphic part, where you could see the diagram,
+highlight parts of it (vertices, edges and angles,) and solve the given problem.
+
+The vertices' positions and the nodes connecting them were defined in Python,
+and then a horrible, disgusting, hacky JS code was generated to actually display it.
+It was honestly just horrible. I used Canvas instead of SVG and wrote so many hacks.
+
+This was the first time I wrote JS code and it actually went fine.
+We were among the 10 best groups, but that was probably because we did something
+educational and not because it was good.
+
+When I showed my horrible hack to someone, he asked my why I didn't use [D3](https://d3js.org).
+I probably kept a link to the D3 homepage open on my phone for a few months,
+but in 2015 I finally got into D3 and reimplemented the whole thing with much fewer hacks.
+
+Anyway, my point is that I wanted to make it easier to create these diagrams.
+That idea evolved into whatever this is.
+
+## Instructions
+
+Use the mouse
+
+* When you hover near a vertex you move it.
+* When you hover near an edge away from a vertex you split it.
+* When you hold the mouse button the above rules are ignored.
+"""
+
+
 main : Program Never Model Msg
 main =
     program
         { init = init
         , subscriptions = always Sub.none
         , update = \msg model -> ( update msg model, Cmd.none )
-        , view = view |> project 8
+        , view = view |> project 8 description
         }

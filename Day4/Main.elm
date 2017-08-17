@@ -162,11 +162,26 @@ events =
     ]
 
 
+
+--
+
+
+description : String
+description =
+    """
+**Originally from 2013**
+
+This is a reimplementation of [this](https://xkcd.com/1331/) by Randall Monroe.
+
+In 2013 I implemented it in Mathematica, which was probably the weirdest choice anyone could make.
+"""
+
+
 main : Program Never Model Msg
 main =
     program
         { init = init events
         , subscriptions = subscriptions
         , update = update
-        , view = view "150px" "45px" |> project 4
+        , view = view "150px" "45px" |> project 4 description
         }

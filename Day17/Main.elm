@@ -117,11 +117,21 @@ view model =
 --
 
 
+description : String
+description =
+    """
+This was a much needed rest from the previous days' projects,
+which were a little intense.
+
+It was inspired mostly by optical illusions.
+"""
+
+
 main : Program Never Model Msg
 main =
     program
         { init = init 500 500
         , subscriptions = subscriptions
         , update = update
-        , view = view |> project 17
+        , view = view |> project 17 description
         }

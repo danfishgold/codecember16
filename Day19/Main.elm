@@ -112,11 +112,25 @@ view model =
 --
 
 
+description : String
+description =
+    """
+Around 2008 I found an series of articles about development for beginners.
+It was written by [Ido Gendel](http://www.idogendel.com/),
+its name was a pun, and it discussed all sorts of topics. It was great.
+Almost 10 years later I still remember it and I still think it's great.
+
+There are two articles I especially liked.
+[This](http://net.nana10.co.il/Article/?ArticleID=613745) is one of them,
+and this project is a reimplementation of it. The second one is yet to come.
+"""
+
+
 main : Program Never Model Msg
 main =
     program
         { init = init 500 500
         , subscriptions = subscriptions
         , update = update
-        , view = view |> project 19
+        , view = view |> project 19 description
         }

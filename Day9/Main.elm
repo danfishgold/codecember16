@@ -186,11 +186,23 @@ view { mouse, polygons, frame } =
 --
 
 
+description : String
+description =
+    """
+This is an homage to [Nicky Case](http://ncase.me)'s
+[Sight and Light](http://ncase.me/sight-and-light/).
+
+It's more of a reimplementation than an homage, but still <3
+
+Here's a link to [Bret Victor](http://worrydream.com), because why not.
+"""
+
+
 main : Program Never Model Msg
 main =
     program
         { init = init
         , subscriptions = subscriptions
         , update = \msg model -> ( update msg model, Cmd.none )
-        , view = view |> project 9
+        , view = view |> project 9 description
         }

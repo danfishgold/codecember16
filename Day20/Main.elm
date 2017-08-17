@@ -159,11 +159,34 @@ view model =
 --
 
 
+description : String
+description =
+    """
+**Originally from March 2009**
+
+In 2009 or so I saved up enough money to buy an iPod Touch.
+I started getting into Objective-C.
+I'm not sure if I tried writing apps before I actually got an iPod,
+but that's not important, because over the years I started learning Obj-C (and
+quit soon after) about five times. Swift is what finally made it stick :)
+
+Anyway, my first project was this:
+you tap the screen and a square appers and starts growing.
+When you let go, it jumps up a little and drops below the screen.
+It was very fun.
+Version 1.1 included fart sounds when you let the square go.
+
+## Instructions
+
+Use the mouse to make tiny circles or just look at the ones in the big circle.
+"""
+
+
 main : Program Never Model Msg
 main =
     program
         { init = init 500 500
         , subscriptions = subscriptions
         , update = update
-        , view = view |> project 20
+        , view = view |> project 20 description
         }

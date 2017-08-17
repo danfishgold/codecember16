@@ -164,11 +164,24 @@ view scale model =
 --
 
 
+description : String
+description =
+    """
+A continuation from the previous day.
+
+I think this is nice.
+
+## Instructions
+
+Hit enter to randomize.
+"""
+
+
 main : Program Never Model Msg
 main =
     program
         { init = init 500 500
         , subscriptions = subscriptions
         , update = update
-        , view = view 8 |> project 16
+        , view = view 8 |> project 16 description
         }

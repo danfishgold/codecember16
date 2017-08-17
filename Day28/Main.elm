@@ -154,11 +154,25 @@ view { size, areas, mouseShape, mouseCenter } =
 --
 
 
+description : String
+description =
+    """
+In my opinion this is cooler than yesterday's project.
+
+## Instructions
+
+Click and drag to make shape outlines.
+You can use the "Cross" option to make this faster.
+Disconnected areas automatically get a different color. When two outlines meet
+they merge.
+"""
+
+
 main : Program Never Model Msg
 main =
     program
         { init = init 50 50 10
         , subscriptions = subscriptions
         , update = \msg model -> ( update msg model, Cmd.none )
-        , view = view |> project 28
+        , view = view |> project 28 description
         }

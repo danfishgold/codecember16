@@ -249,11 +249,22 @@ view width height ({ shapeWidth, aspectRatio } as model) =
 --
 
 
+description : String
+description =
+    """
+This was my first project.
+I wanted to make something similar to [this](https://avh4.github.io/codevember-2016/day-3/) by Aaron VonderHar and I like argyle.
+
+## Instructions
+Hit enter to randomize.
+"""
+
+
 main : Program Never Model Msg
 main =
     program
         { init = init
-        , view = view 500 500 |> project 1
+        , view = view 500 500 |> project 1 description
         , update = update
         , subscriptions = subscriptions
         }

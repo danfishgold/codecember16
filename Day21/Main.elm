@@ -205,11 +205,25 @@ view ({ time, planets, sunRadius } as model) =
 --
 
 
+description : String
+description =
+    """
+**Originally from May 2015**
+
+I think I saw something similar to this on [bl.ocks.org](https://bl.ocks.org)
+and wanted to make this. Space is nice, but this isn't physically accurate at all.
+
+## Instructions
+
+Hit enter to randomize.
+"""
+
+
 main : Program Never Model Msg
 main =
     program
         { init = init 500 500 3 0.2
         , subscriptions = subscriptions
         , update = update
-        , view = view |> project 21
+        , view = view |> project 21 description
         }

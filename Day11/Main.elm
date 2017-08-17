@@ -185,11 +185,35 @@ view { eye, width, height, rects } =
 --
 
 
+description : String
+description =
+    """
+The year was 2015. I took a Python course even though I already knew Python.
+During the lectures I mostly played
+[VVVVVV](http://thelettervsixtim.es)
+and [Luftrausers](http://luftrausers.com).
+
+At some point I tried to find something on GitHub and I was hypnotized by the
+[parallax](https://en.wikipedia.org/wiki/Parallax) in the 404 page.
+Faking 3D in CG is something I wanted to do, so here we are.
+
+These could have been just squares, but I made them cubes because of
+[xkcd](https://xkcd.com/8/)
+and because it looks so much better than just squares.
+
+This was super fun.
+
+## Instructions
+
+Move the mouse ¯\\\\\\_(ツ)\\_/¯
+"""
+
+
 main : Program Never Model Msg
 main =
     program
         { init = init 40
         , subscriptions = subscriptions
         , update = update
-        , view = view |> Helper.project 11
+        , view = view |> Helper.project 11 description
         }

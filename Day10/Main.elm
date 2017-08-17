@@ -131,11 +131,22 @@ view { width, height, points } =
 --
 
 
+description : String
+description =
+    """
+This is a Windows screen saver from my childhood.
+I couldn't find a lot of information about it so I'm not even sure if it's
+from Windows 98 or 95.
+
+Anyway, this was a snack in preparation for tomorrow's project.
+"""
+
+
 main : Program Never Model Msg
 main =
     program
         { init = init
         , subscriptions = subscriptions
         , update = update
-        , view = view |> Helper.project 10
+        , view = view |> Helper.project 10 description
         }

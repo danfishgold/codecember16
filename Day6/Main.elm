@@ -252,11 +252,37 @@ view wd ht model =
 --
 
 
+description : String
+description =
+    """
+This was probably the most difficult project I made. I rewrote it about four times.
+
+This is an example of the Poisson Disk sampling algorithm, which produces
+points which are randomly distributed *and* aren't too densly packed.
+This produces a more natural pattern than random sampling, where there could be
+points which are very close to other points and some which are relatively isolated.
+
+It's based on [Mike Bostock's version](https://bl.ocks.org/mbostock/19168c663618b7f07158),
+which is based on [Jason Davies's version](https://www.jasondavies.com/poisson-disc/).
+I first encountered this algorithm in
+[Mike's very good talk](https://bost.ocks.org/mike/algorithms/) about visualizing alorithms.
+
+## Discussion
+
+This is *so much slower* than the two linked versions.
+Probably because Elm doesn't handle random stuff very well.
+I tried using ports, which helped a little.
+
+This might also be due to some inefficient code, but I don't think an Elm version could
+produce results as impressive as Jason's.
+"""
+
+
 main : Program Never Model Msg
 main =
     program
         { init = init 30 0.05
         , subscriptions = subscriptions
         , update = update
-        , view = view 500 500 |> project 6
+        , view = view 500 500 |> project 6 description
         }

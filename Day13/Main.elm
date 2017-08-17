@@ -149,11 +149,18 @@ view model =
 --
 
 
+description : String
+description =
+    """
+CHILDHOOD MEMORIES
+"""
+
+
 main : Program Never Model Msg
 main =
     program
         { init = init 500 500
         , subscriptions = subscriptions
         , update = update
-        , view = view |> project 13
+        , view = view |> project 13 description
         }

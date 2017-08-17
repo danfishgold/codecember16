@@ -256,11 +256,29 @@ view res { side, current, previous } =
 --
 
 
+description : String
+description =
+    """
+**Originally from 2007**
+
+This was inspired by some coding example by my programming teacher from seventh grade, Anatoly Peymer.
+That example (of random numbers) was the first computer generated art I probably ever saw,
+and it really stuck with me.
+
+This is a little different from what Anatoly made (8-way symmetry instead of 4-)
+but credit goes to him.
+
+## Instructions
+Hit space to restart the process.
+Hit enter to skip to the final result.
+"""
+
+
 main : Program Never Model Msg
 main =
     program
         { init = ( init 100, Cmd.none )
         , update = update
-        , view = view 5 |> project 3
+        , view = view 5 |> project 3 description
         , subscriptions = subscriptions
         }

@@ -208,11 +208,19 @@ view { width, height, boids } =
 --
 
 
+description : String
+description =
+    """
+[Boids](https://en.wikipedia.org/wiki/Boids) are cool.
+I don't know when I first encountered them, but they sure are cool.
+"""
+
+
 main : Program Never Model Msg
 main =
     program
         { init = init 0.001 500 500
         , subscriptions = subscriptions
         , update = \msg model -> ( update msg model, Cmd.none )
-        , view = view |> project 25
+        , view = view |> project 25 description
         }

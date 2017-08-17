@@ -200,11 +200,21 @@ view model =
 --
 
 
+description : String
+description =
+    """
+**Originally from May 2015**
+
+I'm not sure what inspired me in May 2015. It probably had something to do with
+spirographs (more on that later) and Monument Valley.
+"""
+
+
 main : Program Never Model Msg
 main =
     program
         { init = init 500 500
         , subscriptions = subscriptions
         , update = update
-        , view = view |> project 18
+        , view = view |> project 18 description
         }

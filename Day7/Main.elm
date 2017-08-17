@@ -52,13 +52,32 @@ init width height minLength maxLength count =
 --
 
 
+description : String
+description =
+    """
+**Originally from October 2014**
+
+In 2014 someone showed me [snarXiv](http://snarxiv.org), which is a random scientific paper generator.
+It uses [Backus-Naur Form](https://en.wikipedia.org/wiki/Backus–Naur_form)
+to define the syntax and a perl script translates it to OCaml code.
+
+I made a BNF parser in Python, which generated beautiful, disgusting, lazy JS code.
+For some reason I decided to make a [random walk example](http://fishgold.co/BNF/paths).
+The result was very pretty, so I wanted to reimplement it in a way that wasn't super weird.
+
+## Instructions
+
+Hit enter to randomize.
+"""
+
+
 main : Program Never Model Msg
 main =
     program
         { init = init 100 100 400 1400 20
         , subscriptions = subscriptions
         , update = update
-        , view = view 5 |> project 7
+        , view = view 5 |> project 7 description
         }
 
 

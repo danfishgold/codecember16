@@ -249,11 +249,45 @@ view res model =
 --
 
 
+description : String
+description =
+    """
+I wanted to make this ever since I saw Stephen Wolfram's
+[TED talk](https://www.ted.com/talks/stephen_wolfram_computing_a_theory_of_everything).
+
+## Instructions
+This works in rows. The first row is white everywhere except in the middle, where it's black.
+
+Each row is determined pixel by pixel:
+The pixel checks the three pixels above it (above to the left, just above it, and above to the right).
+Based on the colors of these pixels its own color is determined by the tetris pieces.
+
+When you click one of the tetris pieces it changes the color of the bottom pixel and the rule is applied.
+
+### Example
+If you click the tetris piece that is
+
+    |white|black|white|
+          |white|
+
+then the bottom pixel (currently white) will turn black.
+Now the rule means that whenever a pixel is black
+and the pixel to the left and the one to the right are white,
+then the pixel below it will be black.
+
+Stephen Wolfram explains it better.
+
+## Discussion
+
+This is *very* slow.
+"""
+
+
 main : Program Never Model Msg
 main =
     program
         { init = init 120
         , subscriptions = subscriptions
         , update = update
-        , view = view 10 |> project 5
+        , view = view 10 |> project 5 description
         }

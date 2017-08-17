@@ -10566,7 +10566,7 @@ var _user$project$Loops$update = F2(
 				_1: _elm_lang$core$Platform_Cmd$none
 			};
 		} else {
-			if (_p6._0 === 32) {
+			if (_p6._0 === 13) {
 				return {
 					ctor: '_Tuple2',
 					_0: model,

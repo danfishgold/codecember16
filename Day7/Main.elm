@@ -123,7 +123,7 @@ update msg model =
         SetLoops loops ->
             ( { model | loops = loops }, Cmd.none )
 
-        Key 32 ->
+        Key 13 ->
             ( model
             , requestLoops
                 ( model.width

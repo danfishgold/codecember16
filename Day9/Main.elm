@@ -175,7 +175,7 @@ view { mouse, polygons, frame } =
         [ frame |> polygon |> filled Color.black
         , shapes |> List.map (filled Color.white) |> group
         , shapes |> List.map (outlined defaultLine) |> group
-        , sources 10 10 |> List.concatMap lightAreas |> group
+        , sources 5 10 |> List.concatMap lightAreas |> group
         ]
             |> Collage.collage 500 500
             |> Element.toHtml

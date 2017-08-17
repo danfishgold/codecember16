@@ -71,16 +71,7 @@ car x =
 description : String
 description =
     """
-"""
-
-
-main : Program Never Model Msg
-main =
-    program
-        { init = init 500 500 35
-        , subscriptions = subscriptions
-        , update = update
-        , view = view |> project 26 descriptionI like systems where local changes cause a global trend.
+I like systems where local changes cause a global trend.
 Among all these projects, four are examples of such systems, including this one.
 
 At first I tried to come up with a model for trafic, but that proved to be much
@@ -94,7 +85,16 @@ This was a lot of fun.
 ## Instructions
 
 Hover over the ring road to create a trafic jam.
+"""
 
+
+main : Program Never Model Msg
+main =
+    program
+        { init = init 500 500 35
+        , subscriptions = subscriptions
+        , update = update
+        , view = view |> project 26 description
         }
 
 

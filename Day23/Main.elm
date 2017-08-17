@@ -251,6 +251,16 @@ view braidWidth stepHeight ({ count, transitions } as model) =
 --
 
 
+description : String
+description =
+    """
+Inspired by [this](http://sortvis.org), which was mentioned in
+[Mike Bostock's talk about visualizing algorithms](https://bost.ocks.org/mike/algorithms/).
+
+This was fun but also annoying.
+"""
+
+
 main : Html Never
 main =
     div
@@ -264,4 +274,4 @@ main =
         , braid3 |> view 15 30
         , braid2 |> view 15 30
         ]
-        |> \html -> project 23 (always html) <| ()
+        |> \html -> project 23 description (always html) <| ()

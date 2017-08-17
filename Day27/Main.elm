@@ -152,11 +152,31 @@ view { size, areas, mouseShape, mouseCenter } =
 --
 
 
+description : String
+description =
+    """
+This seemed like a cool concept.
+I was actually going for what I accomplished in the next day, but it took some time.
+
+I tried several implementations but I think I like the result.
+
+This isn't inspired by anything specific.
+Nothing is as it seems and everything is random.
+
+## Instructions
+
+Click and drag to make shapes.
+You can use the "Cross" option to make this faster.
+Disconnected areas automatically get a different color. When two areas meet
+they merge.
+"""
+
+
 main : Program Never Model Msg
 main =
     program
         { init = init 50 50 10
         , subscriptions = subscriptions
         , update = \msg model -> ( update msg model, Cmd.none )
-        , view = view |> project 27
+        , view = view |> project 27 description
         }

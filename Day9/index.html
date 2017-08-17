@@ -11105,8 +11105,6 @@ var _evancz$elm_markdown$Markdown$Options = F4(
 	function (a, b, c, d) {
 		return {githubFlavored: a, defaultHighlighting: b, sanitize: c, smartypants: d};
 	});
-var _user$project$Helper$descriptions = _elm_lang$core$Array$fromList(
-	{ctor: '[]'});
 var _user$project$Helper$titles = _elm_lang$core$Array$fromList(
 	{
 		ctor: '::',
@@ -11299,8 +11297,8 @@ var _user$project$Helper$title = function (day) {
 			});
 	}
 };
-var _user$project$Helper$project = F3(
-	function (day, proj, model) {
+var _user$project$Helper$project = F4(
+	function (day, description, proj, model) {
 		var header = A2(
 			_elm_lang$html$Html$div,
 			{
@@ -11338,16 +11336,21 @@ var _user$project$Helper$project = F3(
 					}
 				}
 			});
-		var description = A2(
-			_elm_lang$core$Maybe$withDefault,
-			'',
-			A2(_elm_lang$core$Array$get, day - 1, _user$project$Helper$descriptions));
 		var tomorrow = A2(_elm_lang$core$Array$get, day, _user$project$Helper$titles);
 		var yesterday = A2(_elm_lang$core$Array$get, day - 2, _user$project$Helper$titles);
 		var today = A2(_elm_lang$core$Array$get, day - 1, _user$project$Helper$titles);
 		return A2(
 			_elm_lang$html$Html$div,
-			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$style(
+					{
+						ctor: '::',
+						_0: {ctor: '_Tuple2', _0: 'font-family', _1: 'sans-serif'},
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			},
 			{
 				ctor: '::',
 				_0: A2(
@@ -11404,8 +11407,20 @@ var _user$project$Helper$project = F3(
 							_0: _elm_lang$html$Html_Attributes$style(
 								{
 									ctor: '::',
-									_0: {ctor: '_Tuple2', _0: 'padding', _1: '0 50px'},
-									_1: {ctor: '[]'}
+									_0: {ctor: '_Tuple2', _0: 'margin', _1: '0 auto'},
+									_1: {
+										ctor: '::',
+										_0: {ctor: '_Tuple2', _0: 'width', _1: '70vw'},
+										_1: {
+											ctor: '::',
+											_0: {ctor: '_Tuple2', _0: 'max-width', _1: '800px'},
+											_1: {
+												ctor: '::',
+												_0: {ctor: '_Tuple2', _0: 'padding-bottom', _1: '50px'},
+												_1: {ctor: '[]'}
+											}
+										}
+									}
 								}),
 							_1: {ctor: '[]'}
 						},
@@ -11446,6 +11461,7 @@ var _user$project$Pointer$move = function (msg) {
 		'mousemove',
 		A2(_elm_lang$core$Json_Decode$map, msg, _user$project$Pointer$position));
 };
+var _user$project$Nicky$description = '\nThis is an homage to [Nicky Case](http://ncase.me)\'s\n[Sight and Light](http://ncase.me/sight-and-light/).\n\nIt\'s more of a reimplementation than an homage, but still <3\n\nHere\'s a link to [Bret Victor](http://worrydream.com), because why not.\n';
 var _user$project$Nicky$update = F2(
 	function (msg, model) {
 		var _p0 = msg;
@@ -11634,21 +11650,54 @@ var _user$project$Nicky$init = {
 						ctor: '::',
 						_0: {
 							ctor: '::',
-							_0: {ctor: '_Tuple2', _0: -250, _1: -250},
+							_0: {ctor: '_Tuple2', _0: -60, _1: -190},
 							_1: {
 								ctor: '::',
-								_0: {ctor: '_Tuple2', _0: -250, _1: 250},
+								_0: {ctor: '_Tuple2', _0: -70, _1: -210},
 								_1: {
 									ctor: '::',
-									_0: {ctor: '_Tuple2', _0: 250, _1: 250},
+									_0: {ctor: '_Tuple2', _0: -190, _1: -170},
 									_1: {
 										ctor: '::',
-										_0: {ctor: '_Tuple2', _0: 250, _1: -250},
+										_0: {ctor: '_Tuple2', _0: -160, _1: -160},
 										_1: {ctor: '[]'}
 									}
 								}
 							}
 						},
+						_1: {
+							ctor: '::',
+							_0: {
+								ctor: '::',
+								_0: {ctor: '_Tuple2', _0: 50, _1: 50},
+								_1: {
+									ctor: '::',
+									_0: {ctor: '_Tuple2', _0: 70, _1: 90},
+									_1: {
+										ctor: '::',
+										_0: {ctor: '_Tuple2', _0: 130, _1: 20},
+										_1: {ctor: '[]'}
+									}
+								}
+							},
+							_1: {ctor: '[]'}
+						}
+					}
+				}
+			}
+		},
+		frame: {
+			ctor: '::',
+			_0: {ctor: '_Tuple2', _0: -250, _1: -250},
+			_1: {
+				ctor: '::',
+				_0: {ctor: '_Tuple2', _0: -250, _1: 250},
+				_1: {
+					ctor: '::',
+					_0: {ctor: '_Tuple2', _0: 250, _1: 250},
+					_1: {
+						ctor: '::',
+						_0: {ctor: '_Tuple2', _0: 250, _1: -250},
 						_1: {ctor: '[]'}
 					}
 				}
@@ -11658,22 +11707,24 @@ var _user$project$Nicky$init = {
 	},
 	_1: _elm_lang$core$Platform_Cmd$none
 };
-var _user$project$Nicky$Model = F2(
-	function (a, b) {
-		return {polygons: a, mouse: b};
+var _user$project$Nicky$Model = F3(
+	function (a, b, c) {
+		return {polygons: a, frame: b, mouse: c};
 	});
 var _user$project$Nicky$Mouse = function (a) {
 	return {ctor: 'Mouse', _0: a};
 };
 var _user$project$Nicky$view = function (_p23) {
 	var _p24 = _p23;
-	var _p28 = _p24.polygons;
-	var _p27 = _p24.mouse;
-	var areas = function (source) {
+	var _p29 = _p24.polygons;
+	var _p28 = _p24.mouse;
+	var _p27 = _p24.frame;
+	var shapes = A2(_elm_lang$core$List$map, _evancz$elm_graphics$Collage$polygon, _p29);
+	var lightAreas = function (source) {
 		return A2(
 			_elm_lang$core$List$map,
 			_evancz$elm_graphics$Collage$filled(
-				A4(_elm_lang$core$Color$rgba, 0, 0, 0, 0.2)),
+				A4(_elm_lang$core$Color$rgba, 255, 255, 255, 0.3)),
 			A2(
 				_elm_lang$core$List$map,
 				_evancz$elm_graphics$Collage$polygon,
@@ -11696,12 +11747,15 @@ var _user$project$Nicky$view = function (_p23) {
 						};
 					},
 					_user$project$Nicky$pairs(
-						A2(_user$project$Nicky$destinations, source, _p28)))));
+						A2(
+							_user$project$Nicky$destinations,
+							source,
+							{ctor: '::', _0: _p27, _1: _p29})))));
 	};
 	var actualMouse = {
 		ctor: '_Tuple2',
-		_0: _elm_lang$core$Tuple$first(_p27) - 250,
-		_1: 250 - _elm_lang$core$Tuple$second(_p27)
+		_0: _elm_lang$core$Tuple$first(_p28) - 250,
+		_1: 250 - _elm_lang$core$Tuple$second(_p28)
 	};
 	var sources = F2(
 		function (dist, n) {
@@ -11749,19 +11803,34 @@ var _user$project$Nicky$view = function (_p23) {
 				500,
 				{
 					ctor: '::',
-					_0: _evancz$elm_graphics$Collage$group(
-						A2(
-							_elm_lang$core$List$map,
-							_evancz$elm_graphics$Collage$outlined(_evancz$elm_graphics$Collage$defaultLine),
-							A2(_elm_lang$core$List$map, _evancz$elm_graphics$Collage$polygon, _p28))),
+					_0: A2(
+						_evancz$elm_graphics$Collage$filled,
+						_elm_lang$core$Color$black,
+						_evancz$elm_graphics$Collage$polygon(_p27)),
 					_1: {
 						ctor: '::',
 						_0: _evancz$elm_graphics$Collage$group(
 							A2(
-								_elm_lang$core$List$concatMap,
-								areas,
-								A2(sources, 10, 10))),
-						_1: {ctor: '[]'}
+								_elm_lang$core$List$map,
+								_evancz$elm_graphics$Collage$filled(_elm_lang$core$Color$white),
+								shapes)),
+						_1: {
+							ctor: '::',
+							_0: _evancz$elm_graphics$Collage$group(
+								A2(
+									_elm_lang$core$List$map,
+									_evancz$elm_graphics$Collage$outlined(_evancz$elm_graphics$Collage$defaultLine),
+									shapes)),
+							_1: {
+								ctor: '::',
+								_0: _evancz$elm_graphics$Collage$group(
+									A2(
+										_elm_lang$core$List$concatMap,
+										lightAreas,
+										A2(sources, 5, 10))),
+								_1: {ctor: '[]'}
+							}
+						}
 					}
 				})));
 };
@@ -11777,7 +11846,7 @@ var _user$project$Nicky$main = _elm_lang$html$Html$program(
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			}),
-		view: A2(_user$project$Helper$project, 9, _user$project$Nicky$view)
+		view: A3(_user$project$Helper$project, 9, _user$project$Nicky$description, _user$project$Nicky$view)
 	})();
 var Elm = {};
 Elm['Nicky'] = Elm['Nicky'] || {};

@@ -148,11 +148,21 @@ view model =
 --
 
 
+description : String
+description =
+    """
+[The Useless Web](http://www.theuselessweb.com) is a beautiful website.
+It brought me to [koalas to the max](http://koalastothemax.com).
+
+This is an homage, mostly because recreating it would have been dificult.
+"""
+
+
 main : Program Never Model Msg
 main =
     program
         { init = init 500 500
         , subscriptions = subscriptions
         , update = update
-        , view = view |> project 24
+        , view = view |> project 24 description
         }

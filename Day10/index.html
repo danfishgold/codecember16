@@ -11989,8 +11989,6 @@ var _evancz$elm_markdown$Markdown$Options = F4(
 	function (a, b, c, d) {
 		return {githubFlavored: a, defaultHighlighting: b, sanitize: c, smartypants: d};
 	});
-var _user$project$Helper$descriptions = _elm_lang$core$Array$fromList(
-	{ctor: '[]'});
 var _user$project$Helper$titles = _elm_lang$core$Array$fromList(
 	{
 		ctor: '::',
@@ -12183,8 +12181,8 @@ var _user$project$Helper$title = function (day) {
 			});
 	}
 };
-var _user$project$Helper$project = F3(
-	function (day, proj, model) {
+var _user$project$Helper$project = F4(
+	function (day, description, proj, model) {
 		var header = A2(
 			_elm_lang$html$Html$div,
 			{
@@ -12222,16 +12220,21 @@ var _user$project$Helper$project = F3(
 					}
 				}
 			});
-		var description = A2(
-			_elm_lang$core$Maybe$withDefault,
-			'',
-			A2(_elm_lang$core$Array$get, day - 1, _user$project$Helper$descriptions));
 		var tomorrow = A2(_elm_lang$core$Array$get, day, _user$project$Helper$titles);
 		var yesterday = A2(_elm_lang$core$Array$get, day - 2, _user$project$Helper$titles);
 		var today = A2(_elm_lang$core$Array$get, day - 1, _user$project$Helper$titles);
 		return A2(
 			_elm_lang$html$Html$div,
-			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$style(
+					{
+						ctor: '::',
+						_0: {ctor: '_Tuple2', _0: 'font-family', _1: 'sans-serif'},
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			},
 			{
 				ctor: '::',
 				_0: A2(
@@ -12288,8 +12291,20 @@ var _user$project$Helper$project = F3(
 							_0: _elm_lang$html$Html_Attributes$style(
 								{
 									ctor: '::',
-									_0: {ctor: '_Tuple2', _0: 'padding', _1: '0 50px'},
-									_1: {ctor: '[]'}
+									_0: {ctor: '_Tuple2', _0: 'margin', _1: '0 auto'},
+									_1: {
+										ctor: '::',
+										_0: {ctor: '_Tuple2', _0: 'width', _1: '70vw'},
+										_1: {
+											ctor: '::',
+											_0: {ctor: '_Tuple2', _0: 'max-width', _1: '800px'},
+											_1: {
+												ctor: '::',
+												_0: {ctor: '_Tuple2', _0: 'padding-bottom', _1: '50px'},
+												_1: {ctor: '[]'}
+											}
+										}
+									}
 								}),
 							_1: {ctor: '[]'}
 						},
@@ -12298,6 +12313,7 @@ var _user$project$Helper$project = F3(
 				}
 			});
 	});
+var _user$project$Starfield$description = '\nThis is a Windows screen saver from my childhood.\nI couldn\'t find a lot of information about it so I\'m not even sure if it\'s\nfrom Windows 98 or 95.\n\nAnyway, this was a snack in preparation for tomorrow\'s project.\n';
 var _user$project$Starfield$inFrame = function (_p0) {
 	var _p1 = _p0;
 	var _p4 = _p1._2;
@@ -12424,7 +12440,7 @@ var _user$project$Starfield$main = _elm_lang$html$Html$program(
 		init: _user$project$Starfield$init,
 		subscriptions: _user$project$Starfield$subscriptions,
 		update: _user$project$Starfield$update,
-		view: A2(_user$project$Helper$project, 10, _user$project$Starfield$view)
+		view: A3(_user$project$Helper$project, 10, _user$project$Starfield$description, _user$project$Starfield$view)
 	})();
 var Elm = {};
 Elm['Starfield'] = Elm['Starfield'] || {};

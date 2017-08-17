@@ -10132,8 +10132,6 @@ var _user$project$Day2_Ryb$Rgba = F4(
 		return {red: a, green: b, blue: c, alpha: d};
 	});
 
-var _user$project$Helper$descriptions = _elm_lang$core$Array$fromList(
-	{ctor: '[]'});
 var _user$project$Helper$titles = _elm_lang$core$Array$fromList(
 	{
 		ctor: '::',
@@ -10326,8 +10324,8 @@ var _user$project$Helper$title = function (day) {
 			});
 	}
 };
-var _user$project$Helper$project = F3(
-	function (day, proj, model) {
+var _user$project$Helper$project = F4(
+	function (day, description, proj, model) {
 		var header = A2(
 			_elm_lang$html$Html$div,
 			{
@@ -10365,16 +10363,21 @@ var _user$project$Helper$project = F3(
 					}
 				}
 			});
-		var description = A2(
-			_elm_lang$core$Maybe$withDefault,
-			'',
-			A2(_elm_lang$core$Array$get, day - 1, _user$project$Helper$descriptions));
 		var tomorrow = A2(_elm_lang$core$Array$get, day, _user$project$Helper$titles);
 		var yesterday = A2(_elm_lang$core$Array$get, day - 2, _user$project$Helper$titles);
 		var today = A2(_elm_lang$core$Array$get, day - 1, _user$project$Helper$titles);
 		return A2(
 			_elm_lang$html$Html$div,
-			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$style(
+					{
+						ctor: '::',
+						_0: {ctor: '_Tuple2', _0: 'font-family', _1: 'sans-serif'},
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			},
 			{
 				ctor: '::',
 				_0: A2(
@@ -10431,8 +10434,20 @@ var _user$project$Helper$project = F3(
 							_0: _elm_lang$html$Html_Attributes$style(
 								{
 									ctor: '::',
-									_0: {ctor: '_Tuple2', _0: 'padding', _1: '0 50px'},
-									_1: {ctor: '[]'}
+									_0: {ctor: '_Tuple2', _0: 'margin', _1: '0 auto'},
+									_1: {
+										ctor: '::',
+										_0: {ctor: '_Tuple2', _0: 'width', _1: '70vw'},
+										_1: {
+											ctor: '::',
+											_0: {ctor: '_Tuple2', _0: 'max-width', _1: '800px'},
+											_1: {
+												ctor: '::',
+												_0: {ctor: '_Tuple2', _0: 'padding-bottom', _1: '50px'},
+												_1: {ctor: '[]'}
+											}
+										}
+									}
 								}),
 							_1: {ctor: '[]'}
 						},
@@ -10518,6 +10533,7 @@ var _user$project$Loops$parseLoop = function (_p4) {
 		color: A4(_user$project$Day2_Ryb$ryba, _p5._2, 1, 0.5, 0.5)
 	};
 };
+var _user$project$Loops$description = '\n**Originally from October 2014**\n\nIn 2014 someone showed me [snarXiv](http://snarxiv.org), which is a random scientific paper generator.\nIt uses [Backus-Naur Form](https://en.wikipedia.org/wiki/Backus–Naur_form)\nto define the syntax and a perl script translates it to OCaml code.\n\nI made a BNF parser in Python, which generated beautiful, disgusting, lazy JS code.\nFor some reason I decided to make a [random walk example](http://fishgold.co/BNF/paths).\nThe result was very pretty, so I wanted to reimplement it in a way that wasn\'t super weird.\n\n## Instructions\n\nHit enter to randomize.\n';
 var _user$project$Loops$requestLoops = _elm_lang$core$Native_Platform.outgoingPort(
 	'requestLoops',
 	function (v) {
@@ -10653,9 +10669,10 @@ var _user$project$Loops$main = _elm_lang$html$Html$program(
 		init: A5(_user$project$Loops$init, 100, 100, 400, 1400, 20),
 		subscriptions: _user$project$Loops$subscriptions,
 		update: _user$project$Loops$update,
-		view: A2(
+		view: A3(
 			_user$project$Helper$project,
 			7,
+			_user$project$Loops$description,
 			_user$project$Loops$view(5))
 	})();
 

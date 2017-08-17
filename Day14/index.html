@@ -9876,8 +9876,6 @@ var _user$project$Day14_Clip$clip = F2(
 				_1: {ctor: '[]'}
 			});
 	});
-var _user$project$Helper$descriptions = _elm_lang$core$Array$fromList(
-	{ctor: '[]'});
 var _user$project$Helper$titles = _elm_lang$core$Array$fromList(
 	{
 		ctor: '::',
@@ -10070,8 +10068,8 @@ var _user$project$Helper$title = function (day) {
 			});
 	}
 };
-var _user$project$Helper$project = F3(
-	function (day, proj, model) {
+var _user$project$Helper$project = F4(
+	function (day, description, proj, model) {
 		var header = A2(
 			_elm_lang$html$Html$div,
 			{
@@ -10109,16 +10107,21 @@ var _user$project$Helper$project = F3(
 					}
 				}
 			});
-		var description = A2(
-			_elm_lang$core$Maybe$withDefault,
-			'',
-			A2(_elm_lang$core$Array$get, day - 1, _user$project$Helper$descriptions));
 		var tomorrow = A2(_elm_lang$core$Array$get, day, _user$project$Helper$titles);
 		var yesterday = A2(_elm_lang$core$Array$get, day - 2, _user$project$Helper$titles);
 		var today = A2(_elm_lang$core$Array$get, day - 1, _user$project$Helper$titles);
 		return A2(
 			_elm_lang$html$Html$div,
-			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$style(
+					{
+						ctor: '::',
+						_0: {ctor: '_Tuple2', _0: 'font-family', _1: 'sans-serif'},
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			},
 			{
 				ctor: '::',
 				_0: A2(
@@ -10175,8 +10178,20 @@ var _user$project$Helper$project = F3(
 							_0: _elm_lang$html$Html_Attributes$style(
 								{
 									ctor: '::',
-									_0: {ctor: '_Tuple2', _0: 'padding', _1: '0 50px'},
-									_1: {ctor: '[]'}
+									_0: {ctor: '_Tuple2', _0: 'margin', _1: '0 auto'},
+									_1: {
+										ctor: '::',
+										_0: {ctor: '_Tuple2', _0: 'width', _1: '70vw'},
+										_1: {
+											ctor: '::',
+											_0: {ctor: '_Tuple2', _0: 'max-width', _1: '800px'},
+											_1: {
+												ctor: '::',
+												_0: {ctor: '_Tuple2', _0: 'padding-bottom', _1: '50px'},
+												_1: {ctor: '[]'}
+											}
+										}
+									}
 								}),
 							_1: {ctor: '[]'}
 						},
@@ -10185,6 +10200,7 @@ var _user$project$Helper$project = F3(
 				}
 			});
 	});
+var _user$project$Moire$description = '\nI love [Moiré](https://en.wikipedia.org/wiki/Moiré_pattern).\n\nEspecially on the chairs in the conference room where I work\n(they\'re made of a perforated fabric that stretches around a metal frame,\nso there are holes on the front and on the back and they make cool patterns.)\n\nHere\'s a link to\n[the Sampling Theorem](https://en.wikipedia.org/wiki/Nyquist–Shannon_sampling_theorem)\nwhich is relevant, and to\n[Seeing Circles, Sines, and Signals](https://jackschaedler.github.io/circles-sines-signals/sincos.html),\nwhich is important to me because it led me to\n[Mike Bostock\'s talk](https://bost.ocks.org/mike/algorithms/)\nabout visualizing alorithms, which was mentioned in day 6.\n';
 var _user$project$Moire$circles = F5(
 	function (width, height, rad, spacing, color) {
 		var d = (2 * rad) + spacing;
@@ -10349,7 +10365,7 @@ var _user$project$Moire$main = _elm_lang$html$Html$program(
 		init: A2(_user$project$Moire$init, 500, 500),
 		subscriptions: _user$project$Moire$subscriptions,
 		update: _user$project$Moire$update,
-		view: A2(_user$project$Helper$project, 14, _user$project$Moire$view)
+		view: A3(_user$project$Helper$project, 14, _user$project$Moire$description, _user$project$Moire$view)
 	})();
 var Elm = {};
 Elm['Moire'] = Elm['Moire'] || {};

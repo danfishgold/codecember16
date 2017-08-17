@@ -11944,8 +11944,6 @@ var _evancz$elm_markdown$Markdown$Options = F4(
 	function (a, b, c, d) {
 		return {githubFlavored: a, defaultHighlighting: b, sanitize: c, smartypants: d};
 	});
-var _user$project$Helper$descriptions = _elm_lang$core$Array$fromList(
-	{ctor: '[]'});
 var _user$project$Helper$titles = _elm_lang$core$Array$fromList(
 	{
 		ctor: '::',
@@ -12138,8 +12136,8 @@ var _user$project$Helper$title = function (day) {
 			});
 	}
 };
-var _user$project$Helper$project = F3(
-	function (day, proj, model) {
+var _user$project$Helper$project = F4(
+	function (day, description, proj, model) {
 		var header = A2(
 			_elm_lang$html$Html$div,
 			{
@@ -12177,16 +12175,21 @@ var _user$project$Helper$project = F3(
 					}
 				}
 			});
-		var description = A2(
-			_elm_lang$core$Maybe$withDefault,
-			'',
-			A2(_elm_lang$core$Array$get, day - 1, _user$project$Helper$descriptions));
 		var tomorrow = A2(_elm_lang$core$Array$get, day, _user$project$Helper$titles);
 		var yesterday = A2(_elm_lang$core$Array$get, day - 2, _user$project$Helper$titles);
 		var today = A2(_elm_lang$core$Array$get, day - 1, _user$project$Helper$titles);
 		return A2(
 			_elm_lang$html$Html$div,
-			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$style(
+					{
+						ctor: '::',
+						_0: {ctor: '_Tuple2', _0: 'font-family', _1: 'sans-serif'},
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			},
 			{
 				ctor: '::',
 				_0: A2(
@@ -12243,8 +12246,20 @@ var _user$project$Helper$project = F3(
 							_0: _elm_lang$html$Html_Attributes$style(
 								{
 									ctor: '::',
-									_0: {ctor: '_Tuple2', _0: 'padding', _1: '0 50px'},
-									_1: {ctor: '[]'}
+									_0: {ctor: '_Tuple2', _0: 'margin', _1: '0 auto'},
+									_1: {
+										ctor: '::',
+										_0: {ctor: '_Tuple2', _0: 'width', _1: '70vw'},
+										_1: {
+											ctor: '::',
+											_0: {ctor: '_Tuple2', _0: 'max-width', _1: '800px'},
+											_1: {
+												ctor: '::',
+												_0: {ctor: '_Tuple2', _0: 'padding-bottom', _1: '50px'},
+												_1: {ctor: '[]'}
+											}
+										}
+									}
 								}),
 							_1: {ctor: '[]'}
 						},
@@ -12338,6 +12353,7 @@ var _user$project$Day25_Vector$sum = function (vecs) {
 		{ctor: '_Tuple2', _0: 0, _1: 0},
 		vecs);
 };
+var _user$project$Boids$description = '\n[Boids](https://en.wikipedia.org/wiki/Boids) are cool.\nI don\'t know when I first encountered them, but they sure are cool.\n';
 var _user$project$Boids$view = function (_p0) {
 	var _p1 = _p0;
 	var _p5 = _p1.width;
@@ -12641,7 +12657,7 @@ var _user$project$Boids$main = _elm_lang$html$Html$program(
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			}),
-		view: A2(_user$project$Helper$project, 25, _user$project$Boids$view)
+		view: A3(_user$project$Helper$project, 25, _user$project$Boids$description, _user$project$Boids$view)
 	})();
 var Elm = {};
 Elm['Boids'] = Elm['Boids'] || {};

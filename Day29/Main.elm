@@ -46,13 +46,29 @@ init width height =
     )
 
 
+description : String
+description =
+    """
+**Originally from May 2015**
+
+Physics is fun.
+
+## Instructions
+
+Click an empty space to place a "reflector".
+Click and hold an empty space to generate a wave.
+The wave will progress and its intensity will decrease.
+When it hits a reflector, a secondary wave will be emitted from it.
+"""
+
+
 main : Program Never Model Msg
 main =
     program
         { init = init 500 500
         , subscriptions = subscriptions
         , update = \msg model -> ( update msg model, Cmd.none )
-        , view = view |> project 29
+        , view = view |> project 29 description
         }
 
 

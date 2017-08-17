@@ -11052,132 +11052,6 @@ var _user$project$Day15_View$polygon = F4(
 			},
 			{ctor: '[]'});
 	});
-var _user$project$Day2_Ryb$toRgba = function (_p0) {
-	var _p1 = _p0;
-	var b = _elm_lang$core$Basics$toFloat(_p1.blue) / 255;
-	var y = _elm_lang$core$Basics$toFloat(_p1.yellow) / 255;
-	var r = _elm_lang$core$Basics$toFloat(_p1.red) / 255;
-	return {
-		red: _elm_lang$core$Basics$floor(((((((-34.935 * b) * r) * y) + ((85.935 * b) * r)) - ((41.565 * b) * y)) - (213.435 * b)) + 255.0),
-		green: _elm_lang$core$Basics$floor(((((((((-176.715 * b) * r) * y) + ((159.885 * b) * r)) + ((73.185 * b) * y)) - (159.885 * b)) + ((127.5 * r) * y)) - (255.0 * r)) + 255.0),
-		blue: _elm_lang$core$Basics$floor((((((((((-280.5 * b) * r) * y) + ((229.5 * b) * r)) + ((153.0 * b) * y)) - (102.0 * b)) + ((255.0 * r) * y)) - (255.0 * r)) - (255.0 * y)) + 255.0),
-		alpha: _p1.alpha
-	};
-};
-var _user$project$Day2_Ryb$Ryba = F4(
-	function (a, b, c, d) {
-		return {red: a, yellow: b, blue: c, alpha: d};
-	});
-var _user$project$Day2_Ryb$rgbaAsRyba = function (_p2) {
-	var _p3 = _p2;
-	return A4(_user$project$Day2_Ryb$Ryba, _p3.red, _p3.green, _p3.blue, _p3.alpha);
-};
-var _user$project$Day2_Ryb$ryb = F3(
-	function (h, s, l) {
-		return function (_p4) {
-			var _p5 = _p4;
-			return A4(_elm_lang$core$Color$rgba, _p5.red, _p5.green, _p5.blue, _p5.alpha);
-		}(
-			_user$project$Day2_Ryb$toRgba(
-				_user$project$Day2_Ryb$rgbaAsRyba(
-					_elm_lang$core$Color$toRgb(
-						A3(
-							_elm_lang$core$Color$hsl,
-							_elm_lang$core$Basics$degrees(h),
-							s,
-							l)))));
-	});
-var _user$project$Day2_Ryb$ryba = F4(
-	function (h, s, l, alpha) {
-		return function (c) {
-			return A4(_elm_lang$core$Color$rgba, c.red, c.green, c.blue, alpha);
-		}(
-			_elm_lang$core$Color$toRgb(
-				A3(_user$project$Day2_Ryb$ryb, h, s, l)));
-	});
-var _user$project$Day2_Ryb$Rgba = F4(
-	function (a, b, c, d) {
-		return {red: a, green: b, blue: c, alpha: d};
-	});
-var _user$project$Day2_Random$ryb = A4(
-	_elm_lang$core$Random$map3,
-	_user$project$Day2_Ryb$ryb,
-	A2(_elm_lang$core$Random$float, 0, 360),
-	A2(_elm_lang$core$Random$float, 0, 1),
-	A2(_elm_lang$core$Random$float, 0, 1));
-var _user$project$Day2_Random$hue = A2(_elm_lang$core$Random$float, 0, 360);
-var _user$project$Day2_Random$ryb1 = F2(
-	function (s, l) {
-		return A2(
-			_elm_lang$core$Random$map,
-			function (h) {
-				return A3(_user$project$Day2_Ryb$ryb, h, s, l);
-			},
-			_user$project$Day2_Random$hue);
-	});
-var _user$project$Day2_Random$ryb1v1 = F2(
-	function (s, l) {
-		var clr = function (h) {
-			return A3(_user$project$Day2_Ryb$ryb, h, s, l);
-		};
-		var colors = function (h) {
-			return {
-				ctor: '_Tuple2',
-				_0: clr(h),
-				_1: clr(h + 180)
-			};
-		};
-		return A2(_elm_lang$core$Random$map, colors, _user$project$Day2_Random$hue);
-	});
-var _user$project$Day2_Random$ryb1v2 = F3(
-	function (s, l, spacing) {
-		var clr = function (h) {
-			return A3(_user$project$Day2_Ryb$ryb, h, s, l);
-		};
-		var colors = function (h) {
-			return {
-				ctor: '_Tuple3',
-				_0: clr(h),
-				_1: clr((h + 180) + (spacing / 2)),
-				_2: clr((h + 180) - (spacing / 2))
-			};
-		};
-		return A2(_elm_lang$core$Random$map, colors, _user$project$Day2_Random$hue);
-	});
-var _user$project$Day2_Random$ryb1v3 = F3(
-	function (s, l, spacing) {
-		var clr = function (h) {
-			return A3(_user$project$Day2_Ryb$ryb, h, s, l);
-		};
-		var colors = function (h) {
-			return {
-				ctor: '_Tuple4',
-				_0: clr(h),
-				_1: clr((h + 180) + spacing),
-				_2: clr(h + 180),
-				_3: clr((h + 180) - spacing)
-			};
-		};
-		return A2(_elm_lang$core$Random$map, colors, _user$project$Day2_Random$hue);
-	});
-var _user$project$Day2_Random$ryb2v2 = F3(
-	function (s, l, spacing) {
-		var clr = function (h) {
-			return A3(_user$project$Day2_Ryb$ryb, h, s, l);
-		};
-		var colors = function (h) {
-			return {
-				ctor: '_Tuple4',
-				_0: clr(h + (spacing / 2)),
-				_1: clr(h + ((0 - spacing) / 2)),
-				_2: clr((h + 180) + (spacing / 2)),
-				_3: clr((h + 180) - (spacing / 2))
-			};
-		};
-		return A2(_elm_lang$core$Random$map, colors, _user$project$Day2_Random$hue);
-	});
-var _user$project$Helper$descriptions = _elm_lang$core$Array$fromList(
-	{ctor: '[]'});
 var _user$project$Helper$titles = _elm_lang$core$Array$fromList(
 	{
 		ctor: '::',
@@ -11370,8 +11244,8 @@ var _user$project$Helper$title = function (day) {
 			});
 	}
 };
-var _user$project$Helper$project = F3(
-	function (day, proj, model) {
+var _user$project$Helper$project = F4(
+	function (day, description, proj, model) {
 		var header = A2(
 			_elm_lang$html$Html$div,
 			{
@@ -11409,16 +11283,21 @@ var _user$project$Helper$project = F3(
 					}
 				}
 			});
-		var description = A2(
-			_elm_lang$core$Maybe$withDefault,
-			'',
-			A2(_elm_lang$core$Array$get, day - 1, _user$project$Helper$descriptions));
 		var tomorrow = A2(_elm_lang$core$Array$get, day, _user$project$Helper$titles);
 		var yesterday = A2(_elm_lang$core$Array$get, day - 2, _user$project$Helper$titles);
 		var today = A2(_elm_lang$core$Array$get, day - 1, _user$project$Helper$titles);
 		return A2(
 			_elm_lang$html$Html$div,
-			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$style(
+					{
+						ctor: '::',
+						_0: {ctor: '_Tuple2', _0: 'font-family', _1: 'sans-serif'},
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			},
 			{
 				ctor: '::',
 				_0: A2(
@@ -11475,8 +11354,20 @@ var _user$project$Helper$project = F3(
 							_0: _elm_lang$html$Html_Attributes$style(
 								{
 									ctor: '::',
-									_0: {ctor: '_Tuple2', _0: 'padding', _1: '0 50px'},
-									_1: {ctor: '[]'}
+									_0: {ctor: '_Tuple2', _0: 'margin', _1: '0 auto'},
+									_1: {
+										ctor: '::',
+										_0: {ctor: '_Tuple2', _0: 'width', _1: '70vw'},
+										_1: {
+											ctor: '::',
+											_0: {ctor: '_Tuple2', _0: 'max-width', _1: '800px'},
+											_1: {
+												ctor: '::',
+												_0: {ctor: '_Tuple2', _0: 'padding-bottom', _1: '50px'},
+												_1: {ctor: '[]'}
+											}
+										}
+									}
 								}),
 							_1: {ctor: '[]'}
 						},
@@ -11485,6 +11376,7 @@ var _user$project$Helper$project = F3(
 				}
 			});
 	});
+var _user$project$Tiles$description = '\nA continuation from the previous day.\n\nI think this is nice.\n\n## Instructions\n\nHit enter to randomize.\n';
 var _user$project$Tiles$prefactors = F3(
 	function (x, y, _p0) {
 		var _p1 = _p0;
@@ -11503,8 +11395,8 @@ var _user$project$Tiles$prefactors = F3(
 		return _elm_lang$core$Native_Utils.eq(det, 0) ? _elm_lang$core$Native_Utils.crash(
 			'Tiles',
 			{
-				start: {line: 112, column: 13},
-				end: {line: 112, column: 24}
+				start: {line: 98, column: 13},
+				end: {line: 98, column: 24}
 			})('base is colinear') : {ctor: '_Tuple2', _0: ((vy * x) - (vx * y)) / det, _1: ((ux * y) - (uy * x)) / det};
 	});
 var _user$project$Tiles$ranges = F3(
@@ -11583,14 +11475,9 @@ var _user$project$Tiles$axes = function (_p7) {
 };
 var _user$project$Tiles$view = F2(
 	function (scale, model) {
-		var _p10 = model.colors;
-		var c1 = _p10._0;
-		var c2 = _p10._1;
-		var c3 = _p10._2;
-		var c4 = _p10._3;
 		var color = F2(
 			function (i, j) {
-				var _p11 = {
+				var _p10 = {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.eq(
 						A2(_elm_lang$core$Basics_ops['%'], i, 2),
@@ -11599,24 +11486,24 @@ var _user$project$Tiles$view = F2(
 						A2(_elm_lang$core$Basics_ops['%'], j, 2),
 						0)
 				};
-				if (_p11._0 === true) {
-					if (_p11._1 === true) {
-						return c1;
+				if (_p10._0 === true) {
+					if (_p10._1 === true) {
+						return _elm_lang$core$Color$white;
 					} else {
-						return c2;
+						return _elm_lang$core$Color$lightGray;
 					}
 				} else {
-					if (_p11._1 === true) {
-						return c3;
+					if (_p10._1 === true) {
+						return _elm_lang$core$Color$gray;
 					} else {
-						return c4;
+						return _elm_lang$core$Color$darkGray;
 					}
 				}
 			});
 		var word = _user$project$Day15_Polyomino$bn(model.tile);
-		var _p12 = _user$project$Tiles$axes(model.tile);
-		var u = _p12._0;
-		var v = _p12._1;
+		var _p11 = _user$project$Tiles$axes(model.tile);
+		var u = _p11._0;
+		var v = _p11._1;
 		var p0 = F2(
 			function (i, j) {
 				return {
@@ -11634,15 +11521,15 @@ var _user$project$Tiles$view = F2(
 					A2(p0, i, j),
 					word);
 			});
-		var _p13 = A3(
+		var _p12 = A3(
 			_user$project$Tiles$ranges,
 			model.width / scale,
 			model.height / scale,
 			{ctor: '_Tuple2', _0: u, _1: v});
-		var iMin = _p13._0._0;
-		var iMax = _p13._0._1;
-		var jMin = _p13._1._0;
-		var jMax = _p13._1._1;
+		var iMin = _p12._0._0;
+		var iMax = _p12._0._1;
+		var jMin = _p12._1._0;
+		var jMax = _p12._1._1;
 		var row = function (i) {
 			return A2(
 				_elm_lang$core$List$map,
@@ -11668,9 +11555,9 @@ var _user$project$Tiles$view = F2(
 			},
 			grid);
 	});
-var _user$project$Tiles$Model = F4(
-	function (a, b, c, d) {
-		return {width: a, height: b, tile: c, colors: d};
+var _user$project$Tiles$Model = F3(
+	function (a, b, c) {
+		return {width: a, height: b, tile: c};
 	});
 var _user$project$Tiles$Key = function (a) {
 	return {ctor: 'Key', _0: a};
@@ -11678,32 +11565,13 @@ var _user$project$Tiles$Key = function (a) {
 var _user$project$Tiles$subscriptions = function (model) {
 	return _elm_lang$keyboard$Keyboard$ups(_user$project$Tiles$Key);
 };
-var _user$project$Tiles$SetColors = function (a) {
-	return {ctor: 'SetColors', _0: a};
-};
 var _user$project$Tiles$SetTile = function (a) {
 	return {ctor: 'SetTile', _0: a};
 };
-var _user$project$Tiles$randomize = function () {
-	var tile = A2(
-		_elm_lang$core$Random$generate,
-		_user$project$Tiles$SetTile,
-		A2(_user$project$Day15_Polyomino$randomBN, 3, 7));
-	var colors = A2(
-		_elm_lang$core$Random$generate,
-		_user$project$Tiles$SetColors,
-		A3(_user$project$Day2_Random$ryb1v3, 1, 0.5, 35));
-	return _elm_lang$core$Platform_Cmd$batch(
-		{
-			ctor: '::',
-			_0: colors,
-			_1: {
-				ctor: '::',
-				_0: tile,
-				_1: {ctor: '[]'}
-			}
-		});
-}();
+var _user$project$Tiles$randomize = A2(
+	_elm_lang$core$Random$generate,
+	_user$project$Tiles$SetTile,
+	A2(_user$project$Day15_Polyomino$randomBN, 3, 7));
 var _user$project$Tiles$init = F2(
 	function (width, height) {
 		return {
@@ -11724,40 +11592,28 @@ var _user$project$Tiles$init = F2(
 						_1: {ctor: '[]'}
 					},
 					_2: {ctor: '[]'}
-				},
-				colors: {ctor: '_Tuple4', _0: _elm_lang$core$Color$white, _1: _elm_lang$core$Color$white, _2: _elm_lang$core$Color$white, _3: _elm_lang$core$Color$white}
+				}
 			},
 			_1: _user$project$Tiles$randomize
 		};
 	});
 var _user$project$Tiles$update = F2(
 	function (msg, model) {
-		var _p14 = msg;
-		switch (_p14.ctor) {
-			case 'SetTile':
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{
-							tile: A2(_elm_lang$core$Debug$log, 'tile', _p14._0)
-						}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			case 'SetColors':
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{colors: _p14._0}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			default:
-				if (_p14._0 === 32) {
-					return {ctor: '_Tuple2', _0: model, _1: _user$project$Tiles$randomize};
-				} else {
-					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
-				}
+		var _p13 = msg;
+		if (_p13.ctor === 'SetTile') {
+			return {
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Native_Utils.update(
+					model,
+					{tile: _p13._0}),
+				_1: _elm_lang$core$Platform_Cmd$none
+			};
+		} else {
+			if (_p13._0 === 13) {
+				return {ctor: '_Tuple2', _0: model, _1: _user$project$Tiles$randomize};
+			} else {
+				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+			}
 		}
 	});
 var _user$project$Tiles$main = _elm_lang$html$Html$program(
@@ -11765,9 +11621,10 @@ var _user$project$Tiles$main = _elm_lang$html$Html$program(
 		init: A2(_user$project$Tiles$init, 500, 500),
 		subscriptions: _user$project$Tiles$subscriptions,
 		update: _user$project$Tiles$update,
-		view: A2(
+		view: A3(
 			_user$project$Helper$project,
 			16,
+			_user$project$Tiles$description,
 			_user$project$Tiles$view(8))
 	})();
 var Elm = {};

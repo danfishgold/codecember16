@@ -309,11 +309,21 @@ view model =
 --
 
 
+description : String
+description =
+    """
+[Spirographs](https://en.wikipedia.org/wiki/Spirograph) are neat!
+I got one in a Kinder Surprise in 2014.
+
+I thought I'd have a lot to say about every project but I was wrong.
+"""
+
+
 main : Program Never Model Msg
 main =
     program
         { init = ( init 500 500, Cmd.none )
         , subscriptions = subscriptions
         , update = \msg model -> ( update msg model, Cmd.none )
-        , view = view |> project 22
+        , view = view |> project 22 description
         }

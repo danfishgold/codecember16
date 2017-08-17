@@ -130,11 +130,26 @@ view colors =
             ]
 
 
+description : String
+description =
+    """
+**Originally from May 2014**
+
+I came across the RYB color space in [Paletton](http://paletton.com) and thought it was pretty.
+
+I wanted to make one of my own. The weird and unintuitive equation in the Elm file comes
+from the python file, which is a slight modification of the one I wrote originally,
+based on [Paint Inspired Color Compositing](http://bahamas10.github.io/ryb/assets/ryb.pdf) by N. Gossett and B. Chen.
+
+I used this day's project in many other days.
+"""
+
+
 main : Program Never Model Msg
 main =
     program
         { init = [] |> update OneVThree
         , update = update
-        , view = view |> project 2
+        , view = view |> project 2 description
         , subscriptions = always Sub.none
         }

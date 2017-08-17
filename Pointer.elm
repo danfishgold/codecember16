@@ -1,4 +1,4 @@
-module Pointer exposing (..)
+module Pointer exposing (Position, click, down, up, move)
 
 import Json.Decode as Json
 import Html.Events exposing (on)

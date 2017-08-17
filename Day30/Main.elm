@@ -67,13 +67,26 @@ restart ({ width, height } as model) =
         |> flip update model
 
 
+description : String
+description =
+    """
+This is based on
+[another article](http://10tv.nana10.co.il/Article/?ArticleID=552882)
+by [Ido Gendel](http://www.idogendel.com/). It was almost certainly my favorite.
+
+This article introduced me to the concept of
+[fractals](https://en.wikipedia.org/wiki/Fractal),
+which was one of the reasons I wanted a degree in Math.
+"""
+
+
 main : Program Never Model Msg
 main =
     program
         { init = init 500 500
         , subscriptions = subscriptions
         , update = update
-        , view = view |> project 30
+        , view = view |> project 30 description
         }
 
 
@@ -209,7 +222,7 @@ branchOut wd ht ( pts, lvl ) =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Key 32 ->
+        Key 13 ->
             { model | lightnings = [] } |> restart
 
         Key _ ->

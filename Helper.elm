@@ -28,8 +28,8 @@ link day =
                 [ text <| "Day " ++ toString day ++ ": " ++ str ]
 
 
-project : Int -> (model -> Html msg) -> model -> Html msg
-project day proj model =
+project : Int -> String -> (model -> Html msg) -> model -> Html msg
+project day description proj model =
     let
         today =
             Array.get (day - 1) titles
@@ -39,9 +39,6 @@ project day proj model =
 
         tomorrow =
             Array.get (day) titles
-
-        description =
-            Array.get (day - 1) descriptions |> Maybe.withDefault ""
 
         header =
             div
@@ -55,7 +52,7 @@ project day proj model =
                 [ link (day - 1), title day, link (day + 1) ]
     in
         div
-            []
+            [ style [ ( "font-family", "sans-serif" ) ] ]
             [ div
                 [ style
                     [ ( "display", "flex" )
@@ -66,7 +63,15 @@ project day proj model =
                 [ div [ style [ ( "padding", "50px 0" ) ] ] [ proj model ]
                 , header
                 ]
-            , Markdown.toHtml [ style [ ( "padding", "0 50px" ) ] ] description
+            , Markdown.toHtml
+                [ style
+                    [ ( "margin", "0 auto" )
+                    , ( "width", "70vw" )
+                    , ( "max-width", "800px" )
+                    , ( "padding-bottom", "50px" )
+                    ]
+                ]
+                description
             ]
 
 
@@ -104,9 +109,3 @@ titles =
         , "Waves"
         , "Lightning"
         ]
-
-
-descriptions : Array String
-descriptions =
-    Array.fromList
-        []

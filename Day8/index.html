@@ -8703,8 +8703,6 @@ var _evancz$elm_markdown$Markdown$Options = F4(
 	function (a, b, c, d) {
 		return {githubFlavored: a, defaultHighlighting: b, sanitize: c, smartypants: d};
 	});
-var _user$project$Helper$descriptions = _elm_lang$core$Array$fromList(
-	{ctor: '[]'});
 var _user$project$Helper$titles = _elm_lang$core$Array$fromList(
 	{
 		ctor: '::',
@@ -8897,8 +8895,8 @@ var _user$project$Helper$title = function (day) {
 			});
 	}
 };
-var _user$project$Helper$project = F3(
-	function (day, proj, model) {
+var _user$project$Helper$project = F4(
+	function (day, description, proj, model) {
 		var header = A2(
 			_elm_lang$html$Html$div,
 			{
@@ -8936,16 +8934,21 @@ var _user$project$Helper$project = F3(
 					}
 				}
 			});
-		var description = A2(
-			_elm_lang$core$Maybe$withDefault,
-			'',
-			A2(_elm_lang$core$Array$get, day - 1, _user$project$Helper$descriptions));
 		var tomorrow = A2(_elm_lang$core$Array$get, day, _user$project$Helper$titles);
 		var yesterday = A2(_elm_lang$core$Array$get, day - 2, _user$project$Helper$titles);
 		var today = A2(_elm_lang$core$Array$get, day - 1, _user$project$Helper$titles);
 		return A2(
 			_elm_lang$html$Html$div,
-			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$style(
+					{
+						ctor: '::',
+						_0: {ctor: '_Tuple2', _0: 'font-family', _1: 'sans-serif'},
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			},
 			{
 				ctor: '::',
 				_0: A2(
@@ -9002,8 +9005,20 @@ var _user$project$Helper$project = F3(
 							_0: _elm_lang$html$Html_Attributes$style(
 								{
 									ctor: '::',
-									_0: {ctor: '_Tuple2', _0: 'padding', _1: '0 50px'},
-									_1: {ctor: '[]'}
+									_0: {ctor: '_Tuple2', _0: 'margin', _1: '0 auto'},
+									_1: {
+										ctor: '::',
+										_0: {ctor: '_Tuple2', _0: 'width', _1: '70vw'},
+										_1: {
+											ctor: '::',
+											_0: {ctor: '_Tuple2', _0: 'max-width', _1: '800px'},
+											_1: {
+												ctor: '::',
+												_0: {ctor: '_Tuple2', _0: 'padding-bottom', _1: '50px'},
+												_1: {ctor: '[]'}
+											}
+										}
+									}
 								}),
 							_1: {ctor: '[]'}
 						},
@@ -9044,6 +9059,7 @@ var _user$project$Pointer$move = function (msg) {
 		'mousemove',
 		A2(_elm_lang$core$Json_Decode$map, msg, _user$project$Pointer$position));
 };
+var _user$project$Cradle$description = '\nIn 2014 I went to a hackathon with a friend.\nWe made a tool that helped teach high-school students geometry using gamification (ugh.)\nI was in charge of the graphic part, where you could see the diagram,\nhighlight parts of it (vertices, edges and angles,) and solve the given problem.\n\nThe vertices\' positions and the nodes connecting them were defined in Python,\nand then a horrible, disgusting, hacky JS code was generated to actually display it.\nIt was honestly just horrible. I used Canvas instead of SVG and wrote so many hacks.\n\nThis was the first time I wrote JS code and it actually went fine.\nWe were among the 10 best groups, but that was probably because we did something\neducational and not because it was good.\n\nWhen I showed my horrible hack to someone, he asked my why I didn\'t use [D3](https://d3js.org).\nI probably kept a link to the D3 homepage open on my phone for a few months,\nbut in 2015 I finally got into D3 and reimplemented the whole thing with much fewer hacks.\n\nAnyway, my point is that I wanted to make it easier to create these diagrams.\nThat idea evolved into whatever this is.\n\n## Instructions\n\nUse the mouse\n\n* When you hover near a vertex you move it.\n* When you hover near an edge away from a vertex you split it.\n* When you hold the mouse button the above rules are ignored.\n';
 var _user$project$Cradle$minimumBy = F2(
 	function (fn, xs) {
 		var step = F2(
@@ -9487,7 +9503,7 @@ var _user$project$Cradle$main = _elm_lang$html$Html$program(
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			}),
-		view: A2(_user$project$Helper$project, 8, _user$project$Cradle$view)
+		view: A3(_user$project$Helper$project, 8, _user$project$Cradle$description, _user$project$Cradle$view)
 	})();
 var Elm = {};
 Elm['Cradle'] = Elm['Cradle'] || {};

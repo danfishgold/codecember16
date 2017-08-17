@@ -126,11 +126,30 @@ view { width, height, dx, dy } =
 --
 
 
+description : String
+description =
+    """
+I love [Moiré](https://en.wikipedia.org/wiki/Moiré_pattern).
+
+Especially on the chairs in the conference room where I work
+(they're made of a perforated fabric that stretches around a metal frame,
+so there are holes on the front and on the back and they make cool patterns.)
+
+Here's a link to
+[the Sampling Theorem](https://en.wikipedia.org/wiki/Nyquist–Shannon_sampling_theorem)
+which is relevant, and to
+[Seeing Circles, Sines, and Signals](https://jackschaedler.github.io/circles-sines-signals/sincos.html),
+which is important to me because it led me to
+[Mike Bostock's talk](https://bost.ocks.org/mike/algorithms/)
+about visualizing alorithms, which was mentioned in day 6.
+"""
+
+
 main : Program Never Model Msg
 main =
     program
         { init = init 500 500
         , subscriptions = subscriptions
         , update = update
-        , view = view |> project 14
+        , view = view |> project 14 description
         }

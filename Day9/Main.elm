@@ -2,12 +2,6 @@ module Nicky exposing (..)
 
 import Html exposing (Html, program, div)
 import Helper exposing (project)
-
-
--- import Svg exposing (Svg, svg, polygon)
--- import Svg.Attributes exposing (width, height)
--- import Svg.Attributes exposing (points, x1, y1, x2, y2, stroke, strokeWidth, fill)
-
 import Collage exposing (polygon, group, filled, outlined, defaultLine)
 import Element
 import Color
@@ -20,6 +14,7 @@ type alias Point =
 
 type alias Model =
     { polygons : List (List Point)
+    , frame : List Point
     , mouse : Point
     }
 
@@ -34,8 +29,10 @@ init =
             [ [ ( -150, -130 ), ( -150, -80 ), ( -50, -50 ), ( -50, -150 ) ]
             , [ ( 80, 220 ), ( -50, 180 ), ( -40, 100 ), ( 50, 140 ) ]
             , [ ( 90, -80 ), ( 160, -150 ), ( 150, -60 ) ]
-            , [ ( -250, -250 ), ( -250, 250 ), ( 250, 250 ), ( 250, -250 ) ]
+            , [ ( -60, -190 ), ( -70, -210 ), ( -190, -170 ), ( -160, -160 ) ]
+            , [ ( 50, 50 ), ( 70, 90 ), ( 130, 20 ) ]
             ]
+      , frame = [ ( -250, -250 ), ( -250, 250 ), ( 250, 250 ), ( 250, -250 ) ]
       , mouse = ( 0, 0 )
       }
     , Cmd.none
@@ -152,18 +149,18 @@ update msg model =
 
 
 view : Model -> Html Msg
-view { mouse, polygons } =
+view { mouse, polygons, frame } =
     let
         actualMouse =
             ( Tuple.first mouse - 250, 250 - Tuple.second mouse )
 
-        areas source =
-            polygons
+        lightAreas source =
+            (frame :: polygons)
                 |> destinations source
                 |> pairs
                 |> List.map (\( p1, p2 ) -> [ source, p1, p2 ])
                 |> List.map polygon
-                |> List.map (filled <| Color.rgba 0 0 0 0.2)
+                |> List.map (filled <| Color.rgba 255 255 255 0.3)
 
         sources dist n =
             List.range 0 n
@@ -171,12 +168,14 @@ view { mouse, polygons } =
                 |> List.map (\ang -> ( dist, ang ))
                 |> (\pts -> ( 0, 0 ) :: pts)
                 |> List.map (cartesian actualMouse)
+
+        shapes =
+            polygons |> List.map polygon
     in
-        [ polygons
-            |> List.map polygon
-            |> List.map (outlined defaultLine)
-            |> group
-        , sources 10 10 |> List.concatMap areas |> group
+        [ frame |> polygon |> filled Color.black
+        , shapes |> List.map (filled Color.white) |> group
+        , shapes |> List.map (outlined defaultLine) |> group
+        , sources 5 10 |> List.concatMap lightAreas |> group
         ]
             |> Collage.collage 500 500
             |> Element.toHtml
@@ -187,11 +186,23 @@ view { mouse, polygons } =
 --
 
 
+description : String
+description =
+    """
+This is an homage to [Nicky Case](http://ncase.me)'s
+[Sight and Light](http://ncase.me/sight-and-light/).
+
+It's more of a reimplementation than an homage, but still <3
+
+Here's a link to [Bret Victor](http://worrydream.com), because why not.
+"""
+
+
 main : Program Never Model Msg
 main =
     program
         { init = init
         , subscriptions = subscriptions
         , update = \msg model -> ( update msg model, Cmd.none )
-        , view = view |> project 9
+        , view = view |> project 9 description
         }

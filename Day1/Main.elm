@@ -50,8 +50,8 @@ type Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case (Debug.log "message" msg) of
-        KeyPressed 32 ->
+    case msg of
+        KeyPressed 13 ->
             ( model, Random.generate SetModel randomModel )
 
         KeyPressed _ ->
@@ -249,11 +249,22 @@ view width height ({ shapeWidth, aspectRatio } as model) =
 --
 
 
+description : String
+description =
+    """
+This was my first project.
+I wanted to make something similar to [this](https://avh4.github.io/codevember-2016/day-3/) by Aaron VonderHar and I like argyle.
+
+## Instructions
+Hit enter to randomize.
+"""
+
+
 main : Program Never Model Msg
 main =
     program
         { init = init
-        , view = view 500 500 |> project 1
+        , view = view 500 500 |> project 1 description
         , update = update
         , subscriptions = subscriptions
         }

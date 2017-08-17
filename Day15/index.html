@@ -11176,8 +11176,6 @@ var _user$project$Day2_Random$ryb2v2 = F3(
 		};
 		return A2(_elm_lang$core$Random$map, colors, _user$project$Day2_Random$hue);
 	});
-var _user$project$Helper$descriptions = _elm_lang$core$Array$fromList(
-	{ctor: '[]'});
 var _user$project$Helper$titles = _elm_lang$core$Array$fromList(
 	{
 		ctor: '::',
@@ -11370,8 +11368,8 @@ var _user$project$Helper$title = function (day) {
 			});
 	}
 };
-var _user$project$Helper$project = F3(
-	function (day, proj, model) {
+var _user$project$Helper$project = F4(
+	function (day, description, proj, model) {
 		var header = A2(
 			_elm_lang$html$Html$div,
 			{
@@ -11409,16 +11407,21 @@ var _user$project$Helper$project = F3(
 					}
 				}
 			});
-		var description = A2(
-			_elm_lang$core$Maybe$withDefault,
-			'',
-			A2(_elm_lang$core$Array$get, day - 1, _user$project$Helper$descriptions));
 		var tomorrow = A2(_elm_lang$core$Array$get, day, _user$project$Helper$titles);
 		var yesterday = A2(_elm_lang$core$Array$get, day - 2, _user$project$Helper$titles);
 		var today = A2(_elm_lang$core$Array$get, day - 1, _user$project$Helper$titles);
 		return A2(
 			_elm_lang$html$Html$div,
-			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$style(
+					{
+						ctor: '::',
+						_0: {ctor: '_Tuple2', _0: 'font-family', _1: 'sans-serif'},
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			},
 			{
 				ctor: '::',
 				_0: A2(
@@ -11475,8 +11478,20 @@ var _user$project$Helper$project = F3(
 							_0: _elm_lang$html$Html_Attributes$style(
 								{
 									ctor: '::',
-									_0: {ctor: '_Tuple2', _0: 'padding', _1: '0 50px'},
-									_1: {ctor: '[]'}
+									_0: {ctor: '_Tuple2', _0: 'margin', _1: '0 auto'},
+									_1: {
+										ctor: '::',
+										_0: {ctor: '_Tuple2', _0: 'width', _1: '70vw'},
+										_1: {
+											ctor: '::',
+											_0: {ctor: '_Tuple2', _0: 'max-width', _1: '800px'},
+											_1: {
+												ctor: '::',
+												_0: {ctor: '_Tuple2', _0: 'padding-bottom', _1: '50px'},
+												_1: {ctor: '[]'}
+											}
+										}
+									}
 								}),
 							_1: {ctor: '[]'}
 						},
@@ -11485,6 +11500,7 @@ var _user$project$Helper$project = F3(
 				}
 			});
 	});
+var _user$project$Polyomino$description = '\nWhen I was in elementary school I used to draw crosses on my grid notebooks.\nThis turned to interest in plane tiling, although I never actually read anything\non the subject. I\'m not sure how I got to [this video](https://vimeo.com/170534791)\nby [Andrew Winslow](http://andrewwinslow.com) explaining a paper of his.\nI probably googled for \"plane tiling polyomino\".\n\nAnyway, in this video he shows several criteria for tiling the plane with\npolyominos (closed connected shapes on a two dimensional grid) and I took the simplest one,\nwhich is the Beauquier-Nivat condition.\n\nThese randomized shapes (polyominos) satisfy the BN condition,\nand therefore can tile the plane. More on that tomorrow.\n\nHere\'s [something helpful maybe](http://www.crm.umontreal.ca/Words07/pdf/provencalslides.pdf)\nabout the topic.\n\nI\'m very disappointed in myself for not writing down my sources.\n\n## Instructions\n\nHit enter to randomize.\n';
 var _user$project$Polyomino$view = F2(
 	function (scale, model) {
 		var y = function (i) {
@@ -11602,7 +11618,7 @@ var _user$project$Polyomino$update = F2(
 				_1: _elm_lang$core$Platform_Cmd$none
 			};
 		} else {
-			if (_p2._0 === 32) {
+			if (_p2._0 === 13) {
 				return {ctor: '_Tuple2', _0: model, _1: _user$project$Polyomino$randomize};
 			} else {
 				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
@@ -11614,9 +11630,10 @@ var _user$project$Polyomino$main = _elm_lang$html$Html$program(
 		init: A2(_user$project$Polyomino$init, 500, 500),
 		subscriptions: _user$project$Polyomino$subscriptions,
 		update: _user$project$Polyomino$update,
-		view: A2(
+		view: A3(
 			_user$project$Helper$project,
 			15,
+			_user$project$Polyomino$description,
 			_user$project$Polyomino$view(8))
 	})();
 var Elm = {};

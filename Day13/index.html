@@ -10549,8 +10549,6 @@ var _user$project$Day13_Dvd$dvd = function (c) {
 };
 var _user$project$Day13_Dvd$height = 113;
 var _user$project$Day13_Dvd$width = 196.5;
-var _user$project$Helper$descriptions = _elm_lang$core$Array$fromList(
-	{ctor: '[]'});
 var _user$project$Helper$titles = _elm_lang$core$Array$fromList(
 	{
 		ctor: '::',
@@ -10743,8 +10741,8 @@ var _user$project$Helper$title = function (day) {
 			});
 	}
 };
-var _user$project$Helper$project = F3(
-	function (day, proj, model) {
+var _user$project$Helper$project = F4(
+	function (day, description, proj, model) {
 		var header = A2(
 			_elm_lang$html$Html$div,
 			{
@@ -10782,16 +10780,21 @@ var _user$project$Helper$project = F3(
 					}
 				}
 			});
-		var description = A2(
-			_elm_lang$core$Maybe$withDefault,
-			'',
-			A2(_elm_lang$core$Array$get, day - 1, _user$project$Helper$descriptions));
 		var tomorrow = A2(_elm_lang$core$Array$get, day, _user$project$Helper$titles);
 		var yesterday = A2(_elm_lang$core$Array$get, day - 2, _user$project$Helper$titles);
 		var today = A2(_elm_lang$core$Array$get, day - 1, _user$project$Helper$titles);
 		return A2(
 			_elm_lang$html$Html$div,
-			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$style(
+					{
+						ctor: '::',
+						_0: {ctor: '_Tuple2', _0: 'font-family', _1: 'sans-serif'},
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			},
 			{
 				ctor: '::',
 				_0: A2(
@@ -10848,8 +10851,20 @@ var _user$project$Helper$project = F3(
 							_0: _elm_lang$html$Html_Attributes$style(
 								{
 									ctor: '::',
-									_0: {ctor: '_Tuple2', _0: 'padding', _1: '0 50px'},
-									_1: {ctor: '[]'}
+									_0: {ctor: '_Tuple2', _0: 'margin', _1: '0 auto'},
+									_1: {
+										ctor: '::',
+										_0: {ctor: '_Tuple2', _0: 'width', _1: '70vw'},
+										_1: {
+											ctor: '::',
+											_0: {ctor: '_Tuple2', _0: 'max-width', _1: '800px'},
+											_1: {
+												ctor: '::',
+												_0: {ctor: '_Tuple2', _0: 'padding-bottom', _1: '50px'},
+												_1: {ctor: '[]'}
+											}
+										}
+									}
 								}),
 							_1: {ctor: '[]'}
 						},
@@ -10858,6 +10873,7 @@ var _user$project$Helper$project = F3(
 				}
 			});
 	});
+var _user$project$Main$description = '\nCHILDHOOD MEMORIES\n';
 var _user$project$Main$bg = function (model) {
 	return A2(
 		_elm_lang$svg$Svg$rect,
@@ -11058,7 +11074,7 @@ var _user$project$Main$main = _elm_lang$html$Html$program(
 		init: A2(_user$project$Main$init, 500, 500),
 		subscriptions: _user$project$Main$subscriptions,
 		update: _user$project$Main$update,
-		view: A2(_user$project$Helper$project, 13, _user$project$Main$view)
+		view: A3(_user$project$Helper$project, 13, _user$project$Main$description, _user$project$Main$view)
 	})();
 var Elm = {};
 Elm['Main'] = Elm['Main'] || {};

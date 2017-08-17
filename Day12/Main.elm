@@ -144,11 +144,26 @@ view model =
 --
 
 
+description : String
+description =
+    """
+After I saw the parallax in GitHub's 404 page (see previous day), I found
+a jQuery library for parallax, and it even had parallax in the url.
+I tried to do the same but I'm not sure I succeeded.
+
+This was pretty much the most disappointing day.
+
+## Instructions
+
+Move the mouse ¯\\\\\\_(ツ)\\_/¯
+"""
+
+
 main : Program Never Model Msg
 main =
     Navigation.program (always None)
         { init = init
         , subscriptions = subscriptions
         , update = update
-        , view = view |> Helper.project 12
+        , view = view |> Helper.project 12 description
         }

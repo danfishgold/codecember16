@@ -10739,8 +10739,6 @@ var _user$project$Day19_Trail$Trail = F4(
 	function (a, b, c, d) {
 		return {letters: a, pace: b, x: c, y: d};
 	});
-var _user$project$Helper$descriptions = _elm_lang$core$Array$fromList(
-	{ctor: '[]'});
 var _user$project$Helper$titles = _elm_lang$core$Array$fromList(
 	{
 		ctor: '::',
@@ -10933,8 +10931,8 @@ var _user$project$Helper$title = function (day) {
 			});
 	}
 };
-var _user$project$Helper$project = F3(
-	function (day, proj, model) {
+var _user$project$Helper$project = F4(
+	function (day, description, proj, model) {
 		var header = A2(
 			_elm_lang$html$Html$div,
 			{
@@ -10972,16 +10970,21 @@ var _user$project$Helper$project = F3(
 					}
 				}
 			});
-		var description = A2(
-			_elm_lang$core$Maybe$withDefault,
-			'',
-			A2(_elm_lang$core$Array$get, day - 1, _user$project$Helper$descriptions));
 		var tomorrow = A2(_elm_lang$core$Array$get, day, _user$project$Helper$titles);
 		var yesterday = A2(_elm_lang$core$Array$get, day - 2, _user$project$Helper$titles);
 		var today = A2(_elm_lang$core$Array$get, day - 1, _user$project$Helper$titles);
 		return A2(
 			_elm_lang$html$Html$div,
-			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$style(
+					{
+						ctor: '::',
+						_0: {ctor: '_Tuple2', _0: 'font-family', _1: 'sans-serif'},
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			},
 			{
 				ctor: '::',
 				_0: A2(
@@ -11038,8 +11041,20 @@ var _user$project$Helper$project = F3(
 							_0: _elm_lang$html$Html_Attributes$style(
 								{
 									ctor: '::',
-									_0: {ctor: '_Tuple2', _0: 'padding', _1: '0 50px'},
-									_1: {ctor: '[]'}
+									_0: {ctor: '_Tuple2', _0: 'margin', _1: '0 auto'},
+									_1: {
+										ctor: '::',
+										_0: {ctor: '_Tuple2', _0: 'width', _1: '70vw'},
+										_1: {
+											ctor: '::',
+											_0: {ctor: '_Tuple2', _0: 'max-width', _1: '800px'},
+											_1: {
+												ctor: '::',
+												_0: {ctor: '_Tuple2', _0: 'padding-bottom', _1: '50px'},
+												_1: {ctor: '[]'}
+											}
+										}
+									}
 								}),
 							_1: {ctor: '[]'}
 						},
@@ -11048,6 +11063,7 @@ var _user$project$Helper$project = F3(
 				}
 			});
 	});
+var _user$project$Matrix$description = '\nAround 2008 I found an series of articles about development for beginners.\nIt was written by [Ido Gendel](http://www.idogendel.com/),\nits name was a pun, and it discussed all sorts of topics. It was great.\nAlmost 10 years later I still remember it and I still think it\'s great.\n\nThere are two articles I especially liked.\n[This](http://net.nana10.co.il/Article/?ArticleID=613745) is one of them,\nand this project is a reimplementation of it. The second one is yet to come.\n';
 var _user$project$Matrix$view = function (model) {
 	return A2(
 		_elm_lang$svg$Svg$svg,
@@ -11211,7 +11227,7 @@ var _user$project$Matrix$main = _elm_lang$html$Html$program(
 		init: A2(_user$project$Matrix$init, 500, 500),
 		subscriptions: _user$project$Matrix$subscriptions,
 		update: _user$project$Matrix$update,
-		view: A2(_user$project$Helper$project, 19, _user$project$Matrix$view)
+		view: A3(_user$project$Helper$project, 19, _user$project$Matrix$description, _user$project$Matrix$view)
 	})();
 var Elm = {};
 Elm['Matrix'] = Elm['Matrix'] || {};

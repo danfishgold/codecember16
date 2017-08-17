@@ -114,7 +114,7 @@ update msg model =
         SetVertices vertices ->
             ( { model | vertices = vertices }, Cmd.none )
 
-        Key 32 ->
+        Key 13 ->
             ( model, randomizeVertices model.width model.height 9 )
 
         Key _ ->

@@ -209,7 +209,7 @@ branchOut wd ht ( pts, lvl ) =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Key 32 ->
+        Key 13 ->
             { model | lightnings = [] } |> restart
 
         Key _ ->

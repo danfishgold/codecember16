@@ -61,7 +61,7 @@ update msg model =
         SetTile tile ->
             ( { model | tile = tile |> Debug.log "tile" }, Cmd.none )
 
-        Key 32 ->
+        Key 13 ->
             ( model, randomize )
 
         Key _ ->

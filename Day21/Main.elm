@@ -131,7 +131,7 @@ update msg model =
         Tick dt ->
             ( { model | time = model.time + dt }, Cmd.none )
 
-        Key 32 ->
+        Key 13 ->
             ( model, makePlanets model.count model.sunRadius )
 
         Key _ ->

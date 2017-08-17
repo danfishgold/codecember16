@@ -59,7 +59,7 @@ update msg model =
         SetPolyominos polyominos ->
             ( { model | polyominos = polyominos }, Cmd.none )
 
-        Key 32 ->
+        Key 13 ->
             ( model, randomize )
 
         Key _ ->

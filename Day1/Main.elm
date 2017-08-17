@@ -50,8 +50,8 @@ type Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case (Debug.log "message" msg) of
-        KeyPressed 32 ->
+    case msg of
+        KeyPressed 13 ->
             ( model, Random.generate SetModel randomModel )
 
         KeyPressed _ ->

@@ -1,12 +1,12 @@
-module Headache exposing (..)
+module Headache exposing (main)
 
-import Html exposing (program)
-import Helper exposing (project)
-import Svg exposing (Svg, svg, g)
-import Svg.Attributes exposing (width, height, transform, cx, cy, r, fill)
-import AnimationFrame
+import Browser exposing (document)
+import Browser.Events
 import Color exposing (Color)
-import Color.Convert exposing (colorToCssRgb)
+import Helper exposing (project)
+import Svg exposing (Svg, g, svg)
+import Svg.Attributes exposing (cx, cy, fill, height, r, transform, width)
+import Time
 
 
 type alias Model =
@@ -17,7 +17,7 @@ type alias Model =
 
 
 type Msg
-    = Tick Float
+    = Tick Time.Posix
 
 
 init : Float -> Float -> ( Model, Cmd Msg )
@@ -36,7 +36,7 @@ init width height =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    AnimationFrame.times Tick
+    Browser.Events.onAnimationFrame Tick
 
 
 
@@ -46,9 +46,13 @@ subscriptions model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Tick time ->
+        Tick posix ->
+            let
+                time =
+                    Time.posixToMillis posix |> toFloat
+            in
             ( { model
-                | angle = time / 100 |> \t -> t - 360 * toFloat (floor (t / 360))
+                | angle = time / 100 |> (\t -> t - 360 * toFloat (floor (t / 360)))
               }
             , Cmd.none
             )
@@ -63,17 +67,17 @@ ring ringRadius circleRadius n angle color =
     let
         circle theta =
             Svg.circle
-                [ cx <| toString <| ringRadius * cos theta
-                , cy <| toString <| ringRadius * sin theta
-                , r <| toString circleRadius
-                , fill <| colorToCssRgb color
+                [ cx <| String.fromFloat <| ringRadius * cos theta
+                , cy <| String.fromFloat <| ringRadius * sin theta
+                , r <| String.fromFloat circleRadius
+                , fill <| Color.toCssString color
                 ]
                 []
     in
-        List.range 0 n
-            |> List.map (\k -> 360 * toFloat k / toFloat n |> degrees)
-            |> List.map circle
-            |> g [ transform <| "rotate(" ++ toString angle ++ ")" ]
+    List.range 0 n
+        |> List.map (\k -> 360 * toFloat k / toFloat n |> degrees)
+        |> List.map circle
+        |> g [ transform <| "rotate(" ++ String.fromFloat angle ++ ")" ]
 
 
 view : Model -> Svg Msg
@@ -86,13 +90,14 @@ view model =
             toFloat i * 15
 
         circR i =
-            if i % 2 == 0 then
+            if modBy 2 i == 0 then
                 4
+
             else
                 8
 
         angle i =
-            model.angle * toFloat (i % 5 * 2 - 3)
+            model.angle * toFloat (modBy 5 i * 2 - 3)
 
         color i =
             Color.red
@@ -100,17 +105,17 @@ view model =
         aRing i =
             ring (ringR i) (circR i) (n i) (angle i) (color i)
     in
-        List.range 1 15
-            |> List.map aRing
-            |> g
-                [ transform <|
-                    "translate("
-                        ++ toString (model.width / 2)
-                        ++ ","
-                        ++ toString (model.height / 2)
-                        ++ ")"
-                ]
-            |> \g -> svg [ width <| toString model.width, height <| toString model.height ] [ g ]
+    List.range 1 15
+        |> List.map aRing
+        |> g
+            [ transform <|
+                "translate("
+                    ++ String.fromFloat (model.width / 2)
+                    ++ ","
+                    ++ String.fromFloat (model.height / 2)
+                    ++ ")"
+            ]
+        |> (\g -> svg [ width <| String.fromFloat model.width, height <| String.fromFloat model.height ] [ g ])
 
 
 
@@ -127,10 +132,10 @@ It was inspired mostly by optical illusions.
 """
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    program
-        { init = init 500 500
+    document
+        { init = always <| init 500 500
         , subscriptions = subscriptions
         , update = update
         , view = view |> project 17 description

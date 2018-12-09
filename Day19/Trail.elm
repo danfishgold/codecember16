@@ -1,12 +1,11 @@
 module Day19.Trail exposing (Trail, random, update, view)
 
-import Random
-import Random.Extra exposing (oneIn, constant, combine)
-import Random.Char
-import Svg exposing (Svg, g, text, text_)
-import Svg.Attributes exposing (x, y, fontFamily, fontSize, fill)
 import Color exposing (Color)
-import Color.Convert exposing (colorToCssRgb)
+import Random exposing (constant)
+import Random.Char
+import Random.Extra exposing (combine, oneIn)
+import Svg exposing (Svg, g, text, text_)
+import Svg.Attributes exposing (fill, fontFamily, fontSize, x, y)
 
 
 characters : List Char
@@ -39,18 +38,18 @@ random width letterCount =
         x =
             Random.int 0 (width - 1)
 
-        trail letters pace x =
-            { letters = letters, pace = pace, x = x, y = -1 }
+        trail letters_ pace_ x_ =
+            { letters = letters_, pace = pace_, x = x_, y = -1 }
     in
-        Random.map3 trail
-            letters
-            pace
-            x
+    Random.map3 trail
+        letters
+        pace
+        x
 
 
 update : Int -> Trail -> Random.Generator Trail
 update time trail =
-    if time % trail.pace == 0 then
+    if modBy trail.pace time == 0 then
         let
             movedTrail =
                 { trail | y = trail.y + 1 }
@@ -61,6 +60,7 @@ update time trail =
                         (\change ->
                             if change then
                                 randomLetter
+
                             else
                                 constant letter
                         )
@@ -69,18 +69,19 @@ update time trail =
                 randomLetter
                     |> Random.map (\new -> new :: letters |> List.take (List.length letters))
         in
-            trail.letters
-                |> List.indexedMap maybeChangeLetter
-                |> combine
-                |> Random.andThen addNewLetter
-                |> Random.map (\letters -> { movedTrail | letters = letters })
+        trail.letters
+            |> List.indexedMap maybeChangeLetter
+            |> combine
+            |> Random.andThen addNewLetter
+            |> Random.map (\letters -> { movedTrail | letters = letters })
+
     else
         constant trail
 
 
 letterColor : Int -> Int -> Color
 letterColor n k =
-    Color.hsl (degrees 120) 1 (toFloat (n - k) / toFloat n)
+    Color.hsl (1 / 3) 1 (toFloat (n - k) / toFloat n)
 
 
 view : String -> Float -> Trail -> Svg msg
@@ -92,13 +93,13 @@ view font letterSize trail =
         letterView x0 y0 k letter =
             text_
                 [ fontFamily font
-                , fontSize <| toString letterSize
-                , fill <| colorToCssRgb <| letterColor n k
-                , x <| toString <| toFloat x0 * letterSize
-                , y <| toString <| toFloat (y0 - k) * letterSize
+                , fontSize <| String.fromFloat letterSize
+                , fill <| Color.toCssString <| letterColor n k
+                , x <| String.fromFloat <| toFloat x0 * letterSize
+                , y <| String.fromFloat <| toFloat (y0 - k) * letterSize
                 ]
                 [ text <| String.fromChar letter ]
     in
-        trail.letters
-            |> List.indexedMap (letterView trail.x trail.y)
-            |> g []
+    trail.letters
+        |> List.indexedMap (letterView trail.x trail.y)
+        |> g []

@@ -1,11 +1,11 @@
-module UrlParallax exposing (..)
+module UrlParallax exposing (main)
 
-import Html exposing (program)
+import Browser exposing (document)
+import Browser.Dom exposing (getViewport)
+import Browser.Events as Events
 import Helper
 import Html exposing (Html, div, text)
-import Window
-import Mouse
-import Navigation exposing (Location)
+import Json.Decode as Json
 import Task
 
 
@@ -29,18 +29,8 @@ type Msg
     | None
 
 
-widthFromWindow : Window.Size -> Msg
-widthFromWindow { width } =
-    SetWidth (toFloat width)
-
-
-fractionFromMouse : Model -> Mouse.Position -> Msg
-fractionFromMouse { width } { x } =
-    SetFraction (toFloat x / width)
-
-
-init : Location -> ( Model, Cmd Msg )
-init _ =
+init : ( Model, Cmd Msg )
+init =
     ( { width = 1
       , fraction = 0.5
       , objects =
@@ -51,7 +41,9 @@ init _ =
             , Object "┌┐" 1.1 6
             ]
       }
-    , Task.perform widthFromWindow Window.size
+    , getViewport
+        |> Task.map (\{ viewport } -> viewport.width)
+        |> Task.perform SetWidth
     )
 
 
@@ -62,9 +54,21 @@ init _ =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Mouse.moves (fractionFromMouse model)
-        , Window.resizes widthFromWindow
+        [ onMouseMoves model SetFraction
+        , onWindowResize SetWidth
         ]
+
+
+onMouseMoves model toMsg =
+    Events.onMouseMove
+        (Json.field "x" Json.float
+            |> Json.map (\x -> x / model.width)
+            |> Json.map toMsg
+        )
+
+
+onWindowResize toMsg =
+    Events.onResize (\wd ht -> toMsg (toFloat wd))
 
 
 
@@ -93,12 +97,12 @@ url n objects f0 =
                 after =
                     str |> String.dropLeft (k + String.length obj.str)
             in
-                before ++ obj.str ++ after
+            before ++ obj.str ++ after
     in
-        objects
-            |> List.sortBy .z
-            |> List.map (project f0)
-            |> List.foldr addToString base
+    objects
+        |> List.sortBy .z
+        |> List.map (project f0)
+        |> List.foldr addToString base
 
 
 baseUrl : String
@@ -106,29 +110,17 @@ baseUrl =
     "http://fishgold.co/codecember16/Day12/"
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> Model
 update msg model =
     case msg of
         SetWidth width ->
-            ( { model | width = width }, Cmd.none )
+            { model | width = width }
 
         SetFraction f ->
-            let
-                oldUrl =
-                    url 70 model.objects model.fraction
-
-                newUrl =
-                    url 70 model.objects f
-            in
-                ( { model | fraction = f }
-                , -- if newUrl /= oldUrl then
-                  --     Navigation.modifyUrl (baseUrl ++ newUrl)
-                  --   else
-                  Cmd.none
-                )
+            { model | fraction = f }
 
         None ->
-            ( model, Cmd.none )
+            model
 
 
 
@@ -159,11 +151,11 @@ Move the mouse ¯\\\\\\_(ツ)\\_/¯
 """
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    Navigation.program (always None)
-        { init = init
+    document
+        { init = always init
         , subscriptions = subscriptions
-        , update = update
+        , update = \msg model -> ( update msg model, Cmd.none )
         , view = view |> Helper.project 12 description
         }

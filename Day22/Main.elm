@@ -1,18 +1,18 @@
-module Spirograph exposing (..)
+module Main exposing (main)
 
-import Html exposing (Html, program)
+import Browser exposing (document)
+import Browser.Events
 import Helper exposing (project)
-import Html exposing (div, input, button, text)
-import Html.Attributes as Attrs exposing (type_, style, defaultValue)
-import Html.Events exposing (onInput, onClick)
-import Svg exposing (Svg, svg, polyline, circle)
-import Svg.Attributes exposing (width, height, cx, cy, r, stroke, strokeWidth, fill, points)
-import AnimationFrame
+import Html exposing (Html, button, div, input, text)
+import Html.Attributes as Attrs exposing (style, type_, value)
+import Html.Events exposing (onClick, onInput)
+import Svg exposing (Svg, circle, polyline, svg)
+import Svg.Attributes exposing (cx, cy, fill, height, points, r, stroke, strokeWidth, width)
 
 
 radiusResolution : Float
 radiusResolution =
-    0.025
+    0.01
 
 
 type alias Point =
@@ -26,9 +26,7 @@ type alias Model =
     , smallR : Float
     , points : List Point
     , time : Float
-    , maxTime : Float
-    , v : Float
-    , live : Bool
+    , speed : Speed
     }
 
 
@@ -37,6 +35,27 @@ type Speed
     | Fast
     | Medium
     | Slow
+
+
+isLive : Speed -> Bool
+isLive speed =
+    velocity speed /= Nothing
+
+
+velocity : Speed -> Maybe Float
+velocity speed =
+    case speed of
+        Fast ->
+            Just <| 1 / 200
+
+        Medium ->
+            Just <| 1 / 300
+
+        Slow ->
+            Just <| 1 / 400
+
+        Instantaneous ->
+            Nothing
 
 
 type Msg
@@ -52,13 +71,11 @@ init width height =
     update Reset
         { width = width
         , height = height
-        , bigR = 0.35
-        , smallR = 0.35
+        , bigR = 0.6
+        , smallR = 0.6
         , points = []
         , time = 0
-        , maxTime = 0
-        , v = 1 / 200
-        , live = False
+        , speed = Fast
         }
 
 
@@ -68,8 +85,9 @@ init width height =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    if model.live then
-        AnimationFrame.diffs Tick
+    if isLive model.speed then
+        Browser.Events.onAnimationFrameDelta Tick
+
     else
         Sub.none
 
@@ -78,8 +96,10 @@ subscriptions model =
 --
 
 
-centers : Model -> Float -> ( Point, Point )
-centers { bigR, smallR, v } time =
+{-| The position of the circle and the dot inside at the given time
+-}
+centers : Model -> Float -> Float -> ( Point, Point )
+centers { bigR, smallR } v time =
     let
         ( t, t_ ) =
             ( time * v, -(1 - bigR) / bigR * time * v )
@@ -94,71 +114,65 @@ centers { bigR, smallR, v } time =
             , yCirc + bigR * smallR * sin t_
             )
     in
-        ( ( xCirc, yCirc ), ( xDot, yDot ) )
+    ( ( xCirc, yCirc ), ( xDot, yDot ) )
 
 
-{-|
-   solve for lowest n:
-     n * 6/4 = int
-   => n = 4 / 2 = 4 / gcd(6, 4)
-   The resulting integer would be 4 / gcd(6, 4) * 6/4 = 6 / gcd(6, 4) = 3
-   Meaning, nominator / gcd (nominator, denominator)
+{-| solve for lowest n:
+n \* 6/4 = int
+=> n = 4 / 2 = 4 / gcd(6, 4)
+The resulting integer would be 4 / gcd(6, 4) \* 6/4 = 6 / gcd(6, 4) = 3
+Meaning, nominator / gcd (nominator, denominator)
 
-   We want both theta1 = 2pi k and theta2 = 2pi m
-     time = 2pi k / v = 2pi m / v * r/(1-r)
-   this means we're looking for integers k, m, s.t. k = m * r/(1-r)
+We want both theta1 = 2pi k and theta2 = 2pi m
+theta = 2pi k = 2pi m \* r/(1-r)
+this means we're looking for integers k, m, s.t. k = m \* r/(1-r)
 
-   therefore, k = r / gcd (r, 1-r)
-   and t = 2pi / v * r / gcd (r, 1-r)
+therefore, k = r / gcd (r, 1-r)
+and theta = 2pi \* r / gcd (r, 1-r)
 
 -}
-maxTime : { r : Float, v : Float } -> Float
-maxTime { r, v } =
+maxTheta : Float -> Float
+maxTheta bigR =
     let
         gcd n m =
             if m == 0 then
                 n
+
             else
-                gcd m (n % m)
+                gcd m (modBy m n)
 
         ( nom, denom ) =
-            ( round <| r / radiusResolution, round <| (1 - r) / radiusResolution )
+            ( round <| bigR / radiusResolution, round <| (1 - bigR) / radiusResolution )
 
         k =
             nom // gcd nom denom
     in
-        2 * pi * toFloat k / v
+    2 * pi * toFloat k
 
 
 update : Msg -> Model -> Model
 update msg model =
     case msg of
         Tick dt ->
-            if model.live then
-                { model
-                    | time = model.time + min 32 dt
-                    , points =
-                        if model.time <= model.maxTime then
-                            centers model model.time |> Tuple.second |> \pt -> pt :: model.points
-                        else
-                            model.points
-                }
-            else
-                model
+            case velocity model.speed of
+                Just v ->
+                    { model
+                        | time = model.time + min 32 dt
+                        , points =
+                            if model.time <= maxTheta model.bigR / v then
+                                centers model v model.time
+                                    |> Tuple.second
+                                    |> (\pt -> pt :: model.points)
+
+                            else
+                                model.points
+                    }
+
+                Nothing ->
+                    model
 
         SetSpeed speed ->
-            case speed of
-                Instantaneous ->
-                    update Reset { model | live = False }
-
-                Fast ->
-                    update Reset { model | live = True, v = 1 / 200 }
-
-                Medium ->
-                    update Reset { model | live = True, v = 1 / 300 }
-
-                Slow ->
-                    update Reset { model | live = True, v = 1 / 400 }
+            update Reset { model | speed = speed }
 
         SetBigR r ->
             update Reset { model | bigR = r }
@@ -167,22 +181,21 @@ update msg model =
             update Reset { model | smallR = r }
 
         Reset ->
-            let
-                maxT =
-                    maxTime { r = model.bigR, v = model.v }
-            in
-                if model.live then
-                    { model | time = 0, points = [], maxTime = maxT }
-                else
-                    { model
-                        | points =
-                            maxT
-                                / 16
-                                |> ceiling
-                                |> List.range 0
-                                |> List.map ((*) 16 >> toFloat >> centers model >> Tuple.second)
-                        , maxTime = maxT
-                    }
+            if isLive model.speed then
+                { model | time = 0, points = [] }
+
+            else
+                let
+                    max =
+                        maxTheta model.bigR
+
+                    length =
+                        ceiling max * 30
+
+                    pt idx =
+                        Tuple.second <| centers model 1 (max * toFloat idx / toFloat length)
+                in
+                { model | points = List.map pt (List.range 0 length) }
 
 
 
@@ -195,13 +208,10 @@ svgView ({ time, bigR, smallR } as model) =
         ( xCenter, yCenter, scale ) =
             ( model.width / 2, model.height / 2, min model.width model.height / 2.2 )
 
-        ( ( xCirc, yCirc ), ( xDot, yDot ) ) =
-            centers model model.time
-
         path =
             polyline
                 [ model.points
-                    |> List.map (\( x, y ) -> toString (xCenter + scale * x) ++ "," ++ toString (yCenter + scale * y))
+                    |> List.map (\( x, y ) -> String.fromFloat (xCenter + scale * x) ++ "," ++ String.fromFloat (yCenter + scale * y))
                     |> String.join " "
                     |> points
                 , fill "none"
@@ -210,99 +220,112 @@ svgView ({ time, bigR, smallR } as model) =
                 ]
                 []
 
-        container =
-            circle
-                [ cx <| toString xCenter
-                , cy <| toString yCenter
-                , r <| toString <| 1 * scale
-                , fill "none"
-                , stroke "black"
-                , strokeWidth "1"
-                ]
-                []
-
-        circ =
-            circle
-                [ cx <| toString <| xCenter + scale * xCirc
-                , cy <| toString <| xCenter + scale * yCirc
-                , r <| toString <| bigR * scale
-                , fill "none"
-                , stroke "black"
-                , strokeWidth "1"
-                ]
-                []
-
-        dot =
-            circle
-                [ cx <| toString <| xCenter + scale * xDot
-                , cy <| toString <| xCenter + scale * yDot
-                , r <| "2"
-                , fill "black"
-                ]
-                []
+        svg_ =
+            svg [ width <| String.fromFloat model.width, height <| String.fromFloat model.height ]
     in
-        svg [ width <| toString model.width, height <| toString model.height ]
-            (if model.live then
-                [ container, circ, dot, path ]
-             else
-                [ path ]
-            )
+    case velocity model.speed of
+        Just v ->
+            let
+                ( ( xCirc, yCirc ), ( xDot, yDot ) ) =
+                    centers model v model.time
+
+                container =
+                    circle
+                        [ cx <| String.fromFloat xCenter
+                        , cy <| String.fromFloat yCenter
+                        , r <| String.fromFloat <| 1 * scale
+                        , fill "none"
+                        , stroke "black"
+                        , strokeWidth "1"
+                        ]
+                        []
+
+                circ =
+                    circle
+                        [ cx <| String.fromFloat <| xCenter + scale * xCirc
+                        , cy <| String.fromFloat <| xCenter + scale * yCirc
+                        , r <| String.fromFloat <| bigR * scale
+                        , fill "none"
+                        , stroke "black"
+                        , strokeWidth "1"
+                        ]
+                        []
+
+                dot =
+                    circle
+                        [ cx <| String.fromFloat <| xCenter + scale * xDot
+                        , cy <| String.fromFloat <| xCenter + scale * yDot
+                        , r <| "2"
+                        , fill "black"
+                        ]
+                        []
+            in
+            svg_ [ container, circ, dot, path ]
+
+        Nothing ->
+            svg_ [ path ]
 
 
 view : Model -> Html Msg
 view model =
     let
         onValue msg =
-            onInput (String.toFloat >> Result.withDefault 0 >> msg)
+            onInput (String.toFloat >> Maybe.withDefault 0 >> msg)
 
-        radio msg name title checked =
-            div [ style [ ( "display", "flex" ), ( "align-items", "center" ) ] ]
+        radio toMsg name title val checked =
+            div [ style "display" "flex", style "align-items" "center" ]
                 [ input
                     [ type_ "radio"
                     , Attrs.name name
-                    , onClick msg
+                    , onClick <| toMsg val
                     , Attrs.checked checked
                     ]
                     []
                 , text title
                 ]
+
+        radios toMsg name titlesAndValues selectedValue =
+            titlesAndValues
+                |> List.map
+                    (\( title, value ) ->
+                        radio toMsg name title value (value == selectedValue)
+                    )
+                |> div [ style "display" "flex" ]
     in
-        div
-            [ style
-                [ ( "display", "flex" )
-                , ( "flex-direction", "column" )
-                , ( "align-items", "center" )
-                , ( "margin", "20px auto" )
-                ]
+    div
+        [ style "display" "flex"
+        , style "flex-direction" "column"
+        , style "align-items" "center"
+        , style "margin" "20px auto"
+        ]
+        [ radios SetSpeed
+            "v"
+            [ ( "Instantaneous", Instantaneous )
+            , ( "Fast", Fast )
+            , ( "Medium", Medium )
+            , ( "Slow", Slow )
             ]
-            [ div [ style [ ( "display", "flex" ) ] ]
-                [ radio (SetSpeed Instantaneous) "v" "Instantaneous" True
-                , radio (SetSpeed Fast) "v" "Fast" False
-                , radio (SetSpeed Medium) "v" "Medium" False
-                , radio (SetSpeed Slow) "v" "Slow" False
-                ]
-            , text "Big radius"
-            , input
-                [ onValue SetBigR
-                , type_ "range"
-                , Attrs.min "0"
-                , Attrs.max "1"
-                , Attrs.step <| toString radiusResolution
-                , defaultValue "0.8"
-                ]
-                []
-            , text "Small radius"
-            , input
-                [ onValue SetSmallR
-                , type_ "range"
-                , Attrs.min "0"
-                , Attrs.max "1"
-                , Attrs.step <| toString radiusResolution
-                , defaultValue "0.8"
-                ]
-                []
-            , svgView model
+            model.speed
+        , text "Big radius"
+        , input
+            [ onValue SetBigR
+            , type_ "range"
+            , Attrs.min "0"
+            , Attrs.max "1"
+            , Attrs.step <| String.fromFloat radiusResolution
             ]
+            []
+        , text "Small radius"
+        , input
+            [ onValue SetSmallR
+            , type_ "range"
+            , Attrs.min "0"
+            , Attrs.max "1"
+            , Attrs.step <| String.fromFloat radiusResolution
+            ]
+            []
+        , svgView model
+        ]
 
 
 
@@ -319,10 +342,10 @@ I thought I'd have a lot to say about every project but I was wrong.
 """
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    program
-        { init = ( init 500 500, Cmd.none )
+    document
+        { init = always <| ( init 500 500, Cmd.none )
         , subscriptions = subscriptions
         , update = \msg model -> ( update msg model, Cmd.none )
         , view = view |> project 22 description

@@ -1,31 +1,42 @@
-module Frequency exposing (..)
+module Frequency exposing (main)
 
-import Html exposing (program)
+import Browser exposing (document)
+import Browser.Events
 import Helper exposing (project)
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (style)
-import AnimationFrame exposing (diffs)
-import Time exposing (Time, second)
+import Time
 
 
 type alias Model =
-    { events : List { title : String, duration : Float, current : Time, fired : Bool } }
+    { events :
+        List
+            { title : String
+            , duration : Float
+            , current : Float
+            , fired : Bool
+            }
+    }
 
 
 type Msg
-    = Tick Time
+    = Tick Float
 
 
 init : List ( String, Float ) -> ( Model, Cmd Msg )
-init events =
+init events_ =
     let
         addInitials ( title, duration ) =
-            { title = title, duration = duration, current = 0, fired = False }
+            { title = title
+            , duration = duration
+            , current = 0
+            , fired = False
+            }
     in
-        ( { events = events |> List.map addInitials
-          }
-        , Cmd.none
-        )
+    ( { events = List.map addInitials events_
+      }
+    , Cmd.none
+    )
 
 
 
@@ -34,7 +45,7 @@ init events =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    diffs Tick
+    Browser.Events.onAnimationFrameDelta Tick
 
 
 
@@ -49,10 +60,11 @@ update msg model =
                 progress ({ current, duration } as event) =
                     if current + dt > duration then
                         { event | current = current + dt - duration, fired = True }
+
                     else
                         { event | current = current + dt }
             in
-                ( { model | events = model.events |> List.map progress }, Cmd.none )
+            ( { model | events = model.events |> List.map progress }, Cmd.none )
 
 
 
@@ -60,50 +72,51 @@ update msg model =
 
 
 view : String -> String -> Model -> Html Msg
-view width height { events } =
+view width height model =
     let
         eventDiv title opacity =
             div
-                [ style
-                    [ ( "width", width )
-                    , ( "height", height )
-                    , ( "flex", "0 1 auto" )
-                    , ( "opacity", toString <| opacity )
-                    , ( "display", "flex" )
-                    , ( "text-align", "center" )
-                    , ( "align-items", "center" )
-                    , ( "justify-content", "center" )
-                    , ( "padding", "10px 10px" )
-                    ]
+                [ style "width" width
+                , style "height" height
+                , style "flex" "0 1 auto"
+                , style "opacity" (String.fromFloat opacity)
+                , style "display" "flex"
+                , style "text-align" "center"
+                , style "align-items" "center"
+                , style "justify-content" "center"
+                , style "padding" "10px 10px"
                 ]
                 [ text title ]
 
         event { title, duration, current, fired } =
             if not fired then
                 eventDiv title 0
+
             else
                 eventDiv title <| decay <| current / (0.25 * second)
     in
-        events
-            |> List.map event
-            |> div
-                [ style
-                    [ ( "width", "95%" )
-                    , ( "max-width", "900px" )
-                    , ( "margin", "0 auto" )
-                    , ( "display", "flex" )
-                    , ( "flex-wrap", "wrap" )
-                    ]
-                ]
+    model.events
+        |> List.map event
+        |> div
+            [ style "width" "95%"
+            , style "max-width" "900px"
+            , style "margin" "0 auto"
+            , style "display" "flex"
+            , style "flex-wrap" "wrap"
+            ]
 
 
-decay : Time -> Float
+decay : Float -> Float
 decay f =
     0.15 + 0.85 * e ^ -f
 
 
 
 --
+
+
+second =
+    1000
 
 
 events : List ( String, Float )
@@ -177,10 +190,10 @@ In 2013 I implemented it in Mathematica, which was probably the weirdest choice 
 """
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    program
-        { init = init events
+    document
+        { init = always <| init events
         , subscriptions = subscriptions
         , update = update
         , view = view "150px" "45px" |> project 4 description

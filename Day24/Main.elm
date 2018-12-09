@@ -1,16 +1,15 @@
-module Koalas exposing (..)
+module Koalas exposing (main)
 
-import Html exposing (program)
+import Browser exposing (document)
+import Color exposing (Color)
+import Day2.Random exposing (ryb1, ryb2v2)
+import Day24.Tree as Tree exposing (Tree(..))
 import Helper exposing (project)
-import Svg exposing (Svg, svg, rect)
-import Svg.Attributes exposing (x, y, width, height, fill)
 import Random
 import Random.Extra exposing (sample)
-import Color exposing (Color)
-import Color.Convert exposing (colorToCssRgb)
-import Day2.Random exposing (ryb1, ryb2v2)
-import Time exposing (Time, every, second)
-import Day24.Tree as Tree exposing (Tree(..))
+import Svg exposing (Svg, rect, svg)
+import Svg.Attributes exposing (fill, height, width, x, y)
+import Time exposing (Posix, every)
 
 
 type alias Model =
@@ -22,7 +21,7 @@ type alias Model =
 
 
 type Msg
-    = Tick Time
+    = Tick Posix
     | Expand Tree.Index
     | Retract Tree.Index
     | SetNode ( Tree.Index, Tree Color )
@@ -45,7 +44,7 @@ init width height =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    every (0.1 * second) Tick
+    every 100 Tick
 
 
 
@@ -64,11 +63,10 @@ randomAction model =
         oneLevelUp idx =
             List.take (List.length idx - 1) idx
     in
-        Random.Extra.frequency
-            [ ( 1, randomLeafIdx |> Random.map oneLevelUp |> Random.map Retract )
-            , ( 12, randomLeafIdx |> Random.map Expand )
-            ]
-            |> Random.generate identity
+    Random.Extra.frequency
+        ( 1, randomLeafIdx |> Random.map oneLevelUp |> Random.map Retract )
+        [ ( 12, randomLeafIdx |> Random.map Expand ) ]
+        |> Random.generate identity
 
 
 setNodes : List ( Tree.Index, Tree a ) -> Tree a -> Tree a
@@ -90,11 +88,11 @@ update msg model =
 
         Expand idx ->
             let
-                node ( c1, c2, c3, c4 ) =
+                node { c1, c2, c3, c4 } =
                     Tree (Leaf c1) (Leaf c2) (Leaf c3) (Leaf c4)
-                        |> \node -> ( idx, node )
+                        |> (\node_ -> ( idx, node_ ))
             in
-                ( model, ryb2v2 1 0.5 45 |> Random.map node |> Random.generate SetNode )
+            ( model, ryb2v2 1 0.5 45 |> Random.map node |> Random.generate SetNode )
 
         Retract idx ->
             ( model, ryb1 1 0.5 |> Random.map (\c -> ( idx, Leaf c )) |> Random.generate SetNode )
@@ -117,10 +115,11 @@ view model =
 
                 i :: rest ->
                     location rest
-                        |> \( x, y ) ->
-                            ( 0.5 * toFloat (i % 2) + 0.5 * x
-                            , 0.5 * toFloat (i // 2) + 0.5 * y
-                            )
+                        |> (\( x, y ) ->
+                                ( 0.5 * toFloat (modBy 2 i) + 0.5 * x
+                                , 0.5 * toFloat (i // 2) + 0.5 * y
+                                )
+                           )
 
         nodeRect i c =
             let
@@ -128,20 +127,20 @@ view model =
                     location i
 
                 side =
-                    List.length i |> toFloat |> \n -> 0.5 ^ n
+                    List.length i |> toFloat |> (\n -> 0.5 ^ n)
             in
-                rect
-                    [ x <| toString <| model.width * x0
-                    , y <| toString <| model.height * y0
-                    , width <| toString <| model.width * side
-                    , height <| toString <| model.height * side
-                    , fill <| colorToCssRgb c
-                    ]
-                    []
+            rect
+                [ x <| String.fromFloat <| model.width * x0
+                , y <| String.fromFloat <| model.height * y0
+                , width <| String.fromFloat <| model.width * side
+                , height <| String.fromFloat <| model.height * side
+                , fill <| Color.toCssString c
+                ]
+                []
     in
-        model.tree
-            |> Tree.indexedMap nodeRect
-            |> svg [ width <| toString model.width, height <| toString model.height ]
+    model.tree
+        |> Tree.indexedMap nodeRect
+        |> svg [ width <| String.fromFloat model.width, height <| String.fromFloat model.height ]
 
 
 
@@ -158,10 +157,10 @@ This is an homage, mostly because recreating it would have been dificult.
 """
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    program
-        { init = init 500 500
+    document
+        { init = always <| init 500 500
         , subscriptions = subscriptions
         , update = update
         , view = view |> project 24 description

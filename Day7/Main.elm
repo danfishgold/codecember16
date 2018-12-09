@@ -1,14 +1,15 @@
-port module Loops exposing (..)
+port module Loops exposing (main)
 
-import Html exposing (program)
-import Helper exposing (project)
-import Svg exposing (Svg, svg, path)
-import Svg.Attributes exposing (width, height, fill, d)
+import Browser exposing (document)
+import Browser.Events
 import Color exposing (Color)
-import Color.Convert exposing (colorToCssRgba)
 import Day2.Ryb exposing (ryba)
+import Helper exposing (onEnter, project)
+import Json.Decode as Json
+import Json.Encode exposing (Value)
 import String
-import Keyboard exposing (KeyCode)
+import Svg exposing (Svg, path, svg)
+import Svg.Attributes exposing (d, fill, height, width)
 
 
 type alias Model =
@@ -22,7 +23,7 @@ type alias Model =
 
 type Msg
     = SetLoops (List Loop)
-    | Key KeyCode
+    | RequestLoops
 
 
 type alias Point =
@@ -44,7 +45,13 @@ init width height minLength maxLength count =
       , minLength = minLength
       , maxLength = maxLength
       }
-    , requestLoops ( width, height, minLength, maxLength, count )
+    , requestLoops
+        { width = width
+        , height = height
+        , minLength = minLength
+        , maxLength = maxLength
+        , count = count
+        }
     )
 
 
@@ -71,10 +78,10 @@ Hit enter to randomize.
 """
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    program
-        { init = init 100 100 400 1400 20
+    document
+        { init = always <| init 100 100 400 1400 20
         , subscriptions = subscriptions
         , update = update
         , view = view 5 |> project 7 description
@@ -91,7 +98,14 @@ type alias JSLoop =
 
 {-| width, height, minLength, maxLength, count
 -}
-port requestLoops : ( Int, Int, Int, Int, Int ) -> Cmd msg
+port requestLoops :
+    { width : Int
+    , height : Int
+    , minLength : Int
+    , maxLength : Int
+    , count : Int
+    }
+    -> Cmd msg
 
 
 port getLoops : (List JSLoop -> msg) -> Sub msg
@@ -101,7 +115,7 @@ parseLoop : JSLoop -> Loop
 parseLoop ( deltas, center, hue ) =
     { deltas = deltas
     , center = center
-    , color = ryba (hue) 1 0.5 0.5
+    , color = ryba hue 1 0.5 0.5
     }
 
 
@@ -109,7 +123,7 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ getLoops (List.map parseLoop >> SetLoops)
-        , Keyboard.ups Key
+        , onEnter RequestLoops
         ]
 
 
@@ -123,19 +137,16 @@ update msg model =
         SetLoops loops ->
             ( { model | loops = loops }, Cmd.none )
 
-        Key 13 ->
+        RequestLoops ->
             ( model
             , requestLoops
-                ( model.width
-                , model.height
-                , model.minLength
-                , model.maxLength
-                , List.length model.loops
-                )
+                { width = model.width
+                , height = model.height
+                , minLength = model.minLength
+                , maxLength = model.maxLength
+                , count = List.length model.loops
+                }
             )
-
-        Key _ ->
-            ( model, Cmd.none )
 
 
 
@@ -154,22 +165,22 @@ view res model =
         command cmd ( x, y ) =
             cmd
                 ++ " "
-                ++ toString (toFloat x * res)
+                ++ String.fromFloat (toFloat x * res)
                 ++ " "
-                ++ toString (toFloat y * res)
+                ++ String.fromFloat (toFloat y * res)
 
         pathD { deltas, center } =
-            (command "M" center)
+            command "M" center
                 :: (deltas |> List.map (command "l"))
                 |> String.join " "
 
         loopPath loop =
             path
-                [ fill <| colorToCssRgba loop.color
+                [ fill <| Color.toCssString loop.color
                 , d <| pathD loop
                 ]
                 []
     in
-        model.loops
-            |> List.map loopPath
-            |> svg [ width <| toString wd, height <| toString ht ]
+    model.loops
+        |> List.map loopPath
+        |> svg [ width <| String.fromFloat wd, height <| String.fromFloat ht ]

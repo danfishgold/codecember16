@@ -1,8 +1,9 @@
-module Pointer exposing (Position, click, down, up, move)
+module Pointer exposing (Position, click, down, move, up)
 
-import Json.Decode as Json
+import Html exposing (Attribute, Html)
 import Html.Events exposing (on)
-import Html exposing (Html, Attribute)
+import Json.Decode as Json
+
 
 
 --
@@ -14,7 +15,7 @@ type alias Position =
 
 position : Json.Decoder Position
 position =
-    Json.map2 (,)
+    Json.map2 (\a b -> ( a, b ))
         (Json.field "offsetX" Json.float)
         (Json.field "offsetY" Json.float)
 

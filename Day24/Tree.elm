@@ -1,16 +1,15 @@
-module Day24.Tree
-    exposing
-        ( Tree(..)
-        , Index
-        , size
-        , get
-        , set
-        , update
-        , map
-        , indexedMap
-        , leafIndexes
-        , rootIndexes
-        )
+module Day24.Tree exposing
+    ( Index
+    , Tree(..)
+    , get
+    , indexedMap
+    , leafIndexes
+    , map
+    , rootIndexes
+    , set
+    , size
+    , update
+    )
 
 
 type Tree a
@@ -104,17 +103,17 @@ map fn tree =
 indexedMap : (Index -> a -> b) -> Tree a -> List b
 indexedMap fn tree =
     let
-        sub fn idx tree =
-            case tree of
+        sub fn_ idx tree_ =
+            case tree_ of
                 Leaf x ->
-                    [ fn idx x ]
+                    [ fn_ idx x ]
 
                 Tree a b c d ->
                     [ a, b, c, d ]
-                        |> List.indexedMap (\i t -> sub fn (idx ++ [ i ]) t)
+                        |> List.indexedMap (\i t -> sub fn_ (idx ++ [ i ]) t)
                         |> List.concatMap identity
     in
-        sub fn [] tree
+    sub fn [] tree
 
 
 leafIndexes : Tree a -> List Index

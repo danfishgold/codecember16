@@ -1,20 +1,23 @@
-module Poisson exposing (..)
+module Poisson exposing (main)
 
-import Html exposing (program)
-import Html exposing (Html, div, text)
-import Svg exposing (Svg, svg, g)
-import Svg.Attributes exposing (cx, cy, r, fill, width, height)
-import Set exposing (Set)
 import Array exposing (Array)
-import Random exposing (Generator)
-import Random.Set
-import Random.Extra
+import Browser exposing (document)
+import Browser.Events
 import Color exposing (Color, black, red)
-import Color.Convert exposing (colorToCssRgb)
-import Time exposing (Time, every, second)
-import AnimationFrame
 import Day6.Array2D as Array2D exposing (Array2D)
 import Helper exposing (project)
+import Html exposing (Html, div, text)
+import Random exposing (Generator)
+import Random.Extra
+import Random.Set
+import Set exposing (Set)
+import Svg exposing (Svg, g, svg)
+import Svg.Attributes exposing (cx, cy, fill, height, r, width)
+import Time exposing (every)
+
+
+second =
+    1000
 
 
 type alias Point =
@@ -24,16 +27,16 @@ type alias Point =
 type alias Model =
     { activeList : Set Int
     , grid : Array2D Int
-    , background : Array ( Point, Time )
+    , background : Array ( Point, Float )
     , r : Float
     , k : Int
-    , time : Time
-    , animationTime : Time
+    , time : Float
+    , animationTime : Float
     }
 
 
 type Msg
-    = Tick Time
+    = Tick Float
     | HandleActivePoint (Maybe Int)
     | HandleCandidates Int (List Point)
     | MakeAlgorithmStep
@@ -48,17 +51,17 @@ init k r =
         gridCellCount =
             ceiling (1 / gridCellSize)
     in
-        ( { activeList = Set.empty
-          , grid = Array2D.empty gridCellCount gridCellCount
-          , background = Array.empty
-          , r = r
-          , k = k
-          , time = 0
-          , animationTime = 0.2 * second
-          }
-            |> addActive ( 0, 0 )
-        , Cmd.none
-        )
+    ( { activeList = Set.empty
+      , grid = Array2D.empty gridCellCount gridCellCount
+      , background = Array.empty
+      , r = r
+      , k = k
+      , time = 0
+      , animationTime = 0.2 * second
+      }
+        |> addActive ( 0, 0 )
+    , Cmd.none
+    )
 
 
 
@@ -74,12 +77,14 @@ subscriptions model =
                 |> Array.toList
                 |> List.any (\t -> model.time < t + model.animationTime + 0.1 * second)
         then
-            AnimationFrame.diffs Tick
+            Browser.Events.onAnimationFrameDelta Tick
+
         else
             Sub.none
+
     else
         Sub.batch
-            [ AnimationFrame.diffs Tick
+            [ Browser.Events.onAnimationFrameDelta Tick
             , Time.every (0.001 * second) (always MakeAlgorithmStep)
             ]
 
@@ -107,20 +112,20 @@ update msg ({ r, k, activeList, background, grid } as model) =
                         |> Maybe.map Tuple.first
 
                 idxAndPoint =
-                    Maybe.map2 (,)
+                    Maybe.map2 (\a b -> ( a, b ))
                         maybePointIndex
                         (maybePointIndex |> Maybe.andThen pointFromIndex)
             in
-                case idxAndPoint of
-                    Nothing ->
-                        ( model, Cmd.none )
+            case idxAndPoint of
+                Nothing ->
+                    ( model, Cmd.none )
 
-                    Just ( pIdx, p ) ->
-                        ( model
-                        , Random.generate
-                            (HandleCandidates pIdx)
-                            (Random.list k (randomPointAround r p))
-                        )
+                Just ( pIdx, p ) ->
+                    ( model
+                    , Random.generate
+                        (HandleCandidates pIdx)
+                        (Random.list k (randomPointAround r p))
+                    )
 
         HandleCandidates pIdx qs ->
             case findFirst (gridIdxsIfFarEnough model) qs of
@@ -147,11 +152,11 @@ addActive pt ({ background, activeList, grid, time } as model) =
         ( i, j ) =
             gridIdxs model pt
     in
-        { model
-            | background = Array.push ( pt, time ) background
-            , activeList = Set.insert idx activeList
-            , grid = Array2D.set i j (Just idx) grid
-        }
+    { model
+        | background = Array.push ( pt, time ) background
+        , activeList = Set.insert idx activeList
+        , grid = Array2D.set i j (Just idx) grid
+    }
 
 
 findFirst : (a -> Maybe b) -> List a -> Maybe a
@@ -183,11 +188,11 @@ randomPointAround r ( x, y ) =
         arg =
             Random.float 0 (2 * pi)
 
-        pt r t =
-            ( x + r * cos t, y + r * sin t )
+        pt r_ t =
+            ( x + r_ * cos t, y + r_ * sin t )
     in
-        Random.map2 pt rad arg
-            |> Random.Extra.filter isPointInBox
+    Random.map2 pt rad arg
+        |> Random.Extra.filter isPointInBox
 
 
 gridIdxsIfFarEnough : Model -> Point -> Maybe ( Int, Int )
@@ -199,21 +204,22 @@ gridIdxsIfFarEnough ({ r, grid, background } as model) q =
         pointsAreFar ( x1, y1 ) ( x2, y2 ) =
             (x1 - x2) ^ 2 + (y1 - y2) ^ 2 > r ^ 2
     in
-        case Array2D.get i j grid of
-            Just _ ->
-                Nothing
+    case Array2D.get i j grid of
+        Just _ ->
+            Nothing
 
-            Nothing ->
-                if
-                    Array2D.elementsInSubArray grid
-                        (List.range (i - 2) (i + 2))
-                        (List.range (j - 2) (j + 2))
-                        |> List.filterMap (flip Array.get background)
-                        |> List.all (\( pt, _ ) -> pointsAreFar pt q)
-                then
-                    Just ( i, j )
-                else
-                    Nothing
+        Nothing ->
+            if
+                Array2D.elementsInSubArray grid
+                    (List.range (i - 2) (i + 2))
+                    (List.range (j - 2) (j + 2))
+                    |> List.filterMap (\a -> Array.get a background)
+                    |> List.all (\( pt, _ ) -> pointsAreFar pt q)
+            then
+                Just ( i, j )
+
+            else
+                Nothing
 
 
 
@@ -225,27 +231,27 @@ view wd ht model =
     let
         circle c ( ( x, y ), t0 ) =
             Svg.circle
-                [ cx <| toString (wd * x)
-                , cy <| toString (ht * y)
-                , r <| toString <| min 2 <| (model.time - t0) / model.animationTime
-                , fill <| colorToCssRgb c
+                [ cx <| String.fromFloat (wd * x)
+                , cy <| String.fromFloat (ht * y)
+                , r <| String.fromFloat <| min 2 <| (model.time - t0) / model.animationTime
+                , fill <| Color.toCssString c
                 ]
                 []
     in
-        svg
-            [ width <| toString wd
-            , height <| toString ht
-            ]
-            [ model.background
-                |> Array.toList
-                |> List.map (circle black)
-                |> g []
-            , model.activeList
-                |> Set.toList
-                |> List.filterMap (flip Array.get model.background)
-                |> List.map (circle red)
-                |> g []
-            ]
+    svg
+        [ width <| String.fromFloat wd
+        , height <| String.fromFloat ht
+        ]
+        [ model.background
+            |> Array.toList
+            |> List.map (circle black)
+            |> g []
+        , model.activeList
+            |> Set.toList
+            |> List.filterMap (\a -> Array.get a model.background)
+            |> List.map (circle red)
+            |> g []
+        ]
 
 
 
@@ -278,10 +284,10 @@ produce results as impressive as Jason's.
 """
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    program
-        { init = init 30 0.05
+    document
+        { init = always <| init 30 0.03
         , subscriptions = subscriptions
         , update = update
         , view = view 500 500 |> project 6 description

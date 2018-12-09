@@ -1,14 +1,13 @@
-module Lightning exposing (..)
+module Lightning exposing (main)
 
-import Html exposing (program)
-import Helper exposing (project)
-import Svg exposing (Svg, svg, rect, polyline)
-import Svg.Attributes exposing (x, y, width, height, points, fill, stroke, strokeWidth)
+import Browser exposing (document)
+import Browser.Events
 import Color exposing (Color)
-import Color.Convert exposing (colorToCssRgb)
-import Keyboard exposing (KeyCode)
-import Random
-import Random.Extra exposing (constant, sample, combine, rangeLengthList)
+import Helper exposing (onEnter, project)
+import Random exposing (constant)
+import Random.Extra exposing (combine, rangeLengthList, sample)
+import Svg exposing (Svg, polyline, rect, svg)
+import Svg.Attributes exposing (fill, height, points, stroke, strokeWidth, width, x, y)
 import Task
 
 
@@ -44,10 +43,10 @@ type alias Level =
 
 
 type Msg
-    = Key KeyCode
-    | Add Lightning
+    = Add Lightning
     | BranchOut (List Lightning)
     | Refine Lightning
+    | Randomize
 
 
 init : Float -> Float -> ( Model, Cmd Msg )
@@ -64,7 +63,7 @@ init width height =
 restart : Model -> ( Model, Cmd Msg )
 restart ({ width, height } as model) =
     Refine ( [ ( width / 2, 0 ), ( width / 2, height ) ], 1 )
-        |> flip update model
+        |> (\a -> update a model)
 
 
 description : String
@@ -80,10 +79,10 @@ which was one of the reasons I wanted a degree in Math.
 """
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    program
-        { init = init 500 500
+    document
+        { init = always <| init 500 500
         , subscriptions = subscriptions
         , update = update
         , view = view |> project 30 description
@@ -96,7 +95,7 @@ main =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Keyboard.ups Key
+    onEnter Randomize
 
 
 
@@ -110,7 +109,7 @@ randomElement xs =
             (\maybeX ->
                 case maybeX of
                     Nothing ->
-                        Debug.crash "random sample from an empty list"
+                        Debug.todo "random sample from an empty list"
 
                     Just x ->
                         x
@@ -124,7 +123,7 @@ firstAndLast xs =
             ( first, last )
 
         _ ->
-            Debug.crash "list was empty"
+            Debug.todo "list was empty"
 
 
 pairs : List a -> List ( a, a )
@@ -180,21 +179,21 @@ refine ( pts, lvl ) =
                 refined mid1 mid2 =
                     [ p1, mid1, mid2 ]
             in
-                Random.map2 refined (mid p1 theta) (mid p2 (pi + theta))
+            Random.map2 refined (mid p1 theta) (mid p2 (pi + theta))
     in
-        pts
-            |> pairs
-            |> List.map refinePair
-            |> combine
-            |> Random.map List.concat
-            |> Random.map (\pts -> ( pts ++ [ last ], lvl ))
+    pts
+        |> pairs
+        |> List.map refinePair
+        |> combine
+        |> Random.map List.concat
+        |> Random.map (\pts_ -> ( pts_ ++ [ last ], lvl ))
 
 
 branchOut : Float -> Float -> Lightning -> Random.Generator Lightning
 branchOut wd ht ( pts, lvl ) =
     let
         diam =
-            pts |> firstAndLast |> \( p1, p2 ) -> dist p1 p2
+            pts |> firstAndLast |> (\( p1, p2 ) -> dist p1 p2)
 
         branchStart =
             randomElement pts
@@ -205,14 +204,14 @@ branchOut wd ht ( pts, lvl ) =
         branch start r theta =
             ( [ start, endPoint start r theta ], lvl + 1 )
     in
-        branchStart
-            |> Random.andThen
-                (\start ->
-                    Random.map2 (branch start)
-                        (Random.float 0.5 1 |> Random.map ((*) diam))
-                        (Random.float (0) (pi))
-                )
-            |> Random.Extra.filter (\( pts, _ ) -> List.all withinBounds pts)
+    branchStart
+        |> Random.andThen
+            (\start ->
+                Random.map2 (branch start)
+                    (Random.float 0.5 1 |> Random.map ((*) diam))
+                    (Random.float 0 pi)
+            )
+        |> Random.Extra.filter (\( pts_, _ ) -> List.all withinBounds pts_)
 
 
 
@@ -222,11 +221,8 @@ branchOut wd ht ( pts, lvl ) =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Key 13 ->
+        Randomize ->
             { model | lightnings = [] } |> restart
-
-        Key _ ->
-            ( model, Cmd.none )
 
         Add lightning ->
             ( { model | lightnings = lightning :: model.lightnings }
@@ -234,6 +230,7 @@ update msg model =
                 branchOut model.width model.height lightning
                     |> rangeLengthList 1 2
                     |> Random.generate BranchOut
+
               else
                 Cmd.none
             )
@@ -244,6 +241,7 @@ update msg model =
         Refine lightning ->
             if pointCount lightning < 3 ^ model.iterations then
                 ( model, Random.generate Refine (refine lightning) )
+
             else
                 update (Add lightning) model
 
@@ -259,26 +257,26 @@ view model =
             Svg.rect
                 [ x "0"
                 , y "0"
-                , width <| toString model.width
-                , height <| toString model.height
+                , width <| String.fromFloat model.width
+                , height <| String.fromFloat model.height
                 , fill "black"
                 ]
                 []
 
-        lightning ( pts, level ) =
+        lightning ( pts, level_ ) =
             Svg.polyline
                 [ pts
-                    |> List.map (\( x, y ) -> toString x ++ "," ++ toString y)
+                    |> List.map (\( x, y ) -> String.fromFloat x ++ "," ++ String.fromFloat y)
                     |> String.join " "
                     |> points
                 , fill "none"
-                , stroke <| colorToCssRgb <| color level
+                , stroke <| Color.toCssString <| color level_
                 , strokeWidth "1"
                 ]
                 []
     in
-        (bg :: List.map lightning model.lightnings)
-            |> svg [ width <| toString model.width, height <| toString model.height ]
+    (bg :: List.map lightning model.lightnings)
+        |> svg [ width <| String.fromFloat model.width, height <| String.fromFloat model.height ]
 
 
 color : Level -> Color

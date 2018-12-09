@@ -1,15 +1,15 @@
-module Borders exposing (..)
+module Borders exposing (main)
 
-import Html exposing (program)
-import Helper exposing (project)
-import Html exposing (Html, div, button, text)
-import Html.Events exposing (onClick)
-import Svg exposing (svg)
-import Svg.Attributes exposing (width, height)
+import Browser exposing (document)
 import Color exposing (Color)
-import Pointer
 import Day27.Area as Area exposing (..)
 import Day28.Border as Border exposing (..)
+import Helper exposing (project)
+import Html exposing (Html, button, div, text)
+import Html.Events exposing (onClick)
+import Pointer
+import Svg exposing (svg)
+import Svg.Attributes exposing (height, width)
 
 
 type alias Model =
@@ -48,9 +48,10 @@ init n m scale =
       , mouseShape = Square
       , areas =
             []
-            -- [ shapeAround Color.red Square ( 25, 25 )
-            -- , shapeAround Color.blue Cross ( 10, 25 )
-            -- ]
+
+      -- [ shapeAround Color.red Square ( 25, 25 )
+      -- , shapeAround Color.blue Cross ( 10, 25 )
+      -- ]
       }
     , Cmd.none
     )
@@ -70,6 +71,7 @@ centerFromMouse { rows, columns, scale } ( x, y ) =
     if 0 <= x && floor x <= scale * columns && 0 <= y && floor y <= scale * rows then
         Just
             ( floor x // scale, floor y // scale )
+
     else
         Nothing
 
@@ -87,6 +89,7 @@ update msg model =
         MouseMove center ->
             if center /= model.mouseCenter then
                 { model | mouseCenter = center } |> update (MouseDown model.mouseDown)
+
             else
                 model
 
@@ -96,7 +99,7 @@ update msg model =
                     center
                         |> shapeAround Color.black model.mouseShape
                         |> Add
-                        |> (flip update)
+                        |> (\b a -> update a b)
                             { model | mouseDown = True }
 
                 Nothing ->
@@ -136,18 +139,18 @@ view { size, areas, mouseShape, mouseCenter } =
         svg =
             (areaViews ++ [ mouseAreaView ])
                 |> Svg.svg
-                    [ width <| toString <| scale * columns
-                    , height <| toString <| scale * rows
+                    [ width <| String.fromInt <| scale * columns
+                    , height <| String.fromInt <| scale * rows
                     , Pointer.move (centerFromMouse size >> MouseMove)
                     , Pointer.down <| always <| MouseDown True
                     , Pointer.up <| always <| MouseDown False
                     ]
     in
-        div []
-            [ svg
-            , button [ onClick <| MouseShape Square ] [ text "Square" ]
-            , button [ onClick <| MouseShape Cross ] [ text "Cross" ]
-            ]
+    div []
+        [ svg
+        , button [ onClick <| MouseShape Square ] [ text "Square" ]
+        , button [ onClick <| MouseShape Cross ] [ text "Cross" ]
+        ]
 
 
 
@@ -168,10 +171,10 @@ they merge.
 """
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    program
-        { init = init 50 50 10
+    document
+        { init = always <| init 50 50 10
         , subscriptions = subscriptions
         , update = \msg model -> ( update msg model, Cmd.none )
         , view = view |> project 28 description

@@ -1,14 +1,15 @@
-module Parallax exposing (..)
+module Parallax exposing (main)
 
-import Html exposing (Html, program, div)
-import Helper
-import Collage exposing (collage, rect, circle, move, filled)
-import Element
-import Day2.Random
-import Random
-import Pointer
+import Browser exposing (document)
+import Collage exposing (circle, group)
+import Collage.Render
 import Color exposing (Color)
-import Color.Manipulate exposing (lighten, darken)
+import Color.Manipulate exposing (darken, lighten)
+import Day2.Random
+import Helper exposing (filled)
+import Html exposing (Html, div)
+import Pointer
+import Random
 
 
 type alias Model =
@@ -82,12 +83,12 @@ randomRect =
                 (Random.float -0.5 0.5)
                 randomZ
     in
-        Random.map5 Rect
-            (center)
-            (Random.float 0.1 0.2)
-            (Random.float 0.1 0.2)
-            (Random.float 0.1 0.2)
-            (Day2.Random.ryb1 1 0.5)
+    Random.map5 Rect
+        center
+        (Random.float 0.1 0.2)
+        (Random.float 0.1 0.2)
+        (Random.float 0.1 0.2)
+        (Day2.Random.ryb1 1 0.5)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -103,16 +104,16 @@ update msg model =
                     , -(y / model.height - 0.5)
                     )
             in
-                ( { model | eye = eye }, Cmd.none )
+            ( { model | eye = eye }, Cmd.none )
 
 
 
 --
 
 
-z : Rect -> Float
-z { center } =
-    center |> \( _, _, z ) -> z
+rectZ : Rect -> Float
+rectZ { center } =
+    center |> (\( _, _, z ) -> z)
 
 
 faces : Point2D -> Rect -> List ( Color, List Point3D )
@@ -145,16 +146,18 @@ faces ( x0, y0 ) { center, width, height, depth, color } =
         right =
             [ pt 1 1 0, pt 1 -1 0, pt 1 -1 1, pt 1 1 1 ]
     in
-        [ if y0 > y then
-            ( cTop, top )
-          else
-            ( cBottom, bottom )
-        , if x0 > x then
-            ( cTop, right )
-          else
-            ( cBottom, left )
-        , ( cFront, front )
-        ]
+    [ if y0 > y then
+        ( cTop, top )
+
+      else
+        ( cBottom, bottom )
+    , if x0 > x then
+        ( cTop, right )
+
+      else
+        ( cBottom, left )
+    , ( cFront, front )
+    ]
 
 
 project : Point2D -> Point3D -> Point2D
@@ -172,13 +175,13 @@ view { eye, width, height, rects } =
                 |> Collage.polygon
                 |> filled color
     in
-        rects
-            |> List.sortBy (negate << z)
-            |> List.concatMap (faces eye)
-            |> List.map polygon
-            |> Collage.collage (floor width) (floor height)
-            |> Element.toHtml
-            |> \canvas -> div [ Pointer.move Mouse ] [ canvas ]
+    rects
+        |> List.sortBy rectZ
+        |> List.concatMap (faces eye)
+        |> List.map polygon
+        |> group
+        |> Collage.Render.svgBox ( width, height )
+        |> (\canvas -> div [ Pointer.move Mouse ] [ canvas ])
 
 
 
@@ -209,10 +212,10 @@ Move the mouse ¯\\\\\\_(ツ)\\_/¯
 """
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    program
-        { init = init 40
+    document
+        { init = always <| init 40
         , subscriptions = subscriptions
         , update = update
         , view = view |> Helper.project 11 description

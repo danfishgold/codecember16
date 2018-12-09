@@ -1,4 +1,4 @@
-module Day25.Vector exposing (..)
+module Day25.Vector exposing (Vector, add, arg, capMagnitude, dist2, mul, neg, norm2, normalizeOrZero, onZero, polar, sub, sum, vecMul)
 
 
 type alias Vector =
@@ -49,18 +49,20 @@ normalizeOrZero : Float -> Vector -> Vector
 normalizeOrZero mag ( x, y ) =
     if ( x, y ) == ( 0, 0 ) then
         ( 0, 0 )
+
     else
         let
             scale =
                 mag / (sqrt <| norm2 ( x, y ))
         in
-            ( x * scale, y * scale )
+        ( x * scale, y * scale )
 
 
 onZero : Vector -> Vector -> Vector
 onZero default vec =
     if vec == ( 0, 0 ) then
         default
+
     else
         vec
 
@@ -74,6 +76,7 @@ capMagnitude : Float -> Vector -> Vector
 capMagnitude mag vec =
     if norm2 vec > mag ^ 2 then
         normalizeOrZero mag vec
+
     else
         vec
 

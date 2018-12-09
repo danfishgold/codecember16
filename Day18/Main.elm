@@ -1,16 +1,15 @@
-module RotatingPolygon exposing (..)
+module RotatingPolygon exposing (main)
 
-import Html exposing (program)
-import Helper exposing (project)
-import Svg exposing (Svg, svg, g, defs, circle, line)
-import Svg.Attributes exposing (width, height, cx, cy, r, x1, y1, x2, y2, strokeWidth, fill)
-import Day18.Gradient exposing (gradient, gradientStroke)
+import Browser exposing (document)
+import Browser.Events
 import Color exposing (Color)
-import Color.Convert exposing (colorToCssRgb)
+import Day18.Gradient exposing (gradient, gradientStroke)
+import Helper exposing (onEnter, project)
 import Random
-import AnimationFrame
 import Random.Extra
-import Keyboard exposing (KeyCode)
+import Svg exposing (Svg, circle, defs, g, line, svg)
+import Svg.Attributes exposing (cx, cy, fill, height, r, strokeWidth, width, x1, x2, y1, y2)
+import Time
 
 
 type alias Model =
@@ -22,9 +21,9 @@ type alias Model =
 
 
 type Msg
-    = Tick Float
+    = Tick Time.Posix
     | SetVertices (List Vertex)
-    | Key KeyCode
+    | Randomize
 
 
 type alias Vertex =
@@ -70,8 +69,8 @@ randomizeVertices wd ht n =
         phase =
             Random.float 0 (degrees 360)
 
-        makeVertex r x y w ph =
-            Vertex x y r w ph
+        makeVertex r x_ y_ w_ ph =
+            Vertex x_ y_ r w_ ph
 
         vertex =
             radius
@@ -85,8 +84,8 @@ randomizeVertices wd ht n =
                             phase
                     )
     in
-        Random.list n vertex
-            |> Random.generate SetVertices
+    Random.list n vertex
+        |> Random.generate SetVertices
 
 
 
@@ -96,8 +95,8 @@ randomizeVertices wd ht n =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ AnimationFrame.times Tick
-        , Keyboard.ups Key
+        [ Browser.Events.onAnimationFrame Tick
+        , onEnter Randomize
         ]
 
 
@@ -108,17 +107,14 @@ subscriptions model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Tick t ->
-            ( { model | t = t }, Cmd.none )
+        Tick posix ->
+            ( { model | t = toFloat <| Time.posixToMillis posix }, Cmd.none )
 
         SetVertices vertices ->
             ( { model | vertices = vertices }, Cmd.none )
 
-        Key 13 ->
+        Randomize ->
             ( model, randomizeVertices model.width model.height 9 )
-
-        Key _ ->
-            ( model, Cmd.none )
 
 
 
@@ -130,27 +126,30 @@ vertexParameters t v =
     let
         theta =
             v.w * t + v.phase
+
+        hue =
+            theta / degrees 360 - toFloat (floor (theta / degrees 360))
     in
-        ( v.cx + v.r * cos theta, v.cx + v.r * sin theta, Color.hsl theta 1 0.5 )
+    ( v.cx + v.r * cos theta, v.cx + v.r * sin theta, Color.hsl hue 1 0.5 )
 
 
 pairs : List a -> List ( a, a )
 pairs xs =
     let
-        withoutOverflow xs =
-            case xs of
+        withoutOverflow xs_ =
+            case xs_ of
                 fst :: snd :: rest ->
                     ( fst, snd ) :: withoutOverflow (snd :: rest)
 
                 _ ->
                     []
     in
-        case xs of
-            fst :: rest ->
-                withoutOverflow (xs ++ [ fst ])
+    case xs of
+        fst :: rest ->
+            withoutOverflow (xs ++ [ fst ])
 
-            [] ->
-                []
+        [] ->
+            []
 
 
 view : Model -> Svg Msg
@@ -166,34 +165,34 @@ view model =
             edges
                 |> List.indexedMap
                     (\i edge ->
-                        gradient (toString i) edge
+                        gradient (String.fromInt i) edge
                     )
 
         point ( x, y, c ) =
             Svg.circle
-                [ cx <| toString x
-                , cy <| toString y
+                [ cx <| String.fromFloat x
+                , cy <| String.fromFloat y
                 , r <| "2"
-                , fill <| colorToCssRgb c
+                , fill <| Color.toCssString c
                 ]
                 []
 
         line i ( ( xa, ya, _ ), ( xb, yb, _ ) ) =
             Svg.line
-                [ x1 <| toString xa
-                , y1 <| toString ya
-                , x2 <| toString xb
-                , y2 <| toString yb
-                , gradientStroke <| toString i
+                [ x1 <| String.fromFloat xa
+                , y1 <| String.fromFloat ya
+                , x2 <| String.fromFloat xb
+                , y2 <| String.fromFloat yb
+                , gradientStroke <| String.fromInt i
                 , strokeWidth "4"
                 ]
                 []
     in
-        [ Svg.defs [] gradients
-        , edges |> List.indexedMap line |> g []
-        , vertices |> List.map point |> g []
-        ]
-            |> svg [ width <| toString model.width, height <| toString model.height ]
+    [ Svg.defs [] gradients
+    , edges |> List.indexedMap line |> g []
+    , vertices |> List.map point |> g []
+    ]
+        |> svg [ width <| String.fromFloat model.width, height <| String.fromFloat model.height ]
 
 
 
@@ -210,10 +209,10 @@ spirographs (more on that later) and Monument Valley.
 """
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    program
-        { init = init 500 500
+    document
+        { init = always <| init 500 500
         , subscriptions = subscriptions
         , update = update
         , view = view |> project 18 description

@@ -1,13 +1,12 @@
-module StarSystem exposing (..)
+module StarSystem exposing (main)
 
-import Html exposing (program)
-import Helper exposing (project)
-import Svg exposing (Svg, svg, g, circle)
-import Svg.Attributes exposing (width, height, cx, cy, r, stroke, strokeWidth, fill, transform)
-import AnimationFrame
+import Browser exposing (document)
+import Browser.Events
+import Helper exposing (onEnter, project)
 import Random
 import Random.Extra
-import Keyboard exposing (KeyCode)
+import Svg exposing (Svg, circle, g, svg)
+import Svg.Attributes exposing (cx, cy, fill, height, r, stroke, strokeWidth, transform, width)
 
 
 type alias Model =
@@ -36,7 +35,7 @@ type alias Planet =
 
 type Msg
     = SetPlanets (List Planet)
-    | Key KeyCode
+    | Randomize
     | Tick Float
 
 
@@ -60,8 +59,8 @@ init width height count sunRadius =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ AnimationFrame.diffs Tick
-        , Keyboard.ups Key
+        [ Browser.Events.onAnimationFrameDelta Tick
+        , onEnter Randomize
         ]
 
 
@@ -113,9 +112,9 @@ makePlanets count sunRadius =
                 |> diffs
                 |> List.all (\d -> d > 2 * minRad planets)
     in
-        Random.list count (planetProps |> Random.andThen planet)
-            |> Random.Extra.filter farEnough
-            |> Random.generate SetPlanets
+    Random.list count (planetProps |> Random.andThen planet)
+        |> Random.Extra.filter farEnough
+        |> Random.generate SetPlanets
 
 
 
@@ -131,11 +130,8 @@ update msg model =
         Tick dt ->
             ( { model | time = model.time + dt }, Cmd.none )
 
-        Key 13 ->
+        Randomize ->
             ( model, makePlanets model.count model.sunRadius )
-
-        Key _ ->
-            ( model, Cmd.none )
 
 
 
@@ -148,9 +144,9 @@ circle color x y rad =
         [ fill color
         , stroke "black"
         , strokeWidth "1"
-        , cx <| toString x
-        , cy <| toString y
-        , r <| toString rad
+        , cx <| String.fromFloat x
+        , cy <| String.fromFloat y
+        , r <| String.fromFloat rad
         ]
         []
 
@@ -166,8 +162,8 @@ view ({ time, planets, sunRadius } as model) =
 
         bg =
             Svg.rect
-                [ width <| toString model.width
-                , height <| toString model.height
+                [ width <| String.fromFloat model.width
+                , height <| String.fromFloat model.height
                 , fill "#ddd"
                 ]
                 []
@@ -176,7 +172,7 @@ view ({ time, planets, sunRadius } as model) =
             circ "#bbb" 0 0 sunRadius
 
         tracks =
-            planets |> List.map (\p -> circ "none" 0 0 (p.props.d)) |> g []
+            planets |> List.map (\p -> circ "none" 0 0 p.props.d) |> g []
 
         xy { d, w, phase } =
             ( d * cos (w * time + phase)
@@ -193,12 +189,12 @@ view ({ time, planets, sunRadius } as model) =
                         ( mx, my ) =
                             xy m
                     in
-                        circ "#ddd" (px + mx) (py + my) m.r
+                    circ "#ddd" (px + mx) (py + my) m.r
             in
-                g [] [ circ "#888" px py p.props.r, List.map moon p.moons |> g [] ]
+            g [] [ circ "#888" px py p.props.r, List.map moon p.moons |> g [] ]
     in
-        [ bg, sun, tracks, List.map planet planets |> g [] ]
-            |> svg [ width <| toString model.width, height <| toString model.height ]
+    [ bg, sun, tracks, List.map planet planets |> g [] ]
+        |> svg [ width <| String.fromFloat model.width, height <| String.fromFloat model.height ]
 
 
 
@@ -219,10 +215,10 @@ Hit enter to randomize.
 """
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    program
-        { init = init 500 500 3 0.2
+    document
+        { init = always <| init 500 500 3 0.2
         , subscriptions = subscriptions
         , update = update
         , view = view |> project 21 description

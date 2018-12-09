@@ -1,15 +1,14 @@
-module Braids exposing (..)
+module Braids exposing (main)
 
-import Html exposing (Html, div)
-import Helper exposing (project)
-import Html.Attributes exposing (style)
-import Svg exposing (Svg, svg, g, line)
-import Svg.Attributes exposing (width, height, x1, y1, x2, y2, stroke, strokeWidth, strokeLinecap)
-import Color exposing (Color)
-import Color.Gradient exposing (gradient)
-import Color.Interpolate as Space
-import Color.Convert exposing (colorToCssRgb)
 import Array exposing (Array)
+import Color exposing (Color)
+import Color.Gradient exposing (linearGradient)
+import Color.Interpolate as Space
+import Helper exposing (project)
+import Html exposing (Html, div)
+import Html.Attributes exposing (style)
+import Svg exposing (Svg, g, line, svg)
+import Svg.Attributes exposing (height, stroke, strokeLinecap, strokeWidth, width, x1, x2, y1, y2)
 
 
 type alias Model =
@@ -45,11 +44,10 @@ braid3 =
     { count = 3
     , transitions =
         List.repeat 5
-            ([ [ ( 0, 1 ) ]
-             , [ ( 2, 0 ) ]
-             , [ ( 1, 2 ) ]
-             ]
-            )
+            [ [ ( 0, 1 ) ]
+            , [ ( 2, 0 ) ]
+            , [ ( 1, 2 ) ]
+            ]
             |> List.concat
     }
 
@@ -59,16 +57,15 @@ braid4 =
     { count = 4
     , transitions =
         List.repeat 2
-            ([ [ ( 2, 1 ) ]
-             , [ ( 1, 3 ), ( 0, 2 ) ]
-             , [ ( 3, 0 ) ]
-             , [ ( 0, 1 ), ( 2, 3 ) ]
-             , [ ( 1, 2 ) ]
-             , [ ( 3, 1 ), ( 2, 0 ) ]
-             , [ ( 0, 3 ) ]
-             , [ ( 1, 0 ), ( 3, 2 ) ]
-             ]
-            )
+            [ [ ( 2, 1 ) ]
+            , [ ( 1, 3 ), ( 0, 2 ) ]
+            , [ ( 3, 0 ) ]
+            , [ ( 0, 1 ), ( 2, 3 ) ]
+            , [ ( 1, 2 ) ]
+            , [ ( 3, 1 ), ( 2, 0 ) ]
+            , [ ( 0, 3 ) ]
+            , [ ( 1, 0 ), ( 3, 2 ) ]
+            ]
             |> List.concat
     }
 
@@ -78,10 +75,9 @@ braid2 =
     { count = 2
     , transitions =
         List.repeat 7
-            ([ [ ( 0, 1 ) ]
-             , [ ( 1, 0 ) ]
-             ]
-            )
+            [ [ ( 0, 1 ) ]
+            , [ ( 1, 0 ) ]
+            ]
             |> List.concat
     }
 
@@ -90,10 +86,11 @@ braid2 =
 --
 
 
-segmentZ : Segment -> comparable
+segmentZ : Segment -> Int
 segmentZ { z } =
     if z == Over then
         1
+
     else
         -1
 
@@ -112,18 +109,18 @@ update i fn arr =
     arr
         |> Array.get i
         |> fn
-        |> \new -> Array.set i new arr
+        |> (\new -> Array.set i new arr)
 
 
 push : Int -> a -> Array (Array a) -> Array (Array a)
 push i x array =
     let
-        extend x maybeArr =
+        extend x_ maybeArr =
             maybeArr
                 |> Maybe.withDefault Array.empty
-                |> Array.push x
+                |> Array.push x_
     in
-        update i (extend x) array
+    update i (extend x) array
 
 
 itemColumns : Model -> Array (Array ( Step, Index, Z ))
@@ -148,15 +145,15 @@ itemColumns { count, transitions } =
                 |> push i ( step, lastCol j columns, Over )
                 |> push j ( step, lastCol i columns, Under )
     in
-        transitions
-            |> List.indexedMap (\step -> List.map (\transition -> ( step + 1, transition )))
-            |> List.concat
-            |> List.foldl (swap) initial
+    transitions
+        |> List.indexedMap (\step -> List.map (\transition -> ( step + 1, transition )))
+        |> List.concat
+        |> List.foldl swap initial
 
 
 segments : Int -> Int -> List ( Step, Index, Z ) -> List Segment
-segments offset maxStep itemColumns =
-    case itemColumns of
+segments offset maxStep itemColumns_ =
+    case itemColumns_ of
         ( t1, i1, _ ) :: ( t2, i2, z2 ) :: rest ->
             { first = t1 - offset
             , last = t2 - 1
@@ -205,17 +202,17 @@ view braidWidth stepHeight ({ count, transitions } as model) =
             stepHeight * toFloat (step + 2)
 
         colors =
-            gradient Space.HSL [ Color.red, Color.green ] count
+            linearGradient Space.HSL [ Color.red, Color.green ] count
 
         line c s1 s2 i1 i2 =
             Svg.line
-                [ stroke <| colorToCssRgb c
-                , strokeWidth <| toString braidWidth
+                [ stroke <| Color.toCssString c
+                , strokeWidth <| String.fromFloat braidWidth
                 , strokeLinecap "round"
-                , y1 <| toString <| y i1
-                , y2 <| toString <| y i2
-                , x1 <| toString <| x s1
-                , x2 <| toString <| x s2
+                , y1 <| String.fromFloat <| y i1
+                , y2 <| String.fromFloat <| y i2
+                , x1 <| String.fromFloat <| x s1
+                , x2 <| String.fromFloat <| x s2
                 ]
                 []
 
@@ -225,7 +222,7 @@ view braidWidth stepHeight ({ count, transitions } as model) =
                 |> Array.toList
                 |> List.map Array.toList
                 |> List.map (segments 1 steps)
-                |> List.map2 (\c segs -> List.map ((,) c) segs) colors
+                |> List.map2 (\c segs -> List.map (\b -> ( c, b )) segs) colors
                 |> List.concat
 
         vertical ( color, seg ) =
@@ -234,17 +231,21 @@ view braidWidth stepHeight ({ count, transitions } as model) =
         diagonal ( color, seg ) =
             line color seg.last (seg.last + 1) seg.column seg.nextColumn
     in
-        (columnSegments
-            |> List.sortBy (\( c, segment ) -> segmentZ segment)
-            |> \segs ->
-                (segs |> List.filter (\( _, { first, last } ) -> first /= last) |> List.map vertical)
+    (columnSegments
+        |> List.sortBy (\( c, segment ) -> segmentZ segment)
+        |> (\segs ->
+                (segs
+                    |> List.filter (\( _, seg ) -> seg.first /= seg.last)
+                    |> List.map vertical
+                )
                     ++ List.map diagonal segs
-        )
-            |> svg
-                [ width <| toString wd
-                , height <| toString ht
-                , style [ ( "padding", "20px" ) ]
-                ]
+           )
+    )
+        |> svg
+            [ width <| String.fromFloat wd
+            , height <| String.fromFloat ht
+            , style "padding" "20px"
+            ]
 
 
 
@@ -261,17 +262,19 @@ This was fun but also annoying.
 """
 
 
-main : Html Never
-main =
+mainHtml =
     div
-        [ style
-            [ ( "display", "flex" )
-            , ( "flex-direction", "column" )
-            , ( "align-items", "center" )
-            ]
+        [ style "display" "flex"
+        , style "flex-direction" "column"
+        , style "align-items" "center"
         ]
         [ braid4 |> view 15 30
         , braid3 |> view 15 30
         , braid2 |> view 15 30
         ]
-        |> \html -> project 23 description (always html) <| ()
+
+
+main =
+    project 23 description (always mainHtml) ()
+        |> .body
+        |> div []

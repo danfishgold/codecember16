@@ -1,18 +1,17 @@
-module Day15.Polyomino
-    exposing
-        ( Letter(..)
-        , Word
-        , Point
-        , bn
-        , isRegular
-        , points
-        , random
-        , randomBN
-        )
+module Day15.Polyomino exposing
+    ( Letter(..)
+    , Point
+    , Word
+    , bn
+    , isRegular
+    , points
+    , random
+    , randomBN
+    )
 
-import Set
 import Random
-import Random.Extra exposing (sample, constant)
+import Random.Extra exposing (sample)
+import Set
 
 
 type Letter
@@ -104,7 +103,7 @@ isRegular word =
         ( first, last ) =
             ( List.take 1 pts, List.drop (list - 1) pts )
     in
-        list == set + 1 && first == last
+    list == set + 1 && first == last
 
 
 
@@ -129,7 +128,7 @@ random min max =
 
 randomBN : Int -> Int -> Random.Generator ( Word, Word, Word )
 randomBN min max =
-    Random.map3 (,,)
+    Random.map3 (\a b c -> ( a, b, c ))
         (randomWord min max)
         (randomWord min max)
         (randomWord min max)

@@ -1,18 +1,19 @@
-module Anatoly exposing (..)
+module Anatoly exposing (main)
 
-import Html exposing (Html, program)
-import Helper exposing (project)
-import Time exposing (second, every, Time)
+import Browser exposing (document)
+import Browser.Events
 import Color exposing (Color)
-import Random exposing (Generator, generate)
-import Random.Extra
-import Keyboard exposing (KeyCode)
-import Svg exposing (Svg, svg, rect, g)
-import Svg.Attributes exposing (x, y, width, height, fill)
-import Svg.Keyed exposing (node)
-import Color.Convert exposing (colorToCssRgb)
 import Day2.Random exposing (ryb1)
 import Dict exposing (Dict)
+import Helper exposing (onEnterOrSpace, project)
+import Html exposing (Html)
+import Json.Decode as Json
+import Random exposing (Generator, generate)
+import Random.Extra
+import Svg exposing (Svg, g, rect, svg)
+import Svg.Attributes exposing (fill, height, width, x, y)
+import Svg.Keyed exposing (node)
+import Time exposing (Posix, every)
 
 
 type alias Model =
@@ -54,12 +55,13 @@ shape seed side =
         |> Random.step (randomShape side)
         |> Tuple.first
         |> separateList
-        |> \( curr, prev ) ->
-            { previous = prev
-            , current = curr
-            , side = side
-            , paused = True
-            }
+        |> (\( curr, prev ) ->
+                { previous = prev
+                , current = curr
+                , side = side
+                , paused = True
+                }
+           )
 
 
 separateList : List Point -> ( Point, Dict ( Int, Int ) Point )
@@ -78,10 +80,10 @@ separateList pts =
 
 type Msg
     = ResetPoints
-    | Tick Time
+    | Tick Posix
     | Add Point
     | SetShape (List Point)
-    | Key KeyCode
+    | SkipAnimation
 
 
 
@@ -93,9 +95,10 @@ subscriptions model =
     Sub.batch
         [ if model.paused then
             Sub.none
+
           else
-            every (0.0001 * second) Tick
-        , Keyboard.ups Key
+            every 1 Tick
+        , onEnterOrSpace SkipAnimation ResetPoints
         ]
 
 
@@ -109,30 +112,30 @@ randomNeighbor ( x0, y0, _ ) =
         neighbor ( x, y ) =
             let
                 up =
-                    Random.Extra.constant ( x, y + 1 )
+                    Random.constant ( x, y + 1 )
 
                 down =
-                    Random.Extra.constant ( x, y - 1 )
+                    Random.constant ( x, y - 1 )
 
                 left =
-                    Random.Extra.constant ( x - 1, y )
+                    Random.constant ( x - 1, y )
 
                 right =
-                    Random.Extra.constant ( x + 1, y )
+                    Random.constant ( x + 1, y )
             in
-                Random.Extra.frequency
-                    [ ( 0.335, up )
-                    , ( 0.28, down )
-                    , ( 0.3, left )
-                    , ( 0.37, right )
-                    ]
+            Random.Extra.frequency
+                ( 0.335, up )
+                [ ( 0.28, down )
+                , ( 0.3, left )
+                , ( 0.37, right )
+                ]
 
         color =
             ryb1 1 0.35
     in
-        Random.map2 (\( x1, y1 ) c -> ( x1, y1, c ))
-            (neighbor ( x0, y0 ))
-            (color)
+    Random.map2 (\( x1, y1 ) c -> ( x1, y1, c ))
+        (neighbor ( x0, y0 ))
+        color
 
 
 randomShape : Int -> Generator (List Point)
@@ -140,12 +143,13 @@ randomShape side =
     let
         process previous (( x, y, _ ) as pt) =
             if abs x > side || abs y > side then
-                Random.Extra.constant previous
+                Random.constant previous
+
             else
                 randomNeighbor pt
                     |> Random.andThen (process (pt :: previous))
     in
-        process [] ( 0, 0, Color.white )
+    process [] ( 0, 0, Color.white )
 
 
 
@@ -156,34 +160,35 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ResetPoints ->
-            ( { model | current = ( 0, 0, Color.white ), previous = Dict.empty }, Cmd.none )
+            ( { model
+                | current = ( 0, 0, Color.white )
+                , previous = Dict.empty
+                , paused = False
+              }
+            , Cmd.none
+            )
 
         Add (( x, y, _ ) as pt) ->
             if abs x > model.side // 3 || abs y > model.side // 3 then
                 ( { model | paused = True }, Cmd.none )
+
             else
                 let
-                    addToDict ( x, y, c ) dict =
-                        dict |> Dict.insert ( x, y ) ( x, y, c )
+                    addToDict ( x_, y_, c ) dict =
+                        dict |> Dict.insert ( x_, y_ ) ( x_, y_, c )
                 in
-                    ( { model
-                        | previous = model.previous |> addToDict model.current
-                        , current = pt
-                      }
-                    , Cmd.none
-                    )
+                ( { model
+                    | previous = model.previous |> addToDict model.current
+                    , current = pt
+                  }
+                , Cmd.none
+                )
 
         Tick _ ->
             ( model, generate Add (randomNeighbor model.current) )
 
-        Key 32 ->
-            update ResetPoints { model | paused = False }
-
-        Key 13 ->
+        SkipAnimation ->
             ( model, generate SetShape (randomShape (model.side // 3)) )
-
-        Key _ ->
-            ( model, Cmd.none )
 
         SetShape [] ->
             update ResetPoints model
@@ -191,14 +196,15 @@ update msg model =
         SetShape pts ->
             pts
                 |> separateList
-                |> \( curr, prev ) ->
-                    ( { model
-                        | current = curr
-                        , previous = prev
-                        , paused = True
-                      }
-                    , Cmd.none
-                    )
+                |> (\( curr, prev ) ->
+                        ( { model
+                            | current = curr
+                            , previous = prev
+                            , paused = True
+                          }
+                        , Cmd.none
+                        )
+                   )
 
 
 
@@ -212,15 +218,15 @@ view res { side, current, previous } =
             rect
                 [ x "0"
                 , y "0"
-                , width <| toString <| toFloat side * res
-                , height <| toString <| toFloat side * res
-                , fill <| colorToCssRgb Color.black
+                , width <| String.fromFloat <| toFloat side * res
+                , height <| String.fromFloat <| toFloat side * res
+                , fill <| Color.toCssString Color.black
                 ]
                 []
 
         pts =
             (Dict.values previous ++ [ current ])
-                |> List.indexedMap (\i pt -> ( toString i, mirroredPoint pt ))
+                |> List.indexedMap (\i pt -> ( String.fromInt i, mirroredPoint pt ))
                 |> node "g" []
 
         mirroredPoint ( x, y, c ) =
@@ -237,19 +243,19 @@ view res { side, current, previous } =
 
         point ( x0, y0, c ) =
             rect
-                [ x <| toString <| toFloat (x0 + side // 2) * res
-                , y <| toString <| toFloat (y0 + side // 2) * res
-                , width <| toString res
-                , height <| toString res
-                , fill <| colorToCssRgb c
+                [ x <| String.fromFloat <| toFloat (x0 + side // 2) * res
+                , y <| String.fromFloat <| toFloat (y0 + side // 2) * res
+                , width <| String.fromFloat res
+                , height <| String.fromFloat res
+                , fill <| Color.toCssString c
                 ]
                 []
     in
-        svg
-            [ width <| toString <| side * ceiling res
-            , height <| toString <| side * ceiling res
-            ]
-            [ bg, pts ]
+    svg
+        [ width <| String.fromInt <| side * ceiling res
+        , height <| String.fromInt <| side * ceiling res
+        ]
+        [ bg, pts ]
 
 
 
@@ -274,10 +280,10 @@ Hit enter to skip to the final result.
 """
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    program
-        { init = ( init 100, Cmd.none )
+    document
+        { init = always ( init 100, Cmd.none )
         , update = update
         , view = view 5 |> project 3 description
         , subscriptions = subscriptions

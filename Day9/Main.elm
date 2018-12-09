@@ -1,10 +1,11 @@
-module Nicky exposing (..)
+module Nicky exposing (main)
 
-import Html exposing (Html, program, div)
-import Helper exposing (project)
-import Collage exposing (polygon, group, filled, outlined, defaultLine)
-import Element
-import Color
+import Browser exposing (document)
+import Collage exposing (defaultLineStyle, group, polygon, uniform)
+import Collage.Render
+import Color exposing (Color)
+import Helper exposing (filled, outlined, project)
+import Html exposing (Html, div)
 import Pointer
 
 
@@ -15,7 +16,7 @@ type alias Point =
 type alias Model =
     { polygons : List (List Point)
     , frame : List Point
-    , mouse : Point
+    , mouse : Maybe Point
     }
 
 
@@ -33,7 +34,7 @@ init =
             , [ ( 50, 50 ), ( 70, 90 ), ( 130, 20 ) ]
             ]
       , frame = [ ( -250, -250 ), ( -250, 250 ), ( 250, 250 ), ( 250, -250 ) ]
-      , mouse = ( 0, 0 )
+      , mouse = Nothing
       }
     , Cmd.none
     )
@@ -55,27 +56,27 @@ subscriptions model =
 pairs : List a -> List ( a, a )
 pairs xs =
     let
-        withoutOverflow xs =
-            case xs of
+        withoutOverflow xs_ =
+            case xs_ of
                 fst :: snd :: rest ->
                     ( fst, snd ) :: withoutOverflow (snd :: rest)
 
                 _ ->
                     []
     in
-        case xs of
-            fst :: rest ->
-                withoutOverflow (xs ++ [ fst ])
+    case xs of
+        fst :: rest ->
+            withoutOverflow (xs ++ [ fst ])
 
-            [] ->
-                []
+        [] ->
+            []
 
 
 intersection : Point -> Float -> ( Point, Point ) -> Maybe Float
 intersection ( a, b ) theta ( ( x1, y1 ), ( x2, y2 ) ) =
     let
-        ( dx, dy, dx1, dy1 ) =
-            ( x2 - x1, y2 - y1, a - x1, b - y1 )
+        ( ( dx, dy ), ( dx1, dy1 ) ) =
+            ( ( x2 - x1, y2 - y1 ), ( a - x1, b - y1 ) )
 
         ( c, s ) =
             ( cos theta, sin theta )
@@ -86,22 +87,26 @@ intersection ( a, b ) theta ( ( x1, y1 ), ( x2, y2 ) ) =
         t =
             if abs denom > 0.05 then
                 Just (nom / denom)
+
             else
                 Nothing
 
-        d t =
-            if 0 <= t && t <= 1 then
-                (dx * t - dx1)
+        d t_ =
+            if 0 <= t_ && t_ <= 1 then
+                (dx * t_ - dx1)
                     / c
-                    |> \dist ->
-                        if dist > 0 then
-                            Just dist
-                        else
-                            Nothing
+                    |> (\dist ->
+                            if dist > 0 then
+                                Just dist
+
+                            else
+                                Nothing
+                       )
+
             else
                 Nothing
     in
-        t |> Maybe.andThen d
+    t |> Maybe.andThen d
 
 
 angle : Point -> Point -> Float
@@ -110,38 +115,43 @@ angle ( x0, y0 ) ( x, y ) =
 
 
 cartesian : Point -> ( Float, Float ) -> Point
-cartesian ( x0, y0 ) ( d, angle ) =
-    ( x0 + d * cos angle, y0 + d * sin angle )
+cartesian ( x0, y0 ) ( d, angle_ ) =
+    ( x0 + d * cos angle_, y0 + d * sin angle_ )
 
 
 destinations : Point -> List (List Point) -> List Point
 destinations mouse polygons =
     let
+        lines : List ( Point, Point )
         lines =
             polygons |> List.concatMap pairs
 
+        rayAngles : List Float
         rayAngles =
             polygons
                 |> List.concatMap (List.map (angle mouse))
                 |> List.concatMap (\t -> [ t - 0.001, t + 0.001 ])
                 |> List.sort
 
-        rayIntersection angle =
+        rayIntersection : Float -> Maybe ( Float, Float )
+        rayIntersection angle_ =
             lines
-                |> List.filterMap (intersection mouse angle)
+                |> List.filterMap (intersection mouse angle_)
                 |> List.minimum
-                |> Maybe.map (\d -> ( d, angle ))
+                |> Maybe.map (\d -> ( d, angle_ ))
     in
-        rayAngles
-            |> List.filterMap rayIntersection
-            |> List.map (cartesian mouse)
+    rayAngles
+        |> List.filterMap rayIntersection
+        |> List.map (cartesian mouse)
 
 
 update : Msg -> Model -> Model
 update msg model =
     case msg of
         Mouse mouse ->
-            { model | mouse = mouse }
+            { model
+                | mouse = Just mouse
+            }
 
 
 
@@ -151,8 +161,8 @@ update msg model =
 view : Model -> Html Msg
 view { mouse, polygons, frame } =
     let
-        actualMouse =
-            ( Tuple.first mouse - 250, 250 - Tuple.second mouse )
+        actualMouse ( x, y ) =
+            ( x - 250, 250 - y )
 
         lightAreas source =
             (frame :: polygons)
@@ -160,26 +170,31 @@ view { mouse, polygons, frame } =
                 |> pairs
                 |> List.map (\( p1, p2 ) -> [ source, p1, p2 ])
                 |> List.map polygon
-                |> List.map (filled <| Color.rgba 255 255 255 0.3)
+                |> List.map (filled <| Color.rgba 1 1 1 0.15)
 
         sources dist n =
-            List.range 0 n
-                |> List.map (\i -> degrees <| toFloat i / toFloat n * 360)
-                |> List.map (\ang -> ( dist, ang ))
-                |> (\pts -> ( 0, 0 ) :: pts)
-                |> List.map (cartesian actualMouse)
+            case mouse of
+                Nothing ->
+                    []
+
+                Just mouse_ ->
+                    List.range 0 n
+                        |> List.map (\i -> degrees <| toFloat i / toFloat n * 360)
+                        |> List.map (\ang -> ( dist, ang ))
+                        |> (\pts -> ( 0, 0 ) :: pts)
+                        |> List.map (cartesian (actualMouse mouse_))
 
         shapes =
             polygons |> List.map polygon
     in
-        [ frame |> polygon |> filled Color.black
-        , shapes |> List.map (filled Color.white) |> group
-        , shapes |> List.map (outlined defaultLine) |> group
-        , sources 5 10 |> List.concatMap lightAreas |> group
-        ]
-            |> Collage.collage 500 500
-            |> Element.toHtml
-            |> \canvas -> div [ Pointer.move Mouse ] [ canvas ]
+    [ shapes |> List.map (Helper.outlined 1 Color.black Collage.Clipped) |> group
+    , sources 5 10 |> List.concatMap lightAreas |> group
+    , shapes |> List.map (filled Color.lightGray) |> group
+    , frame |> polygon |> filled Color.black
+    ]
+        |> Collage.group
+        |> Collage.Render.svgBox ( 500, 500 )
+        |> (\canvas -> div [ Pointer.move Mouse ] [ canvas ])
 
 
 
@@ -189,7 +204,7 @@ view { mouse, polygons, frame } =
 description : String
 description =
     """
-This is an homage to [Nicky Case](http://ncase.me)'s
+This is a recreation of [Nicky Case](http://ncase.me)'s
 [Sight and Light](http://ncase.me/sight-and-light/).
 
 It's more of a reimplementation than an homage, but still <3
@@ -198,10 +213,10 @@ Here's a link to [Bret Victor](http://worrydream.com), because why not.
 """
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    program
-        { init = init
+    document
+        { init = always init
         , subscriptions = subscriptions
         , update = \msg model -> ( update msg model, Cmd.none )
         , view = view |> project 9 description

@@ -1,16 +1,15 @@
-module Palette exposing (..)
+module Palette exposing (main)
 
-import Html exposing (program)
-import Helper exposing (project)
-import Html exposing (Html, div, button, text)
-import Html.Events exposing (onClick)
-import Svg exposing (svg, g, rect, text, text_)
-import Svg.Attributes exposing (x, y, width, height, fill)
-import Svg.Attributes exposing (fontFamily, fontSize)
-import Day2.Random exposing (ryb1, ryb1v1, ryb1v2, ryb1v3, ryb2v2)
-import Random exposing (generate, map)
+import Browser exposing (document)
 import Color exposing (Color)
-import Color.Convert exposing (colorToCssRgb, colorToHex)
+import Color.Convert exposing (colorToHex)
+import Day2.Random exposing (ryb1, ryb1v1, ryb1v2, ryb1v3, ryb2v2)
+import Helper exposing (project)
+import Html exposing (Html, button, div, text)
+import Html.Events exposing (onClick)
+import Random exposing (generate, map)
+import Svg exposing (g, rect, svg, text, text_)
+import Svg.Attributes exposing (fill, fontFamily, fontSize, height, width, x, y)
 
 
 type alias Model =
@@ -31,19 +30,19 @@ t1 a =
     [ a ]
 
 
-t2 : ( a, a ) -> List a
-t2 ( a, b ) =
-    [ a, b ]
+t2 : { c1 : Color, c2 : Color } -> List Color
+t2 { c1, c2 } =
+    [ c1, c2 ]
 
 
-t3 : ( a, a, a ) -> List a
-t3 ( a, b, c ) =
-    [ a, b, c ]
+t3 : { c1 : Color, c2 : Color, c3 : Color } -> List Color
+t3 { c1, c2, c3 } =
+    [ c1, c2, c3 ]
 
 
-t4 : ( a, a, a, a ) -> List a
-t4 ( a, b, c, d ) =
-    [ a, b, c, d ]
+t4 : { c1 : Color, c2 : Color, c3 : Color, c4 : Color } -> List Color
+t4 { c1, c2, c3, c4 } =
+    [ c1, c2, c3, c4 ]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -74,60 +73,57 @@ view colors =
         d =
             250
 
-        n =
-            List.length colors
-
-        properties k n =
-            case ( k, n ) of
+        properties k =
+            case ( k, List.length colors ) of
                 ( 0, 1 ) ->
-                    ( 0, 0, d * 2, d * 2 )
+                    ( ( 0, 0 ), ( d * 2, d * 2 ) )
 
                 ( i, 2 ) ->
-                    ( 0, d * toFloat i, 2 * d, d )
+                    ( ( 0, d * toFloat i ), ( 2 * d, d ) )
 
                 ( 0, 3 ) ->
-                    ( 0, 0, 2 * d, d )
+                    ( ( 0, 0 ), ( 2 * d, d ) )
 
                 ( i, 3 ) ->
-                    ( toFloat (i - 1) * d, d, d, d )
+                    ( ( toFloat (i - 1) * d, d ), ( d, d ) )
 
                 ( i, _ ) ->
-                    ( d * toFloat (i % 2), d * toFloat (i // 2), d, d )
+                    ( ( d * toFloat (modBy 2 i), d * toFloat (i // 2) ), ( d, d ) )
 
-        square ( x0, y0, w, h ) color =
+        square ( ( x0, y0 ), ( w, h ) ) color =
             g []
                 [ rect
-                    [ x <| toString <| x0
-                    , y <| toString <| y0
-                    , width <| toString w
-                    , height <| toString h
-                    , fill <| colorToCssRgb color
+                    [ x <| String.fromFloat <| x0
+                    , y <| String.fromFloat <| y0
+                    , width <| String.fromFloat w
+                    , height <| String.fromFloat h
+                    , fill <| Color.toCssString color
                     ]
                     []
                 , text_
-                    [ x <| toString <| x0 + 0.05 * d
-                    , y <| toString <| y0 + 0.1 * d
+                    [ x <| String.fromFloat <| x0 + 0.05 * d
+                    , y <| String.fromFloat <| y0 + 0.1 * d
                     , fontSize "24"
                     , fontFamily "sans serif"
                     ]
                     [ Svg.text <| colorToHex color ]
                 ]
     in
-        div []
-            [ colors
-                |> List.indexedMap (\i c -> square (properties i n) c)
-                |> svg
-                    [ width <| toString <| d * 2
-                    , height <| toString <| d * 2
-                    ]
-            , div []
-                [ button [ onClick One ] [ Html.text "1" ]
-                , button [ onClick OneVOne ] [ Html.text "1:1" ]
-                , button [ onClick OneVTwo ] [ Html.text "1:2" ]
-                , button [ onClick OneVThree ] [ Html.text "1:3" ]
-                , button [ onClick TwoVTwo ] [ Html.text "2:2" ]
+    div []
+        [ colors
+            |> List.indexedMap (\i c -> square (properties i) c)
+            |> svg
+                [ width <| String.fromFloat <| d * 2
+                , height <| String.fromFloat <| d * 2
                 ]
+        , div []
+            [ button [ onClick One ] [ Html.text "1" ]
+            , button [ onClick OneVOne ] [ Html.text "1:1" ]
+            , button [ onClick OneVTwo ] [ Html.text "1:2" ]
+            , button [ onClick OneVThree ] [ Html.text "1:3" ]
+            , button [ onClick TwoVTwo ] [ Html.text "2:2" ]
             ]
+        ]
 
 
 description : String
@@ -145,10 +141,10 @@ I used this day's project in many other days.
 """
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    program
-        { init = [] |> update OneVThree
+    document
+        { init = always ([] |> update OneVThree)
         , update = update
         , view = view |> project 2 description
         , subscriptions = always Sub.none

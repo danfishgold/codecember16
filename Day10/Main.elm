@@ -1,12 +1,12 @@
-module Starfield exposing (..)
+module Starfield exposing (main)
 
-import Html exposing (Html, program)
-import Helper
-import Collage exposing (collage, rect, circle, move, filled)
-import Element
+import Browser exposing (document)
+import Browser.Events
+import Collage exposing (circle, group, rectangle, shift)
+import Collage.Render
 import Color exposing (black, white)
-import AnimationFrame
-import Time exposing (Time)
+import Helper exposing (filled)
+import Html exposing (Html)
 import Random
 import Random.Float
 
@@ -31,7 +31,7 @@ type alias Point2D =
 
 type Msg
     = AddPoint Point3D
-    | Delta Time
+    | Delta Float
 
 
 init : ( Model, Cmd Msg )
@@ -53,7 +53,7 @@ init =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    AnimationFrame.diffs Delta
+    Browser.Events.onAnimationFrameDelta Delta
 
 
 
@@ -66,9 +66,9 @@ randomPoint z =
         pt x y =
             ( x, y, z )
     in
-        Random.map2 pt
-            (Random.Float.normal 0 4)
-            (Random.Float.normal 0 4)
+    Random.map2 pt
+        (Random.Float.normal 0 4)
+        (Random.Float.normal 0 4)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -81,12 +81,13 @@ update msg model =
                         |> List.map (\( x, y, z ) -> ( x, y, z - dt * model.speed ))
                         |> List.filter inFrame
             in
-                ( { model | points = newPoints }
-                , if List.length newPoints < model.count then
-                    Random.generate AddPoint (randomPoint model.zFar)
-                  else
-                    Cmd.none
-                )
+            ( { model | points = newPoints }
+            , if List.length newPoints < model.count then
+                Random.generate AddPoint (randomPoint model.zFar)
+
+              else
+                Cmd.none
+            )
 
         AddPoint pt ->
             ( { model | points = pt :: model.points }, Cmd.none )
@@ -116,15 +117,15 @@ view { width, height, points } =
         point ( x, y, z ) =
             circle (5 / z)
                 |> filled white
-                |> move (project ( x * width, y * height, z ))
+                |> shift (project ( x * width, y * height, z ))
     in
-        [ rect width height |> filled black
-        , points
-            |> List.map point
-            |> Collage.group
-        ]
-            |> collage (floor width) (floor height)
-            |> Element.toHtml
+    [ points
+        |> List.map point
+        |> Collage.group
+    , rectangle width height |> filled black
+    ]
+        |> group
+        |> Collage.Render.svgBox ( width, height )
 
 
 
@@ -142,10 +143,10 @@ Anyway, this was a snack in preparation for tomorrow's project.
 """
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    program
-        { init = init
+    document
+        { init = always <| init
         , subscriptions = subscriptions
         , update = update
         , view = view |> Helper.project 10 description

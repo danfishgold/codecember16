@@ -1,11 +1,10 @@
-module Day27.Area exposing (..)
+module Day27.Area exposing (Area, Center, Shape(..), addToAreas, colors, merge, shapeAround, view)
 
-import Color exposing (Color)
-import Svg exposing (Svg, polygon)
-import Svg.Attributes exposing (fill, x, y, width, height)
-import Color.Convert exposing (colorToCssRgba)
-import Set exposing (Set)
 import Array exposing (Array)
+import Color exposing (Color)
+import Set exposing (Set)
+import Svg exposing (Svg, polygon)
+import Svg.Attributes exposing (fill, height, width, x, y)
 
 
 colors : Array Color
@@ -47,9 +46,9 @@ shapeAround color shape ( x, y ) =
                 Cross ->
                     [ ( x, y ), ( x - 1, y ), ( x + 1, y ), ( x, y - 1 ), ( x, y + 1 ) ]
     in
-        { points = Set.fromList points
-        , color = color
-        }
+    { points = Set.fromList points
+    , color = color
+    }
 
 
 
@@ -63,7 +62,7 @@ addToAreas areas newArea =
             areas |> List.map .color
 
         colorI =
-            List.length areas % Array.length colors
+            modBy (Array.length colors) (List.length areas)
 
         color =
             colors |> Array.filter (\c -> List.member c existingColors |> not) |> Array.get 0 |> Maybe.withDefault (Array.get colorI colors |> Maybe.withDefault newArea.color)
@@ -81,7 +80,7 @@ addToAreas areas newArea =
                         Nothing ->
                             first :: tryMerging rest area
     in
-        tryMerging areas { newArea | color = color }
+    tryMerging areas { newArea | color = color }
 
 
 merge : Area -> Area -> Maybe Area
@@ -96,6 +95,7 @@ merge a b =
         ( setToShift, setToStay ) =
             if Set.size a.points < Set.size b.points then
                 ( a.points, b.points )
+
             else
                 ( b.points, a.points )
 
@@ -105,10 +105,11 @@ merge a b =
         anyIntersection =
             List.any doesIntersect deltas
     in
-        if anyIntersection then
-            Just <| { points = Set.union setToShift setToStay, color = a.color }
-        else
-            Nothing
+    if anyIntersection then
+        Just <| { points = Set.union setToShift setToStay, color = a.color }
+
+    else
+        Nothing
 
 
 
@@ -120,15 +121,15 @@ view scale { points, color } =
     let
         pixel ( x0, y0 ) =
             Svg.rect
-                [ x <| toString <| scale * x0
-                , y <| toString <| scale * y0
-                , width <| toString scale
-                , height <| toString scale
-                , fill <| colorToCssRgba color
+                [ x <| String.fromInt <| scale * x0
+                , y <| String.fromInt <| scale * y0
+                , width <| String.fromInt scale
+                , height <| String.fromInt scale
+                , fill <| Color.toCssString color
                 ]
                 []
     in
-        points
-            |> Set.toList
-            |> List.map pixel
-            |> Svg.g []
+    points
+        |> Set.toList
+        |> List.map pixel
+        |> Svg.g []

@@ -1,10 +1,9 @@
 module Day15.View exposing (polygon)
 
-import Svg exposing (Svg, polygon)
-import Svg.Attributes exposing (points, fill, stroke, strokeWidth)
-import Day15.Polyomino as Poly
 import Color exposing (Color)
-import Color.Convert exposing (colorToCssRgb)
+import Day15.Polyomino as Poly
+import Svg exposing (Svg, polygon)
+import Svg.Attributes exposing (fill, points, stroke, strokeWidth)
 
 
 polygon : Float -> Color -> Poly.Point -> Poly.Word -> Svg msg
@@ -16,16 +15,16 @@ polygon scale color p0 word =
 
         pointsValue =
             pts
-                |> List.map (\( px, py ) -> toString px ++ "," ++ toString py)
+                |> List.map (\( px, py ) -> String.fromFloat px ++ "," ++ String.fromFloat py)
                 |> String.join " "
 
         n =
             List.length pts |> toFloat
     in
-        Svg.polygon
-            [ points pointsValue
-            , fill <| colorToCssRgb color
-            , stroke "black"
-            , strokeWidth "1"
-            ]
-            []
+    Svg.polygon
+        [ points pointsValue
+        , fill <| Color.toCssString color
+        , stroke "black"
+        , strokeWidth "1"
+        ]
+        []

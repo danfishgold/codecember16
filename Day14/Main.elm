@@ -1,13 +1,14 @@
-module Moire exposing (..)
+module Moire exposing (main)
 
-import Html exposing (Html, program)
-import Helper exposing (project)
-import Svg exposing (Svg, svg, circle, g)
-import Svg.Attributes as Attrs exposing (cx, cy, r, fill, transform)
-import Day14.Clip exposing (clip, clipPath)
+import Browser exposing (document)
+import Browser.Events
 import Color exposing (Color)
-import Color.Convert exposing (colorToCssRgb)
-import AnimationFrame
+import Day14.Clip exposing (clip, clipPath)
+import Helper exposing (project)
+import Html exposing (Html)
+import Svg exposing (Svg, circle, g, svg)
+import Svg.Attributes as Attrs exposing (cx, cy, fill, r, transform)
+import Time exposing (Posix)
 
 
 type alias Model =
@@ -19,7 +20,7 @@ type alias Model =
 
 
 type Msg
-    = Tick Float
+    = Tick Posix
 
 
 init : Float -> Float -> ( Model, Cmd Msg )
@@ -39,7 +40,7 @@ init width height =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    AnimationFrame.times Tick
+    Browser.Events.onAnimationFrame Tick
 
 
 
@@ -49,7 +50,11 @@ subscriptions model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Tick t ->
+        Tick posix ->
+            let
+                t =
+                    toFloat <| Time.posixToMillis posix
+            in
             ( { model
                 | dx = cos (t * 0.001) * 10
                 , dy = sin (t * 0.001) * 10
@@ -69,8 +74,9 @@ circles width height rad spacing color =
             2 * rad + spacing
 
         x i j =
-            if i % 2 == 0 then
+            if modBy 2 i == 0 then
                 d * j + d / 2
+
             else
                 d * j
 
@@ -79,10 +85,10 @@ circles width height rad spacing color =
 
         circle i j =
             Svg.circle
-                [ cx <| toString <| x i j
-                , cy <| toString <| y i j
-                , r <| toString rad
-                , fill <| colorToCssRgb color
+                [ cx <| String.fromFloat <| x i j
+                , cy <| String.fromFloat <| y i j
+                , r <| String.fromFloat rad
+                , fill <| Color.toCssString color
                 ]
                 []
 
@@ -96,8 +102,8 @@ circles width height rad spacing color =
                 |> List.map toFloat
                 |> List.map (\j -> circle i j)
     in
-        List.range 0 rows
-            |> List.concatMap row
+    List.range 0 rows
+        |> List.concatMap row
 
 
 view : Model -> Html Msg
@@ -109,17 +115,17 @@ view { width, height, dx, dy } =
         circles2 =
             circles width height 10 2.5 Color.red
     in
-        svg
-            [ Attrs.width <| toString width
-            , Attrs.height <| toString height
+    svg
+        [ Attrs.width <| String.fromFloat width
+        , Attrs.height <| String.fromFloat height
+        ]
+        [ clip "circles1" circles1
+        , g
+            [ clipPath "circles1" ]
+            [ g [ transform <| "translate(" ++ String.fromFloat dx ++ "," ++ String.fromFloat dy ++ ")" ]
+                circles2
             ]
-            [ clip "circles1" circles1
-            , g
-                [ clipPath "circles1" ]
-                [ g [ transform <| "translate(" ++ toString dx ++ "," ++ toString dy ++ ")" ]
-                    circles2
-                ]
-            ]
+        ]
 
 
 
@@ -145,10 +151,10 @@ about visualizing alorithms, which was mentioned in day 6.
 """
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    program
-        { init = init 500 500
+    document
+        { init = always <| init 500 500
         , subscriptions = subscriptions
         , update = update
         , view = view |> project 14 description

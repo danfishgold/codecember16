@@ -1,10 +1,10 @@
-module Cradle exposing (..)
+module Cradle exposing (main)
 
-import Html exposing (program)
+import Browser exposing (document)
 import Helper exposing (project)
-import Svg exposing (Svg, svg, polyline, circle)
-import Svg.Attributes exposing (width, height, points, stroke, strokeWidth, fill, style, cx, cy, r)
 import Pointer
+import Svg exposing (Svg, circle, polyline, svg)
+import Svg.Attributes exposing (cx, cy, fill, height, points, r, stroke, strokeWidth, style, width)
 
 
 type alias Point =
@@ -89,24 +89,24 @@ pairs xs =
 
 insert : Int -> a -> List a -> List a
 insert idx x xs =
-    (List.take (idx + 1) xs) ++ [ x ] ++ (List.drop (idx + 1) xs)
+    List.take (idx + 1) xs ++ [ x ] ++ List.drop (idx + 1) xs
 
 
 modify : Int -> (a -> a) -> List a -> List a
 modify idx fn xs =
     let
         start =
-            List.take (idx) xs
+            List.take idx xs
 
         xend =
-            List.drop (idx) xs
+            List.drop idx xs
     in
-        case xend of
-            x :: end ->
-                start ++ [ fn x ] ++ end
+    case xend of
+        x :: end ->
+            start ++ [ fn x ] ++ end
 
-            [] ->
-                start
+        [] ->
+            start
 
 
 moveBy : Int -> Point -> List Point -> List Point
@@ -130,11 +130,10 @@ fraction t ( x1, y1 ) ( x2, y2 ) =
     ( x1 + t * (x2 - x1), y1 + t * (y2 - y1) )
 
 
-{-|
-nearest p (p1, p2) returns (t, d2)
+{-| nearest p (p1, p2) returns (t, d2)
 where
-  t is the parameter of p1 + t*(p2-p1) of the nearest point to p is on the p1-p2 line
-  d2 is the distance between that point and p, squared
+t is the parameter of p1 + t\*(p2-p1) of the nearest point to p is on the p1-p2 line
+d2 is the distance between that point and p, squared
 -}
 nearest : Point -> ( Point, Point ) -> ( Float, Float )
 nearest ( a, b ) ( ( x1, y1 ), ( x2, y2 ) ) =
@@ -148,7 +147,7 @@ nearest ( a, b ) ( ( x1, y1 ), ( x2, y2 ) ) =
         ( dx1, dy1 ) =
             ( a - x1, b - y1 )
     in
-        ( (dx * dx1 + dy * dy1) / m, (dx1 * dy - dx * dy1) ^ 2 / m )
+    ( (dx * dx1 + dy * dy1) / m, (dx1 * dy - dx * dy1) ^ 2 / m )
 
 
 minimumBy : (a -> comparable) -> List a -> Maybe a
@@ -157,29 +156,34 @@ minimumBy fn xs =
         step x minX =
             if fn x < fn minX then
                 x
+
             else
                 minX
     in
-        case xs of
-            [] ->
-                Nothing
+    case xs of
+        [] ->
+            Nothing
 
-            hd :: tl ->
-                List.foldl step hd tl
-                    |> Just
+        hd :: tl ->
+            List.foldl step hd tl
+                |> Just
 
 
 parametersToLocation : ( Int, ( Float, Float ) ) -> ( Float, Closeness )
 parametersToLocation ( i, ( t, d2 ) ) =
     if d2 <= 30 then
-        if abs (t) <= 0.2 then
+        if abs t <= 0.2 then
             ( d2, Edge i )
+
         else if abs (t - 1) <= 0.2 then
             ( d2, Edge (i + 1) )
+
         else if 0 <= t && t <= 1 then
             ( d2, Middle i t )
+
         else
             ( d2, None )
+
     else
         ( d2, None )
 
@@ -199,13 +203,14 @@ currentClose prev p pts =
         locations =
             locationsForPoints p pts
     in
-        if List.any (\( _, closeness ) -> closeness == prev) locations then
-            prev
-        else
-            locations
-                |> minimumBy Tuple.first
-                |> Maybe.map Tuple.second
-                |> Maybe.withDefault None
+    if List.any (\( _, closeness ) -> closeness == prev) locations then
+        prev
+
+    else
+        locations
+            |> minimumBy Tuple.first
+            |> Maybe.map Tuple.second
+            |> Maybe.withDefault None
 
 
 updateOnState : MouseState -> Model -> Model
@@ -220,38 +225,43 @@ updateOnState state model =
         newModel =
             { model | previousClose = close }
     in
-        case state of
-            Up p ->
-                newModel
+    case state of
+        Up p ->
+            newModel
 
-            Down p ->
-                newModel
+        Down p ->
+            newModel
 
-            Moved p1 p2 ->
-                case ( model.previousClose, close ) of
-                    ( prev, Edge i ) ->
-                        { newModel | line = model.line |> moveTo i p2 }
+        Moved p1 p2 ->
+            case ( model.previousClose, close ) of
+                ( prev, Edge i ) ->
+                    { newModel | line = model.line |> moveTo i p2 }
 
-                    ( Middle i _, Middle j t ) ->
-                        if i == j then
-                            { newModel
-                                | line =
-                                    model.line
-                                        |> insert i (fraction t p1 p2)
-                                , previousClose = Edge (i + 1)
-                            }
-                        else
-                            newModel
+                ( Middle i _, Middle j t ) ->
+                    if i == j then
+                        { newModel
+                            | line =
+                                model.line
+                                    |> insert i (fraction t p1 p2)
+                            , previousClose = Edge (i + 1)
+                        }
 
-                    _ ->
+                    else
                         newModel
+
+                _ ->
+                    newModel
 
 
 update : Msg -> Model -> Model
 update msg model =
     case msg of
         ChangedState state ->
-            model |> updateOnState state |> \model -> { model | mouse = state }
+            model |> updateOnState state |> setMouse state
+
+
+setMouse mouse model =
+    { model | mouse = mouse }
 
 
 
@@ -263,28 +273,28 @@ view model =
     let
         marker color ( x, y ) =
             circle
-                [ cx <| toString x
-                , cy <| toString y
+                [ cx <| String.fromFloat x
+                , cy <| String.fromFloat y
                 , r "2"
                 , fill color
                 ]
                 []
     in
-        svg ([ width "500", height "500" ] ++ events model)
-            ([ polyline
-                [ strokeWidth "2"
-                , stroke "black"
-                , fill "none"
-                , model.line
-                    |> List.map (\( x, y ) -> toString x ++ "," ++ toString y)
-                    |> String.join " "
-                    |> points
-                ]
-                []
-             , mousePosition model.mouse |> marker "red"
-             ]
-                ++ (model.line |> List.map (marker "black"))
-            )
+    svg ([ width "500", height "500" ] ++ events model)
+        ([ polyline
+            [ strokeWidth "2"
+            , stroke "black"
+            , fill "none"
+            , model.line
+                |> List.map (\( x, y ) -> String.fromFloat x ++ "," ++ String.fromFloat y)
+                |> String.join " "
+                |> points
+            ]
+            []
+         , mousePosition model.mouse |> marker "red"
+         ]
+            ++ (model.line |> List.map (marker "black"))
+        )
 
 
 
@@ -324,10 +334,10 @@ Use the mouse
 """
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    program
-        { init = init
+    document
+        { init = always <| init
         , subscriptions = always Sub.none
         , update = \msg model -> ( update msg model, Cmd.none )
         , view = view |> project 8 description

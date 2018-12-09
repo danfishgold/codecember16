@@ -1,13 +1,13 @@
-module Matrix exposing (..)
+module Matrix exposing (main)
 
-import Html exposing (program)
-import Helper exposing (project)
-import Svg exposing (Svg, svg, rect, g, text, text_)
-import Svg.Attributes exposing (width, height, x, y, fill)
-import Time exposing (Time, second, every)
+import Browser exposing (document)
 import Day19.Trail as Trail exposing (Trail)
+import Helper exposing (project)
 import Random exposing (generate)
 import Random.Extra exposing (combine)
+import Svg exposing (Svg, g, rect, svg, text, text_)
+import Svg.Attributes exposing (fill, height, width, x, y)
+import Time exposing (Posix, every)
 
 
 type alias Model =
@@ -23,7 +23,7 @@ type alias Model =
 
 
 type Msg
-    = Tick Time
+    = Tick Posix
     | SetTrails (List Trail)
     | AddTrail Trail
 
@@ -49,7 +49,7 @@ init width height =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    every (0.01 * second) Tick
+    every 10 Tick
 
 
 
@@ -70,15 +70,16 @@ update msg model =
                 trails =
                     model.trails |> List.filter (\{ letters, y } -> y - List.length letters <= ht)
             in
-                ( { model | time = time }
-                , Cmd.batch
-                    [ if List.length trails < model.count then
-                        generate AddTrail (Trail.random wd model.trailLength)
-                      else
-                        Cmd.none
-                    , trails |> List.map (Trail.update model.time) |> combine |> generate SetTrails
-                    ]
-                )
+            ( { model | time = time }
+            , Cmd.batch
+                [ if List.length trails < model.count then
+                    generate AddTrail (Trail.random wd model.trailLength)
+
+                  else
+                    Cmd.none
+                , trails |> List.map (Trail.update model.time) |> combine |> generate SetTrails
+                ]
+            )
 
         SetTrails trails ->
             ( { model | trails = trails }, Cmd.none )
@@ -96,8 +97,8 @@ view model =
     [ rect
         [ x <| "0"
         , y <| "0"
-        , width <| toString model.width
-        , height <| toString model.height
+        , width <| String.fromFloat model.width
+        , height <| String.fromFloat model.height
         , fill "black"
         ]
         []
@@ -105,7 +106,7 @@ view model =
         |> List.map (Trail.view model.fontFamily model.fontSize)
         |> g []
     ]
-        |> svg [ width <| toString model.width, height <| toString model.height ]
+        |> svg [ width <| String.fromFloat model.width, height <| String.fromFloat model.height ]
 
 
 
@@ -126,10 +127,10 @@ and this project is a reimplementation of it. The second one is yet to come.
 """
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    program
-        { init = init 500 500
+    document
+        { init = always <| init 500 500
         , subscriptions = subscriptions
         , update = update
         , view = view |> project 19 description

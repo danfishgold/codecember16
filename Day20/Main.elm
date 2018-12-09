@@ -1,17 +1,17 @@
-module Gravity exposing (..)
+module Gravity exposing (main)
 
-import Html exposing (Html, program)
-import Helper exposing (project)
-import Svg exposing (Svg, svg, circle)
-import Svg.Keyed exposing (node)
-import Svg.Attributes exposing (width, height, cx, cy, r, fill)
+import Browser exposing (document)
+import Browser.Events
 import Color exposing (Color)
-import Color.Convert exposing (colorToCssRgb)
-import Pointer
-import AnimationFrame
-import Random
 import Day2.Random exposing (ryb1)
-import Time exposing (second)
+import Helper exposing (project)
+import Html exposing (Html)
+import Pointer
+import Random
+import Svg exposing (Svg, circle, svg)
+import Svg.Attributes exposing (cx, cy, fill, height, r, width)
+import Svg.Keyed exposing (node)
+import Time
 
 
 type alias Model =
@@ -59,9 +59,13 @@ init width height =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ AnimationFrame.diffs Tick
-        , Time.every (0.01 * second)
-            (\t ->
+        [ Browser.Events.onAnimationFrameDelta Tick
+        , Time.every 10
+            (\posix ->
+                let
+                    t =
+                        toFloat <| Time.posixToMillis posix
+                in
                 Mouse
                     ( model.width / 2 + model.width / 6 * cos (t / 300)
                     , model.height / 2 + model.height / 6 * sin (t / 300)
@@ -80,10 +84,10 @@ randomBall id x y =
         ball r c v =
             { x = x, y = y, v = v, radius = r, color = c, bounced = False, id = id }
     in
-        Random.map3 ball
-            (Random.float 2 5)
-            (ryb1 1 0.5)
-            (Random.float 0 0.2)
+    Random.map3 ball
+        (Random.float 2 5)
+        (ryb1 1 0.5)
+        (Random.float 0 0.2)
 
 
 updateBall : Float -> Float -> Ball -> Maybe Ball
@@ -95,14 +99,17 @@ updateBall g dt ({ v, y } as ball) =
         vNew =
             v - dt * g
     in
-        if yNew > ball.radius then
-            Just { ball | y = yNew, v = vNew }
-        else if not ball.bounced then
-            Just { ball | v = -vNew * 0.5, y = 2 * ball.radius - yNew, bounced = True }
-        else if yNew > -ball.radius then
-            Just { ball | y = yNew }
-        else
-            Nothing
+    if yNew > ball.radius then
+        Just { ball | y = yNew, v = vNew }
+
+    else if not ball.bounced then
+        Just { ball | v = -vNew * 0.5, y = 2 * ball.radius - yNew, bounced = True }
+
+    else if yNew > -ball.radius then
+        Just { ball | y = yNew }
+
+    else
+        Nothing
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -120,7 +127,8 @@ update msg model =
         Mouse ( x, y ) ->
             ( { model | id = model.id + 1 }
             , if 0 <= x && x <= model.width && 0 <= y && y <= model.height then
-                Random.generate Add (randomBall (toString model.id) x (model.height - y))
+                Random.generate Add (randomBall (String.fromInt model.id) x (model.height - y))
+
               else
                 Cmd.none
             )
@@ -139,20 +147,20 @@ view model =
         ball { id, x, y, radius, color } =
             ( id
             , circle
-                [ cx <| toString <| x
-                , cy <| toString <| model.height - y
-                , r <| toString radius
-                , fill <| colorToCssRgb color
+                [ cx <| String.fromFloat <| x
+                , cy <| String.fromFloat <| model.height - y
+                , r <| String.fromFloat radius
+                , fill <| Color.toCssString color
                 ]
                 []
             )
     in
-        List.map ball model.balls
-            |> node "svg"
-                [ width <| toString model.width
-                , height <| toString model.height
-                , Pointer.move Mouse
-                ]
+    List.map ball model.balls
+        |> node "svg"
+            [ width <| String.fromFloat model.width
+            , height <| String.fromFloat model.height
+            , Pointer.move Mouse
+            ]
 
 
 
@@ -182,10 +190,10 @@ Use the mouse to make tiny circles or just look at the ones in the big circle.
 """
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    program
-        { init = init 500 500
+    document
+        { init = always <| init 500 500
         , subscriptions = subscriptions
         , update = update
         , view = view |> project 20 description

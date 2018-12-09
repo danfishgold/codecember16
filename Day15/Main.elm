@@ -1,24 +1,27 @@
-module Polyomino exposing (..)
+module Polyomino exposing (main)
 
-import Html exposing (program)
-import Helper exposing (project)
-import Svg exposing (Svg, svg, g)
-import Svg.Attributes exposing (transform, width, height)
+import Browser exposing (document)
+import Browser.Events
+import Color exposing (Color)
 import Day15.Polyomino as Poly
 import Day15.View as View
-import Random
-import Keyboard exposing (KeyCode)
-import Color exposing (Color)
 import Day2.Random exposing (ryb1)
+import Helper exposing (onEnter, project)
+import Random
+import Svg exposing (Svg, g, svg)
+import Svg.Attributes exposing (height, transform, width)
 
 
 type alias Model =
-    { width : Float, height : Float, polyominos : List ( Color, Poly.Word ) }
+    { width : Float
+    , height : Float
+    , polyominos : List ( Color, Poly.Word )
+    }
 
 
 type Msg
     = SetPolyominos (List ( Color, Poly.Word ))
-    | Key KeyCode
+    | Randomize
 
 
 init : Float -> Float -> ( Model, Cmd Msg )
@@ -37,7 +40,7 @@ init width height =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Keyboard.ups Key
+    onEnter Randomize
 
 
 
@@ -46,7 +49,7 @@ subscriptions model =
 
 randomize : Cmd Msg
 randomize =
-    Random.map2 (,)
+    Random.map2 (\a b -> ( a, b ))
         (ryb1 1 0.5)
         (Poly.randomBN 2 6 |> Random.map Poly.bn)
         |> Random.list 9
@@ -59,11 +62,8 @@ update msg model =
         SetPolyominos polyominos ->
             ( { model | polyominos = polyominos }, Cmd.none )
 
-        Key 13 ->
+        Randomize ->
             ( model, randomize )
-
-        Key _ ->
-            ( model, Cmd.none )
 
 
 
@@ -74,21 +74,21 @@ view : Float -> Model -> Svg Msg
 view scale model =
     let
         x i =
-            model.width / 6 + toFloat (i % 3) * model.width / 3
+            model.width / 6 + toFloat (modBy 3 i) * model.width / 3
 
         y i =
             model.height / 6 + toFloat (i // 3) * model.height / 3
 
         translate i =
-            "translate(" ++ toString (x i) ++ "," ++ toString (y i) ++ ")"
+            "translate(" ++ String.fromFloat (x i) ++ "," ++ String.fromFloat (y i) ++ ")"
 
         poly i ( color, word ) =
             g [ transform <| translate i ] [ View.polygon scale color ( 0, 0 ) word ]
     in
-        model.polyominos
-            |> List.indexedMap poly
-            |> svg
-                [ width <| toString model.width, height <| toString model.height ]
+    model.polyominos
+        |> List.indexedMap poly
+        |> svg
+            [ width <| String.fromFloat model.width, height <| String.fromFloat model.height ]
 
 
 
@@ -122,10 +122,10 @@ Hit enter to randomize.
 """
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    program
-        { init = init 500 500
+    document
+        { init = always <| init 500 500
         , subscriptions = subscriptions
         , update = update
         , view = view 8 |> project 15 description

@@ -1,14 +1,14 @@
-module Tiles exposing (..)
+module Tiles exposing (main)
 
-import Html exposing (program)
-import Helper exposing (project)
-import Svg exposing (Svg, svg, g)
-import Svg.Attributes exposing (width, height, transform)
-import Day15.Polyomino as Poly exposing (Point, Letter(..))
-import Day15.View exposing (polygon)
-import Random
-import Keyboard exposing (KeyCode)
+import Browser exposing (document)
+import Browser.Events
 import Color exposing (Color, white)
+import Day15.Polyomino as Poly exposing (Letter(..), Point)
+import Day15.View exposing (polygon)
+import Helper exposing (onEnter, project)
+import Random
+import Svg exposing (Svg, g, svg)
+import Svg.Attributes exposing (height, transform, width)
 
 
 type alias Tile =
@@ -29,7 +29,7 @@ randomize =
 
 type Msg
     = SetTile Tile
-    | Key KeyCode
+    | Randomize
 
 
 init : Float -> Float -> ( Model, Cmd Msg )
@@ -48,7 +48,7 @@ init width height =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Keyboard.ups Key
+    onEnter Randomize
 
 
 
@@ -61,11 +61,8 @@ update msg model =
         SetTile tile ->
             ( { model | tile = tile }, Cmd.none )
 
-        Key 13 ->
+        Randomize ->
             ( model, randomize )
-
-        Key _ ->
-            ( model, Cmd.none )
 
 
 
@@ -82,22 +79,23 @@ axes ( w1, w2, w3 ) =
                 |> List.head
                 |> Maybe.withDefault ( 0, 0 )
     in
-        ( vec <| w1 ++ w2, vec <| w3 ++ w2 )
+    ( vec <| w1 ++ w2, vec <| w3 ++ w2 )
 
 
 prefactors : Float -> Float -> ( Point, Point ) -> ( Float, Float )
 prefactors x y ( ( u1, u2 ), ( v1, v2 ) ) =
     let
-        ( ux, uy, vx, vy ) =
-            ( toFloat u1, toFloat u2, toFloat v1, toFloat v2 )
+        ( ( ux, uy ), ( vx, vy ) ) =
+            ( ( toFloat u1, toFloat u2 ), ( toFloat v1, toFloat v2 ) )
 
         det =
             vy * ux - vx * uy
     in
-        if det == 0 then
-            Debug.crash "base is colinear"
-        else
-            ( (vy * x - vx * y) / det, (ux * y - uy * x) / det )
+    if det == 0 then
+        Debug.todo "base is colinear"
+
+    else
+        ( (vy * x - vx * y) / det, (ux * y - uy * x) / det )
 
 
 ranges : Float -> Float -> ( Point, Point ) -> ( ( Int, Int ), ( Int, Int ) )
@@ -108,10 +106,10 @@ ranges wd ht vecs =
             , List.maximum xs |> Maybe.withDefault 0 |> ceiling
             )
     in
-        [ ( 0, 0 ), ( wd, 0 ), ( wd, ht ), ( 0, ht ) ]
-            |> List.map (\( x, y ) -> prefactors x y vecs)
-            |> List.unzip
-            |> \( i, j ) -> ( rangify i, rangify j )
+    [ ( 0, 0 ), ( wd, 0 ), ( wd, ht ), ( 0, ht ) ]
+        |> List.map (\( x, y ) -> prefactors x y vecs)
+        |> List.unzip
+        |> (\( i, j ) -> ( rangify i, rangify j ))
 
 
 view : Float -> Model -> Svg Msg
@@ -129,7 +127,7 @@ view scale model =
             Poly.bn model.tile
 
         color i j =
-            case ( i % 2 == 0, j % 2 == 0 ) of
+            case ( modBy 2 i == 0, modBy 2 j == 0 ) of
                 ( True, True ) ->
                     Color.white
 
@@ -156,8 +154,8 @@ view scale model =
             List.range iMin iMax
                 |> List.concatMap row
     in
-        grid
-            |> svg [ width <| toString model.width, height <| toString model.height ]
+    grid
+        |> svg [ width <| String.fromFloat model.width, height <| String.fromFloat model.height ]
 
 
 
@@ -177,10 +175,10 @@ Hit enter to randomize.
 """
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    program
-        { init = init 500 500
+    document
+        { init = always <| init 500 500
         , subscriptions = subscriptions
         , update = update
         , view = view 8 |> project 16 description

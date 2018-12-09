@@ -1,12 +1,13 @@
-module Boids exposing (..)
+module Boids exposing (main)
 
-import Html exposing (Html, program)
-import Helper exposing (project)
-import Collage exposing (collage, polygon, filled, move, rotate)
-import Element
-import AnimationFrame
+import Browser exposing (document)
+import Browser.Events
+import Collage exposing (group, polygon, rotate, shift)
+import Collage.Render
 import Color exposing (Color)
 import Day25.Vector as Vector exposing (..)
+import Helper exposing (filled, project)
+import Html exposing (Html)
 import Random
 
 
@@ -26,7 +27,8 @@ rules =
     [ Rule cohesion 3.0 100
     , Rule alignment 0.01 20
     , Rule separation 0.2 50
-      -- , Rule center 4 0
+
+    -- , Rule center 4 0
     ]
 
 
@@ -67,14 +69,14 @@ randomBoid maxSpeed =
                 (Random.float 0 360 |> Random.map degrees)
 
         r =
-            Random.map2 (,)
+            Random.map2 (\a b -> ( a, b ))
                 (Random.float -0.5 0.5)
                 (Random.float -0.5 0.5)
 
-        boid r v =
-            Boid r v Color.black
+        boid r_ v_ =
+            Boid r_ v_ Color.black
     in
-        Random.map2 boid r v
+    Random.map2 boid r v
 
 
 
@@ -83,7 +85,7 @@ randomBoid maxSpeed =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    AnimationFrame.diffs Tick
+    Browser.Events.onAnimationFrameDelta Tick
 
 
 
@@ -114,29 +116,31 @@ updateBoids dt maxSpeed boids =
                 |> List.map (velocityFromRule boid)
                 |> Vector.sum
                 |> Vector.normalizeOrZero (maxSpeed / 100)
-                |> \v -> { boid | v = Vector.add boid.v v |> Vector.capMagnitude maxSpeed }
+                |> (\v -> { boid | v = Vector.add boid.v v |> Vector.capMagnitude maxSpeed })
 
-        updateLocation dt boid =
-            { boid | r = add boid.r (mul dt boid.v) }
+        updateLocation dt_ boid =
+            { boid | r = add boid.r (mul dt_ boid.v) }
     in
-        boids |> List.map applyRules |> List.map (updateLocation dt) |> List.map modPosition
+    boids |> List.map applyRules |> List.map (updateLocation dt) |> List.map modPosition
 
 
 modPosition : Boid -> Boid
 modPosition boid =
     let
-        mod x =
-            if x > 0.5 then
-                mod (x - 1)
-            else if x < -0.5 then
-                mod (x + 1)
+        mod x_ =
+            if x_ > 0.5 then
+                mod (x_ - 1)
+
+            else if x_ < -0.5 then
+                mod (x_ + 1)
+
             else
-                x
+                x_
 
         ( x, y ) =
             boid.r
     in
-        { boid | r = ( mod x, mod y ) }
+    { boid | r = ( mod x, mod y ) }
 
 
 neighborsWithin : Boid -> Float -> List Boid -> List Boid
@@ -150,6 +154,7 @@ separation : Boid -> List Boid -> Vector
 separation { r, v } boids =
     if List.isEmpty boids then
         ( 0, 0 )
+
     else
         boids
             |> List.map (.r >> Vector.sub r)
@@ -161,6 +166,7 @@ alignment : Boid -> List Boid -> Vector
 alignment { r, v } boids =
     if List.isEmpty boids then
         ( 0, 0 )
+
     else
         boids
             |> List.map .v
@@ -172,6 +178,7 @@ cohesion : Boid -> List Boid -> Vector
 cohesion { r, v } boids =
     if List.isEmpty boids then
         ( 0, 0 )
+
     else
         boids
             |> List.map .r
@@ -195,13 +202,13 @@ view { width, height, boids } =
         boidPolygon { r, v, c } =
             polygon [ ( -4, -4 ), ( 4, -4 ), ( 0, 8 ) ]
                 |> filled c
-                |> move (vecMul r ( width, height ))
+                |> shift (vecMul r ( width, height ))
                 |> rotate (Vector.arg v)
     in
-        boids
-            |> List.map boidPolygon
-            |> collage (floor width) (floor height)
-            |> Element.toHtml
+    boids
+        |> List.map boidPolygon
+        |> group
+        |> Collage.Render.svgBox ( width, height )
 
 
 
@@ -216,10 +223,10 @@ I don't know when I first encountered them, but they sure are cool.
 """
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    program
-        { init = init 0.001 500 500
+    document
+        { init = always <| init 0.001 500 500
         , subscriptions = subscriptions
         , update = \msg model -> ( update msg model, Cmd.none )
         , view = view |> project 25 description

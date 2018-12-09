@@ -1,25 +1,24 @@
-module Main exposing (..)
+module Main exposing (main)
 
-import Html exposing (program)
-import Helper exposing (project)
-import Svg exposing (Svg, svg, g, rect)
-import Svg.Attributes exposing (x, y, width, height, fill, transform)
-import Day13.Dvd as Dvd
+import Browser exposing (document)
+import Browser.Events
 import Color exposing (Color)
-import AnimationFrame
-import Time exposing (Time)
-import Random.Extra
+import Day13.Dvd as Dvd
+import Helper exposing (project)
 import Random
+import Random.Extra
+import Svg exposing (Svg, g, rect, svg)
+import Svg.Attributes exposing (fill, height, transform, width, x, y)
 
 
 colors : List Color
 colors =
-    [ Color.hsl (degrees 0) 1 0.5
-    , Color.hsl (degrees 60) 1 0.5
-    , Color.hsl (degrees 120) 1 0.5
-    , Color.hsl (degrees 180) 1 0.5
-    , Color.hsl (degrees 240) 1 0.5
-    , Color.hsl (degrees 300) 1 0.5
+    [ Color.hsl (0 / 360) 1 0.5
+    , Color.hsl (60 / 360) 1 0.5
+    , Color.hsl (120 / 360) 1 0.5
+    , Color.hsl (180 / 360) 1 0.5
+    , Color.hsl (240 / 360) 1 0.5
+    , Color.hsl (300 / 360) 1 0.5
     ]
 
 
@@ -36,7 +35,7 @@ type alias Model =
 
 type Msg
     = SetColor Color
-    | Tick Time
+    | Tick Float
 
 
 init : Float -> Float -> ( Model, Cmd Msg )
@@ -45,7 +44,7 @@ init width height =
       , y = 0
       , vx = 0.1
       , vy = 0.1
-      , color = Color.white
+      , color = Color.red
       , width = width
       , height = height
       }
@@ -59,7 +58,7 @@ init width height =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    AnimationFrame.diffs Tick
+    Browser.Events.onAnimationFrameDelta Tick
 
 
 
@@ -72,12 +71,14 @@ move p v dt len =
         p1 =
             p + v * dt
     in
-        if p1 < 0 then
-            { p = -p1, v = -v, flip = True }
-        else if p1 > len then
-            { p = 2 * len - p1, v = -v, flip = True }
-        else
-            { p = p1, v = v, flip = False }
+    if p1 < 0 then
+        { p = -p1, v = -v, flip = True }
+
+    else if p1 > len then
+        { p = 2 * len - p1, v = -v, flip = True }
+
+    else
+        { p = p1, v = v, flip = False }
 
 
 randomColor : Color -> Random.Generator Color
@@ -102,18 +103,19 @@ update msg model =
                 y =
                     move model.y model.vy dt (model.height - Dvd.height)
             in
-                ( { model
-                    | x = x.p
-                    , y = y.p
-                    , vx = x.v
-                    , vy = y.v
-                  }
-                , if x.flip || y.flip then
-                    Random.generate SetColor
-                        (randomColor model.color)
-                  else
-                    Cmd.none
-                )
+            ( { model
+                | x = x.p
+                , y = y.p
+                , vx = x.v
+                , vy = y.v
+              }
+            , if x.flip || y.flip then
+                Random.generate SetColor
+                    (randomColor model.color)
+
+              else
+                Cmd.none
+            )
 
 
 
@@ -122,7 +124,7 @@ update msg model =
 
 dvd : Float -> Float -> Color -> Svg msg
 dvd x y c =
-    g [ transform <| "translate(" ++ toString x ++ "," ++ toString y ++ ")" ] [ Dvd.dvd c ]
+    g [ transform <| "translate(" ++ String.fromFloat x ++ "," ++ String.fromFloat y ++ ")" ] [ Dvd.dvd c ]
 
 
 bg : Model -> Svg msg
@@ -130,8 +132,8 @@ bg model =
     rect
         [ x "0"
         , y "0"
-        , width <| toString model.width
-        , height <| toString model.height
+        , width <| String.fromFloat model.width
+        , height <| String.fromFloat model.height
         , fill "black"
         ]
         []
@@ -139,7 +141,7 @@ bg model =
 
 view : Model -> Svg Msg
 view model =
-    svg [ width <| toString model.width, height <| toString model.height ]
+    svg [ width <| String.fromFloat model.width, height <| String.fromFloat model.height ]
         [ bg model
         , dvd model.x model.y model.color
         ]
@@ -156,10 +158,10 @@ CHILDHOOD MEMORIES
 """
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    program
-        { init = init 500 500
+    document
+        { init = always <| init 500 500
         , subscriptions = subscriptions
         , update = update
         , view = view |> project 13 description

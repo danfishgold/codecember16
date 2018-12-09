@@ -1,12 +1,11 @@
-module Day28.Border exposing (..)
+module Day28.Border exposing (BorderDict, Corner, Direction(..), DirectionNum, border, borderEdges, borderStep, borders, directionFromInt, directionToInt, edgeFromCenter, either, innerBorder, possibleDirections, unitVector, view)
 
-import Day27.Area as Area exposing (Area, Center)
-import Svg exposing (Svg, g, polygon)
-import Svg.Attributes exposing (points, stroke, strokeWidth, fill)
 import Color
-import Color.Convert exposing (colorToCssRgba)
-import Set exposing (Set)
+import Day27.Area as Area exposing (Area, Center)
 import Dict exposing (Dict)
+import Set exposing (Set)
+import Svg exposing (Svg, g, polygon)
+import Svg.Attributes exposing (fill, points, stroke, strokeWidth)
 
 
 type alias Corner =
@@ -60,7 +59,7 @@ directionFromInt i =
             Left
 
         _ ->
-            Debug.crash "wrong direction encoding"
+            Debug.todo "wrong direction encoding"
 
 
 unitVector : DirectionNum -> ( Int, Int )
@@ -97,7 +96,7 @@ edgeFromCenter dirNum ( x, y ) =
 
 possibleDirections : DirectionNum -> List DirectionNum
 possibleDirections dirNum =
-    [ dirNum + 1, dirNum + 3, dirNum ] |> List.map (\i -> i % 4)
+    [ dirNum + 1, dirNum + 3, dirNum ] |> List.map (\i -> modBy 4 i)
 
 
 
@@ -108,6 +107,7 @@ either : Maybe a -> Maybe a -> Maybe a
 either x y =
     if x == Nothing then
         y
+
     else
         x
 
@@ -119,20 +119,20 @@ either x y =
 innerBorder : Set Center -> Set ( Center, DirectionNum )
 innerBorder points =
     let
-        borders dirNum =
+        borders_ dirNum =
             let
                 ( dx, dy ) =
                     unitVector dirNum
             in
-                points
-                    |> Set.map (\( x, y ) -> ( x + dx, y + dy ))
-                    |> (\shifted -> Set.diff shifted points)
-                    |> Set.map (\( x, y ) -> ( ( x - dx, y - dy ), dirNum ))
+            points
+                |> Set.map (\( x, y ) -> ( x + dx, y + dy ))
+                |> (\shifted -> Set.diff shifted points)
+                |> Set.map (\( x, y ) -> ( ( x - dx, y - dy ), dirNum ))
     in
-        [ Up, Right, Down, Left ]
-            |> List.map directionToInt
-            |> List.map borders
-            |> List.foldl Set.union Set.empty
+    [ Up, Right, Down, Left ]
+        |> List.map directionToInt
+        |> List.map borders_
+        |> List.foldl Set.union Set.empty
 
 
 borderEdges : Set ( Center, DirectionNum ) -> BorderDict
@@ -142,10 +142,10 @@ borderEdges innerBorderPoints =
             edgeFromCenter dirNum pt
                 |> (\( p1, p2 ) -> ( ( p1, dirNum ), p2 ))
     in
-        innerBorderPoints
-            |> Set.map edge
-            |> Set.toList
-            |> Dict.fromList
+    innerBorderPoints
+        |> Set.map edge
+        |> Set.toList
+        |> Dict.fromList
 
 
 borderStep : BorderDict -> ( Corner, DirectionNum ) -> Maybe ( Corner, DirectionNum )
@@ -157,17 +157,18 @@ borderStep dict ( point, dirNum ) =
                     pt
 
                 Nothing ->
-                    Debug.crash <| "current point (" ++ toString point ++ ") not on border"
+                    Debug.todo <| "current point (" ++ Debug.toString point ++ ") not on border"
 
         handleDirection nextDirNum =
             if Dict.member ( nextPoint, nextDirNum ) dict then
                 Just ( nextPoint, nextDirNum )
+
             else
                 Nothing
     in
-        possibleDirections dirNum
-            |> List.map handleDirection
-            |> List.foldl either Nothing
+    possibleDirections dirNum
+        |> List.map handleDirection
+        |> List.foldl either Nothing
 
 
 border : ( Corner, DirectionNum ) -> BorderDict -> ( List Corner, BorderDict )
@@ -176,16 +177,16 @@ border ( point, dirNum ) dict =
         newDict =
             dict |> Dict.remove ( point, dirNum )
     in
-        case borderStep dict ( point, dirNum ) of
-            Nothing ->
-                ( [ point ], newDict )
+    case borderStep dict ( point, dirNum ) of
+        Nothing ->
+            ( [ point ], newDict )
 
-            Just step ->
-                let
-                    ( nextBorderPoints, nextDict ) =
-                        border step newDict
-                in
-                    ( point :: nextBorderPoints, nextDict )
+        Just step ->
+            let
+                ( nextBorderPoints, nextDict ) =
+                    border step newDict
+            in
+            ( point :: nextBorderPoints, nextDict )
 
 
 borders : BorderDict -> List (List Corner)
@@ -199,7 +200,7 @@ borders borderDict =
                 ( aBorder, newDict ) =
                     border key borderDict
             in
-                aBorder :: borders newDict
+            aBorder :: borders newDict
 
 
 
@@ -217,21 +218,21 @@ view scale fillColor area =
 
         pointString ( x, y ) =
             ""
-                ++ toString (scale * x)
+                ++ String.fromInt (scale * x)
                 ++ ","
-                ++ toString (scale * y)
+                ++ String.fromInt (scale * y)
 
-        borderView border =
+        borderView border_ =
             polygon
                 [ fill "none"
-                , stroke <| colorToCssRgba area.color
+                , stroke <| Color.toCssString area.color
                 , strokeWidth "2"
-                , points <| String.join " " <| List.map pointString <| border
+                , points <| String.join " " <| List.map pointString <| border_
                 ]
                 []
 
         areaView =
             Area.view scale { area | color = fillColor }
     in
-        g []
-            (areaView :: List.map borderView (allBorders))
+    g []
+        (areaView :: List.map borderView allBorders)

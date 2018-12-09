@@ -1,12 +1,11 @@
-module Jam exposing (..)
+module Jam exposing (main)
 
-import Html exposing (program)
+import Browser exposing (document)
+import Browser.Events
 import Helper exposing (project)
-import Svg exposing (Svg, svg, g)
-import Svg.Attributes exposing (width, height, cx, cy, r, fill, stroke, strokeWidth)
-import Svg.Events exposing (onMouseOver, onMouseOut)
-import AnimationFrame
-import Time exposing (Time, second)
+import Svg exposing (Svg, g, svg)
+import Svg.Attributes exposing (cx, cy, fill, height, r, stroke, strokeWidth, width)
+import Svg.Events exposing (onMouseOut, onMouseOver)
 
 
 type alias Car =
@@ -31,7 +30,7 @@ type alias Model =
 
 
 type Msg
-    = Tick Time
+    = Tick Float
     | AddObstacle
     | RemoveObstacle
 
@@ -40,32 +39,35 @@ init : Float -> Float -> Int -> ( Model, Cmd Msg )
 init width height count =
     ( { width = width
       , height = height
-      , cars = List.range 1 count |> List.map (\i -> toFloat i / toFloat count) |> List.map car
+      , cars =
+            List.range 1 count
+                |> List.map (\i -> toFloat i / toFloat count)
+                |> List.map carAtPosition
       , obstacle = False
       }
     , Cmd.none
     )
 
 
-car : Float -> Car
-car x =
+carAtPosition : Float -> Car
+carAtPosition x =
     let
         sec =
-            second
+            1000
 
         m =
             1 / 500
     in
-        { x = x
-        , v = 0
-        , len = 2 * m
-        , s0 = 3 * m
-        , v0 = 60 * m / sec
-        , aMax = 24 * m / sec ^ 2
-        , reactionTime = 0.5 * sec
-        , deceleration = 12 * m / sec ^ 2
-        , delta = 4
-        }
+    { x = x
+    , v = 0
+    , len = 2 * m
+    , s0 = 3 * m
+    , v0 = 60 * m / sec
+    , aMax = 24 * m / sec ^ 2
+    , reactionTime = 0.5 * sec
+    , deceleration = 12 * m / sec ^ 2
+    , delta = 4
+    }
 
 
 description : String
@@ -88,10 +90,10 @@ Hover over the ring road to create a trafic jam.
 """
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    program
-        { init = init 500 500 35
+    document
+        { init = always <| init 500 500 35
         , subscriptions = subscriptions
         , update = update
         , view = view |> project 26 description
@@ -104,7 +106,7 @@ main =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    AnimationFrame.diffs Tick
+    Browser.Events.onAnimationFrameDelta Tick
 
 
 
@@ -121,23 +123,25 @@ update msg model =
                         carSortValue { x, v, reactionTime } =
                             if x + v * reactionTime > 1 then
                                 x - 1
+
                             else
                                 x
 
                         cars =
                             List.sortBy carSortValue model.cars
                     in
-                        case cars of
-                            [] ->
-                                []
+                    case cars of
+                        [] ->
+                            []
 
-                            first :: rest ->
-                                if model.obstacle then
-                                    cars ++ [ car 0 ] |> mapPairs (updateCar dt)
-                                else
-                                    cars
-                                        ++ [ first ]
-                                        |> mapPairs (updateCar dt)
+                        first :: rest ->
+                            if model.obstacle then
+                                cars ++ [ carAtPosition 0 ] |> mapPairs (updateCar dt)
+
+                            else
+                                cars
+                                    ++ [ first ]
+                                    |> mapPairs (updateCar dt)
               }
             , Cmd.none
             )
@@ -149,17 +153,19 @@ update msg model =
             ( { model | obstacle = False }, Cmd.none )
 
 
-updateCar : Time -> Car -> { a | x : Float, v : Float, len : Float } -> Car
+updateCar : Float -> Car -> { a | x : Float, v : Float, len : Float } -> Car
 updateCar dt ({ x, v, v0, aMax, s0, reactionTime, deceleration, delta } as car) next =
     if dt /= 0 then
         let
-            modAfter a b =
-                if b >= a + 1 then
-                    modAfter a (b - 1)
-                else if b < a then
-                    modAfter a (b + 1)
+            modAfter a_ b_ =
+                if b_ >= a_ + 1 then
+                    modAfter a_ (b_ - 1)
+
+                else if b_ < a_ then
+                    modAfter a_ (b_ + 1)
+
                 else
-                    b
+                    b_
 
             s =
                 modAfter x (next.x - next.len) - x
@@ -177,7 +183,8 @@ updateCar dt ({ x, v, v0, aMax, s0, reactionTime, deceleration, delta } as car) 
             x1 =
                 x + v * dt |> modAfter 0
         in
-            { car | x = x1, v = v1 }
+        { car | x = x1, v = v1 }
+
     else
         car
 
@@ -208,17 +215,17 @@ view model =
 
         circle x y rad fillColor strokeColor width =
             Svg.circle
-                [ cx <| toString <| centerX + x
-                , cy <| toString <| centerY + y
-                , r <| toString rad
+                [ cx <| String.fromFloat <| centerX + x
+                , cy <| String.fromFloat <| centerY + y
+                , r <| String.fromFloat rad
                 , fill fillColor
                 , stroke strokeColor
-                , strokeWidth <| toString width
+                , strokeWidth <| String.fromFloat width
                 ]
                 []
 
         ( ringRad, ringWidth ) =
-            ( min model.width model.height |> \l -> l / 3, 15 )
+            ( min model.width model.height |> (\l -> l / 3), 15 )
 
         ring =
             circle 0 0 ringRad "none" "lightgray" ringWidth
@@ -229,13 +236,14 @@ view model =
         obstacle =
             circle ringRad 0 3 "red" "none" 0
     in
-        [ g [ onMouseOver AddObstacle, onMouseOut RemoveObstacle ]
-            [ ring
-            , model.cars |> List.map car |> g []
-            , if model.obstacle then
-                obstacle
-              else
-                Svg.text ""
-            ]
+    [ g [ onMouseOver AddObstacle, onMouseOut RemoveObstacle ]
+        [ ring
+        , model.cars |> List.map car |> g []
+        , if model.obstacle then
+            obstacle
+
+          else
+            Svg.text ""
         ]
-            |> svg [ width <| toString model.width, height <| toString model.height ]
+    ]
+        |> svg [ width <| String.fromFloat model.width, height <| String.fromFloat model.height ]

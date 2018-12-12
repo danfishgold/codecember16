@@ -83,6 +83,7 @@ update msg model =
         SetNumColors n ->
             { model
                 | colors = n
+                , rule = Dict.filter (\_ c -> c < n) model.rule
             }
 
 

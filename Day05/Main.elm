@@ -14,7 +14,6 @@ import Task
 
 type alias Model =
     { levelCount : Int
-    , ruleRadius : Int
     , colors : Int
     , rule : Dict (List Int) Int
     , levels : List (List Int)
@@ -29,7 +28,6 @@ type Msg
 init : Int -> ( Model, Cmd Msg )
 init levelCount =
     ( { levelCount = levelCount
-      , ruleRadius = 1
       , colors = 3
       , rule = Dict.empty
       , levels = [ [ 1 ] ]
@@ -97,7 +95,7 @@ addRowIfNeeded model =
                     |> Maybe.withDefault [ 1 ]
 
             levels =
-                nextLevel model.rule model.ruleRadius lastLevel :: model.levels
+                nextLevel model.rule lastLevel :: model.levels
         in
         addRowIfNeeded { model | levels = levels }
 
@@ -109,8 +107,8 @@ addRowIfNeeded model =
 --
 
 
-nextLevel : Dict (List Int) Int -> Int -> List Int -> List Int
-nextLevel rule rad lvl =
+nextLevel : Dict (List Int) Int -> List Int -> List Int
+nextLevel rule lvl =
     let
         fn x ( prevs, tupl ) =
             let
@@ -122,7 +120,7 @@ nextLevel rule rad lvl =
             )
 
         initial =
-            List.repeat (2 * rad) 0
+            List.repeat 2 0
     in
     List.foldl fn ( [], initial ) (List.append lvl initial)
         |> Tuple.first
@@ -172,7 +170,7 @@ pyramid res model =
 
 
 rules : Float -> Model -> Html Msg
-rules res { rule, ruleRadius, colors, levelCount } =
+rules res { rule, colors, levelCount } =
     let
         pixel i j c =
             rect
@@ -187,7 +185,7 @@ rules res { rule, ruleRadius, colors, levelCount } =
                 []
 
         n =
-            2 * ruleRadius + 1
+            3
 
         allRules =
             List.range 0 (colors ^ n - 1)
@@ -195,7 +193,7 @@ rules res { rule, ruleRadius, colors, levelCount } =
                 |> List.map (kthRule colors n)
 
         bottom rl =
-            rule |> Dict.get rl |> Maybe.withDefault 0 |> pixel 1 ruleRadius
+            rule |> Dict.get rl |> Maybe.withDefault 0 |> pixel 1 1
 
         top rl =
             List.indexedMap (pixel 0) rl

@@ -61,7 +61,7 @@ subscriptions model =
 --
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> Model
 update msg model =
     case msg of
         ShiftRule idx ->
@@ -74,19 +74,16 @@ update msg model =
                         Nothing ->
                             Just 1
             in
-            ( { model
+            { model
                 | rule = Dict.update idx shift model.rule
-                , levels = [ model.levels |> List.head |> Maybe.withDefault [ 1 ] ]
-              }
-            , message AddRowIfNeeded
-            )
-
                 , levels = [ [ 1 ] ]
             }
                 |> addRowIfNeeded
 
         SetNumColors n ->
-            ( { model | colors = n }, Cmd.none )
+            { model
+                | colors = n
+            }
 
 
 addRowIfNeeded : Model -> Model
@@ -283,6 +280,6 @@ main =
     document
         { init = always <| init 120
         , subscriptions = subscriptions
-        , update = update
+        , update = \msg model -> ( update msg model, Cmd.none )
         , view = view 10 |> project 5 description
         }

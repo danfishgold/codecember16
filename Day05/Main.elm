@@ -171,7 +171,7 @@ pyramid res model =
     model.levels
         |> List.reverse
         |> List.indexedMap row
-        |> List.concat
+        |> List.map (g [])
         |> svg
             [ width <| String.fromFloat <| res * toFloat (2 * model.levelCount + 1)
             , height <| String.fromFloat <| res * toFloat model.levelCount

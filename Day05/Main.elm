@@ -117,12 +117,16 @@ nextLevel rule rad lvl =
                 tuple =
                     tupl ++ [ x ]
             in
-            ( prevs ++ [ Dict.get tuple rule |> Maybe.withDefault 0 ], List.drop 1 tuple )
+            ( (Dict.get tuple rule |> Maybe.withDefault 0) :: prevs
+            , List.drop 1 tuple
+            )
 
         initial =
             List.repeat (2 * rad) 0
     in
-    List.foldl fn ( [], initial ) (List.append lvl initial) |> Tuple.first
+    List.foldl fn ( [], initial ) (List.append lvl initial)
+        |> Tuple.first
+        |> List.reverse
 
 
 color : Int -> Color
@@ -158,6 +162,7 @@ pyramid res model =
             pxls |> List.indexedMap (\j -> pixel i (j0 i + j))
     in
     model.levels
+        |> List.reverse
         |> List.indexedMap row
         |> List.concat
         |> svg

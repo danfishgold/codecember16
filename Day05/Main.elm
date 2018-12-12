@@ -21,14 +21,8 @@ type alias Model =
     }
 
 
-message : msg -> Cmd msg
-message msg =
-    Task.perform identity (Task.succeed msg)
-
-
 type Msg
     = ShiftRule (List Int)
-    | AddRowIfNeeded
     | SetNumColors Int
 
 
@@ -40,7 +34,8 @@ init levelCount =
       , rule = Dict.empty
       , levels = [ [ 1 ] ]
       }
-    , message AddRowIfNeeded
+        |> addRowIfNeeded
+    , Cmd.none
     )
 
 
@@ -86,25 +81,30 @@ update msg model =
             , message AddRowIfNeeded
             )
 
-        AddRowIfNeeded ->
-            if List.length model.levels < model.levelCount then
-                let
-                    lastLevel =
-                        model.levels
-                            |> List.drop (List.length model.levels - 1)
-                            |> List.head
-                            |> Maybe.withDefault [ 1 ]
-
-                    levels =
-                        model.levels ++ [ nextLevel model.rule model.ruleRadius lastLevel ]
-                in
-                ( { model | levels = levels }, message AddRowIfNeeded )
-
-            else
-                ( model, Cmd.none )
+                , levels = [ [ 1 ] ]
+            }
+                |> addRowIfNeeded
 
         SetNumColors n ->
             ( { model | colors = n }, Cmd.none )
+
+
+addRowIfNeeded : Model -> Model
+addRowIfNeeded model =
+    if List.length model.levels < model.levelCount then
+        let
+            lastLevel =
+                model.levels
+                    |> List.head
+                    |> Maybe.withDefault [ 1 ]
+
+            levels =
+                nextLevel model.rule model.ruleRadius lastLevel :: model.levels
+        in
+        addRowIfNeeded { model | levels = levels }
+
+    else
+        model
 
 
 

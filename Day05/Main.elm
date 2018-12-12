@@ -9,7 +9,7 @@ import Html.Attributes exposing (style)
 import Svg exposing (Svg, g, rect, svg)
 import Svg.Attributes exposing (fill, height, stroke, strokeWidth, transform, width, x, y)
 import Svg.Events exposing (onClick)
-import Task
+import Time
 
 
 type alias Model =
@@ -23,6 +23,7 @@ type alias Model =
 type Msg
     = ShiftRule (List Int)
     | SetNumColors Int
+    | Tick
 
 
 init : Int -> ( Model, Cmd Msg )
@@ -32,7 +33,6 @@ init levelCount =
       , rule = Dict.empty
       , levels = [ [ 1 ] ]
       }
-        |> addRowIfNeeded
     , Cmd.none
     )
 
@@ -52,7 +52,7 @@ kthRule c n k =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Time.every 10 (always Tick)
 
 
 
@@ -84,6 +84,9 @@ update msg model =
                 , rule = Dict.filter (\_ c -> c < n) model.rule
             }
 
+        Tick ->
+            addRowIfNeeded model
+
 
 addRowIfNeeded : Model -> Model
 addRowIfNeeded model =
@@ -97,7 +100,7 @@ addRowIfNeeded model =
             levels =
                 nextLevel model.rule lastLevel :: model.levels
         in
-        addRowIfNeeded { model | levels = levels }
+        { model | levels = levels }
 
     else
         model
@@ -109,22 +112,28 @@ addRowIfNeeded model =
 
 nextLevel : Dict (List Int) Int -> List Int -> List Int
 nextLevel rule lvl =
-    let
-        fn x ( prevs, tupl ) =
-            let
-                tuple =
-                    tupl ++ [ x ]
-            in
-            ( (Dict.get tuple rule |> Maybe.withDefault 0) :: prevs
-            , List.drop 1 tuple
-            )
+    tripleMap (\triplet -> Dict.get triplet rule |> Maybe.withDefault 0) lvl
 
-        initial =
-            List.repeat 2 0
-    in
-    List.foldl fn ( [], initial ) (List.append lvl initial)
-        |> Tuple.first
-        |> List.reverse
+
+tripleMap : (List Int -> Int) -> List Int -> List Int
+tripleMap ruleFn row =
+    reversedTripleMapHelper ruleFn ([ 0, 0 ] ++ row) [] |> List.reverse
+
+
+reversedTripleMapHelper : (List Int -> Int) -> List Int -> List Int -> List Int
+reversedTripleMapHelper ruleFn leftPaddedRow reversedNextRow =
+    case leftPaddedRow of
+        a1 :: a2 :: a3 :: tl ->
+            reversedTripleMapHelper ruleFn (a2 :: a3 :: tl) (ruleFn [ a1, a2, a3 ] :: reversedNextRow)
+
+        [ a1, a2 ] ->
+            ruleFn [ a2, 0, 0 ] :: ruleFn [ a1, a2, 0 ] :: reversedNextRow
+
+        [ a1 ] ->
+            ruleFn [ a1, 0, 0 ] :: reversedNextRow
+
+        [] ->
+            reversedNextRow
 
 
 color : Int -> Color

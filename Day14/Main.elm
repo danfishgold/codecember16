@@ -1,10 +1,9 @@
-module Moire exposing (main)
+module Day14.Main exposing (Model, Msg, page)
 
 import Browser exposing (document)
 import Browser.Events
 import Color exposing (Color)
 import Day14.Clip exposing (clip, clipPath)
-import Helper exposing (project)
 import Html exposing (Html)
 import Svg exposing (Svg, circle, g, svg)
 import Svg.Attributes as Attrs exposing (cx, cy, fill, r, transform)
@@ -151,11 +150,11 @@ about visualizing alorithms, which was mentioned in day 6.
 """
 
 
-main : Program () Model Msg
-main =
-    document
-        { init = always <| init 500 500
-        , subscriptions = subscriptions
-        , update = update
-        , view = view |> project 14 description
-        }
+page =
+    { init = always <| init 500 500
+    , subscriptions = subscriptions
+    , update = update
+    , title = "Moiré"
+    , body = view
+    , description = description
+    }

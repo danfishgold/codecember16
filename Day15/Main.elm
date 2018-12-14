@@ -1,12 +1,12 @@
-module Polyomino exposing (main)
+module Day15.Main exposing (Model, Msg, page)
 
 import Browser exposing (document)
 import Browser.Events
 import Color exposing (Color)
+import Day02.Random exposing (ryb1)
 import Day15.Polyomino as Poly
 import Day15.View as View
-import Day2.Random exposing (ryb1)
-import Helper exposing (onEnter, project)
+import Helper exposing (onEnter)
 import Random
 import Svg exposing (Svg, g, svg)
 import Svg.Attributes exposing (height, transform, width)
@@ -122,11 +122,11 @@ Hit enter to randomize.
 """
 
 
-main : Program () Model Msg
-main =
-    document
-        { init = always <| init 500 500
-        , subscriptions = subscriptions
-        , update = update
-        , view = view 8 |> project 15 description
-        }
+page =
+    { init = always <| init 500 500
+    , subscriptions = subscriptions
+    , update = update
+    , title = "Polyomino"
+    , body = view 8
+    , description = description
+    }

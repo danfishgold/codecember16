@@ -1,10 +1,10 @@
-port module Loops exposing (main)
+port module Day07.Main exposing (Model, Msg, page)
 
 import Browser exposing (document)
 import Browser.Events
 import Color exposing (Color)
-import Day2.Ryb exposing (ryba)
-import Helper exposing (onEnter, project)
+import Day02.Ryb exposing (ryba)
+import Helper exposing (onEnter)
 import Json.Decode as Json
 import Json.Encode exposing (Value)
 import String
@@ -78,14 +78,14 @@ Hit enter to randomize.
 """
 
 
-main : Program () Model Msg
-main =
-    document
-        { init = always <| init 100 100 400 1400 20
-        , subscriptions = subscriptions
-        , update = update
-        , view = view 5 |> project 7 description
-        }
+page =
+    { init = always <| init 100 100 400 1400 20
+    , subscriptions = subscriptions
+    , update = update
+    , title = "Loops"
+    , body = view 5
+    , description = description
+    }
 
 
 

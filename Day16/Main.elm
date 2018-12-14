@@ -1,11 +1,11 @@
-module Tiles exposing (main)
+module Day16.Main exposing (Model, Msg, page)
 
 import Browser exposing (document)
 import Browser.Events
 import Color exposing (Color, white)
 import Day15.Polyomino as Poly exposing (Letter(..), Point)
 import Day15.View exposing (polygon)
-import Helper exposing (onEnter, project)
+import Helper exposing (onEnter)
 import Random
 import Svg exposing (Svg, g, svg)
 import Svg.Attributes exposing (height, transform, width)
@@ -175,11 +175,11 @@ Hit enter to randomize.
 """
 
 
-main : Program () Model Msg
-main =
-    document
-        { init = always <| init 500 500
-        , subscriptions = subscriptions
-        , update = update
-        , view = view 8 |> project 16 description
-        }
+page =
+    { init = always <| init 500 500
+    , subscriptions = subscriptions
+    , update = update
+    , title = "Tiles"
+    , body = view 8
+    , description = description
+    }

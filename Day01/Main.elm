@@ -1,9 +1,9 @@
-module Argyle exposing (main)
+module Day01.Main exposing (Model, Msg, page)
 
 import Browser exposing (document)
 import Browser.Events
 import Color exposing (Color)
-import Helper exposing (onEnter, project)
+import Helper exposing (onEnter)
 import Html
 import Json.Decode as Json
 import Random
@@ -261,11 +261,11 @@ Hit enter to randomize.
 """
 
 
-main : Program () Model Msg
-main =
-    document
-        { init = always init
-        , view = view 500 500 |> project 1 description
-        , update = update
-        , subscriptions = subscriptions
-        }
+page =
+    { init = always init
+    , title = "Argyle"
+    , body = view 500 500
+    , description = description
+    , update = update
+    , subscriptions = subscriptions
+    }

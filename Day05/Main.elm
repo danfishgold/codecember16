@@ -1,9 +1,8 @@
-module Automaton exposing (main)
+module Day05.Main exposing (Model, Msg, page)
 
 import Browser exposing (document)
 import Color exposing (Color)
 import Dict exposing (Dict)
-import Helper exposing (project)
 import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (style)
 import Svg exposing (Svg, g, rect, svg)
@@ -288,11 +287,11 @@ This is *very* slow.
 """
 
 
-main : Program () Model Msg
-main =
-    document
-        { init = always <| init 120
-        , subscriptions = subscriptions
-        , update = \msg model -> ( update msg model, Cmd.none )
-        , view = view 10 |> project 5 description
-        }
+page =
+    { init = always <| init 120
+    , subscriptions = subscriptions
+    , update = \msg model -> ( update msg model, Cmd.none )
+    , title = "Automaton"
+    , body = view 10
+    , description = description
+    }

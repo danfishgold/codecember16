@@ -1,4 +1,4 @@
-module Day2.Ryb exposing (ryb, ryba)
+module Day02.Ryb exposing (ryb, ryba)
 
 import Color exposing (Color)
 

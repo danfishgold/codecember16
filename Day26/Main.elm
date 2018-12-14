@@ -1,8 +1,7 @@
-module Jam exposing (main)
+module Day26.Main exposing (Model, Msg, page)
 
 import Browser exposing (document)
 import Browser.Events
-import Helper exposing (project)
 import Svg exposing (Svg, g, svg)
 import Svg.Attributes exposing (cx, cy, fill, height, r, stroke, strokeWidth, width)
 import Svg.Events exposing (onMouseOut, onMouseOver)
@@ -90,14 +89,14 @@ Hover over the ring road to create a trafic jam.
 """
 
 
-main : Program () Model Msg
-main =
-    document
-        { init = always <| init 500 500 35
-        , subscriptions = subscriptions
-        , update = update
-        , view = view |> project 26 description
-        }
+page =
+    { init = always <| init 500 500 35
+    , subscriptions = subscriptions
+    , update = update
+    , title = "Jam"
+    , body = view
+    , description = description
+    }
 
 
 

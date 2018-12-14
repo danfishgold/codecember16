@@ -1,10 +1,9 @@
-module Gravity exposing (main)
+module Day20.Main exposing (Model, Msg, page)
 
 import Browser exposing (document)
 import Browser.Events
 import Color exposing (Color)
-import Day2.Random exposing (ryb1)
-import Helper exposing (project)
+import Day02.Random exposing (ryb1)
 import Html exposing (Html)
 import Pointer
 import Random
@@ -190,11 +189,11 @@ Use the mouse to make tiny circles or just look at the ones in the big circle.
 """
 
 
-main : Program () Model Msg
-main =
-    document
-        { init = always <| init 500 500
-        , subscriptions = subscriptions
-        , update = update
-        , view = view |> project 20 description
-        }
+page =
+    { init = always <| init 500 500
+    , subscriptions = subscriptions
+    , update = update
+    , title = "Gravity"
+    , body = view
+    , description = description
+    }

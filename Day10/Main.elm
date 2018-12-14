@@ -1,4 +1,4 @@
-module Starfield exposing (main)
+module Day10.Main exposing (Model, Msg, page)
 
 import Browser exposing (document)
 import Browser.Events
@@ -143,11 +143,11 @@ Anyway, this was a snack in preparation for tomorrow's project.
 """
 
 
-main : Program () Model Msg
-main =
-    document
-        { init = always <| init
-        , subscriptions = subscriptions
-        , update = update
-        , view = view |> Helper.project 10 description
-        }
+page =
+    { init = always <| init
+    , subscriptions = subscriptions
+    , update = update
+    , title = "Starfield"
+    , body = view
+    , description = description
+    }

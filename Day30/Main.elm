@@ -1,9 +1,9 @@
-module Lightning exposing (main)
+module Day30.Main exposing (Model, Msg, page)
 
 import Browser exposing (document)
 import Browser.Events
 import Color exposing (Color)
-import Helper exposing (onEnter, project)
+import Helper exposing (onEnter)
 import Random exposing (constant)
 import Random.Extra exposing (combine, rangeLengthList, sample)
 import Svg exposing (Svg, polyline, rect, svg)
@@ -79,14 +79,14 @@ which was one of the reasons I wanted a degree in Math.
 """
 
 
-main : Program () Model Msg
-main =
-    document
-        { init = always <| init 500 500
-        , subscriptions = subscriptions
-        , update = update
-        , view = view |> project 30 description
-        }
+page =
+    { init = always <| init 500 500
+    , subscriptions = subscriptions
+    , update = update
+    , title = "Lightning"
+    , body = view
+    , description = description
+    }
 
 
 

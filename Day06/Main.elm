@@ -1,11 +1,10 @@
-module Poisson exposing (main)
+module Day06.Main exposing (Model, Msg, page)
 
 import Array exposing (Array)
 import Browser exposing (document)
 import Browser.Events
 import Color exposing (Color, black, red)
-import Day6.Array2D as Array2D exposing (Array2D)
-import Helper exposing (project)
+import Day06.Array2D as Array2D exposing (Array2D)
 import Html exposing (Html, div, text)
 import Random exposing (Generator)
 import Random.Extra
@@ -284,11 +283,11 @@ produce results as impressive as Jason's.
 """
 
 
-main : Program () Model Msg
-main =
-    document
-        { init = always <| init 30 0.03
-        , subscriptions = subscriptions
-        , update = update
-        , view = view 500 500 |> project 6 description
-        }
+page =
+    { init = always <| init 30 0.03
+    , subscriptions = subscriptions
+    , update = update
+    , title = "Poisson"
+    , body = view 500 500
+    , description = description
+    }

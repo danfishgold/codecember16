@@ -1,4 +1,4 @@
-module Waves exposing (main)
+module Day29.Main exposing (Model, Msg, page)
 
 import Browser exposing (document)
 import Browser.Events
@@ -6,7 +6,7 @@ import Collage exposing (circle, group, rectangle, shift, solid)
 import Collage.Render
 import Color
 import Color.Manipulate exposing (fadeOut)
-import Helper exposing (filled, outlined, project)
+import Helper exposing (filled, outlined)
 import Html exposing (Html)
 import Pointer exposing (Position)
 
@@ -66,14 +66,14 @@ When it hits a reflector, a secondary wave will be emitted from it.
 """
 
 
-main : Program () Model Msg
-main =
-    document
-        { init = always <| init 500 500
-        , subscriptions = subscriptions
-        , update = \msg model -> ( update msg model, Cmd.none )
-        , view = view |> project 29 description
-        }
+page =
+    { init = always <| init 500 500
+    , subscriptions = subscriptions
+    , update = \msg model -> ( update msg model, Cmd.none )
+    , title = "Waves"
+    , body = view
+    , description = description
+    }
 
 
 

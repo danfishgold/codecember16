@@ -1,4 +1,4 @@
-module Day6.Array2D exposing (Array2D, elementsInSubArray, empty, get, set)
+module Day06.Array2D exposing (Array2D, elementsInSubArray, empty, get, set)
 
 import Array exposing (Array)
 

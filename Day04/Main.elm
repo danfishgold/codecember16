@@ -1,8 +1,7 @@
-module Frequency exposing (main)
+module Day04.Main exposing (Model, Msg, page)
 
 import Browser exposing (document)
 import Browser.Events
-import Helper exposing (project)
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (style)
 import Time
@@ -190,11 +189,11 @@ In 2013 I implemented it in Mathematica, which was probably the weirdest choice 
 """
 
 
-main : Program () Model Msg
-main =
-    document
-        { init = always <| init events
-        , subscriptions = subscriptions
-        , update = update
-        , view = view "150px" "45px" |> project 4 description
-        }
+page =
+    { init = always <| init events
+    , subscriptions = subscriptions
+    , update = update
+    , title = "Frequency"
+    , body = view "150px" "45px"
+    , description = description
+    }

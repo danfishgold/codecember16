@@ -1,10 +1,9 @@
-module Palette exposing (main)
+module Day02.Main exposing (Model, Msg, page)
 
 import Browser exposing (document)
 import Color exposing (Color)
 import Color.Convert exposing (colorToHex)
-import Day2.Random exposing (ryb1, ryb1v1, ryb1v2, ryb1v3, ryb2v2)
-import Helper exposing (project)
+import Day02.Random exposing (ryb1, ryb1v1, ryb1v2, ryb1v3, ryb2v2)
 import Html exposing (Html, button, div, text)
 import Html.Events exposing (onClick)
 import Random exposing (generate, map)
@@ -141,11 +140,11 @@ I used this day's project in many other days.
 """
 
 
-main : Program () Model Msg
-main =
-    document
-        { init = always ([] |> update OneVThree)
-        , update = update
-        , view = view |> project 2 description
-        , subscriptions = always Sub.none
-        }
+page =
+    { init = always ([] |> update OneVThree)
+    , update = update
+    , title = "RYB"
+    , body = view
+    , description = description
+    , subscriptions = always Sub.none
+    }

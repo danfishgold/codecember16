@@ -1,10 +1,9 @@
-module Braids exposing (main)
+module Day23.Main exposing (Model, Msg, page)
 
 import Array exposing (Array)
 import Color exposing (Color)
 import Color.Gradient exposing (linearGradient)
 import Color.Interpolate as Space
-import Helper exposing (project)
 import Html exposing (Html, div)
 import Html.Attributes exposing (style)
 import Svg exposing (Svg, g, line, svg)
@@ -12,6 +11,14 @@ import Svg.Attributes exposing (height, stroke, strokeLinecap, strokeWidth, widt
 
 
 type alias Model =
+    ()
+
+
+type alias Msg =
+    ()
+
+
+type alias Braid =
     { count : Int
     , transitions : List (List ( Index, Index ))
     }
@@ -39,7 +46,7 @@ type alias Segment =
     }
 
 
-braid3 : Model
+braid3 : Braid
 braid3 =
     { count = 3
     , transitions =
@@ -52,7 +59,7 @@ braid3 =
     }
 
 
-braid4 : Model
+braid4 : Braid
 braid4 =
     { count = 4
     , transitions =
@@ -70,7 +77,7 @@ braid4 =
     }
 
 
-braid2 : Model
+braid2 : Braid
 braid2 =
     { count = 2
     , transitions =
@@ -123,7 +130,7 @@ push i x array =
     update i (extend x) array
 
 
-itemColumns : Model -> Array (Array ( Step, Index, Z ))
+itemColumns : Braid -> Array (Array ( Step, Index, Z ))
 itemColumns { count, transitions } =
     let
         -- initially, every column at zero
@@ -180,7 +187,7 @@ segments offset maxStep itemColumns_ =
 --
 
 
-view : Float -> Float -> Model -> Svg Never
+view : Float -> Float -> Braid -> Svg Msg
 view braidWidth stepHeight ({ count, transitions } as model) =
     let
         spacing =
@@ -274,7 +281,11 @@ mainHtml =
         ]
 
 
-main =
-    project 23 description (always mainHtml) ()
-        |> .body
-        |> div []
+page =
+    { init = always ( (), Cmd.none )
+    , subscriptions = always Sub.none
+    , update = \_ _ -> ( (), Cmd.none )
+    , title = "Braids"
+    , body = always mainHtml
+    , description = description
+    }

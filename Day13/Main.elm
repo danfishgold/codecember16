@@ -1,10 +1,9 @@
-module Main exposing (main)
+module Day13.Main exposing (Model, Msg, page)
 
 import Browser exposing (document)
 import Browser.Events
 import Color exposing (Color)
 import Day13.Dvd as Dvd
-import Helper exposing (project)
 import Random
 import Random.Extra
 import Svg exposing (Svg, g, rect, svg)
@@ -158,11 +157,11 @@ CHILDHOOD MEMORIES
 """
 
 
-main : Program () Model Msg
-main =
-    document
-        { init = always <| init 500 500
-        , subscriptions = subscriptions
-        , update = update
-        , view = view |> project 13 description
-        }
+page =
+    { init = always <| init 500 500
+    , subscriptions = subscriptions
+    , update = update
+    , title = "DVD"
+    , body = view
+    , description = description
+    }

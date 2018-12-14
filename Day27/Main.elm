@@ -1,9 +1,8 @@
-module Areas exposing (main)
+module Day27.Main exposing (Model, Msg, page)
 
 import Browser exposing (document)
 import Color exposing (Color)
 import Day27.Area as Area exposing (..)
-import Helper exposing (project)
 import Html exposing (Html, button, div, text)
 import Html.Events exposing (onClick)
 import Pointer
@@ -56,11 +55,6 @@ init n m scale =
 
 
 --
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.none
 
 
 centerFromMouse : Size -> Pointer.Position -> Maybe Center
@@ -174,11 +168,11 @@ they merge.
 """
 
 
-main : Program () Model Msg
-main =
-    document
-        { init = always <| init 50 50 10
-        , subscriptions = subscriptions
-        , update = \msg model -> ( update msg model, Cmd.none )
-        , view = view |> project 27 description
-        }
+page =
+    { init = always <| init 50 50 10
+    , subscriptions = always Sub.none
+    , update = \msg model -> ( update msg model, Cmd.none )
+    , title = "Areas"
+    , body = view
+    , description = description
+    }

@@ -1,7 +1,7 @@
-module Day2.Random exposing (ryb, ryb1, ryb1v1, ryb1v2, ryb1v3, ryb2v2)
+module Day02.Random exposing (ryb, ryb1, ryb1v1, ryb1v2, ryb1v3, ryb2v2)
 
 import Color exposing (Color)
-import Day2.Ryb as Ryb
+import Day02.Ryb as Ryb
 import Random exposing (Generator, float, map, map3)
 
 

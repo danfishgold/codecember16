@@ -1,10 +1,9 @@
-module Koalas exposing (main)
+module Day24.Main exposing (Model, Msg, page)
 
 import Browser exposing (document)
 import Color exposing (Color)
-import Day2.Random exposing (ryb1, ryb2v2)
+import Day02.Random exposing (ryb1, ryb2v2)
 import Day24.Tree as Tree exposing (Tree(..))
-import Helper exposing (project)
 import Random
 import Random.Extra exposing (sample)
 import Svg exposing (Svg, rect, svg)
@@ -157,11 +156,11 @@ This is an homage, mostly because recreating it would have been dificult.
 """
 
 
-main : Program () Model Msg
-main =
-    document
-        { init = always <| init 500 500
-        , subscriptions = subscriptions
-        , update = update
-        , view = view |> project 24 description
-        }
+page =
+    { init = always <| init 500 500
+    , subscriptions = subscriptions
+    , update = update
+    , title = "Koalas"
+    , body = view
+    , description = description
+    }

@@ -6,7 +6,7 @@
   </head>
 
   <body>
-    <script src="index.js"></script>
+    <script src="elm.js"></script>
     <script>
       var dirs = [[0, 1], [0, -1], [1, 0], [-1, 0]];
       function randomDirection() {
@@ -27,7 +27,7 @@
         return deltas;
       }
 
-      var app = Elm.Loops.init();
+      var app = Elm.Main.init();
 
       app.ports.requestLoops.subscribe(function(args) {
         var loops = [];

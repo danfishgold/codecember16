@@ -1,7 +1,6 @@
-module Cradle exposing (main)
+module Day08.Main exposing (Model, Msg, page)
 
 import Browser exposing (document)
-import Helper exposing (project)
 import Pointer
 import Svg exposing (Svg, circle, polyline, svg)
 import Svg.Attributes exposing (cx, cy, fill, height, points, r, stroke, strokeWidth, style, width)
@@ -334,11 +333,11 @@ Use the mouse
 """
 
 
-main : Program () Model Msg
-main =
-    document
-        { init = always <| init
-        , subscriptions = always Sub.none
-        , update = \msg model -> ( update msg model, Cmd.none )
-        , view = view |> project 8 description
-        }
+page =
+    { init = always <| init
+    , subscriptions = always Sub.none
+    , update = \msg model -> ( update msg model, Cmd.none )
+    , title = "Cradle"
+    , body = view
+    , description = description
+    }

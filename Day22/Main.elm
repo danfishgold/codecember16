@@ -1,8 +1,7 @@
-module Main exposing (main)
+module Day22.Main exposing (Model, Msg, page)
 
 import Browser exposing (document)
 import Browser.Events
-import Helper exposing (project)
 import Html exposing (Html, button, div, input, text)
 import Html.Attributes as Attrs exposing (style, type_, value)
 import Html.Events exposing (onClick, onInput)
@@ -342,11 +341,11 @@ I thought I'd have a lot to say about every project but I was wrong.
 """
 
 
-main : Program () Model Msg
-main =
-    document
-        { init = always <| ( init 500 500, Cmd.none )
-        , subscriptions = subscriptions
-        , update = \msg model -> ( update msg model, Cmd.none )
-        , view = view |> project 22 description
-        }
+page =
+    { init = always <| ( init 500 500, Cmd.none )
+    , subscriptions = subscriptions
+    , update = \msg model -> ( update msg model, Cmd.none )
+    , title = "Spirograph"
+    , body = view
+    , description = description
+    }

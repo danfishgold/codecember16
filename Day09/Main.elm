@@ -1,10 +1,9 @@
-module Nicky exposing (main)
+module Day09.Main exposing (Model, Msg, page)
 
-import Browser exposing (document)
 import Collage exposing (defaultLineStyle, group, polygon, uniform)
 import Collage.Render
 import Color exposing (Color)
-import Helper exposing (filled, outlined, project)
+import Helper exposing (filled, outlined)
 import Html exposing (Html, div)
 import Pointer
 
@@ -38,15 +37,6 @@ init =
       }
     , Cmd.none
     )
-
-
-
---
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.none
 
 
 
@@ -213,11 +203,11 @@ Here's a link to [Bret Victor](http://worrydream.com), because why not.
 """
 
 
-main : Program () Model Msg
-main =
-    document
-        { init = always init
-        , subscriptions = subscriptions
-        , update = \msg model -> ( update msg model, Cmd.none )
-        , view = view |> project 9 description
-        }
+page =
+    { init = always init
+    , subscriptions = always Sub.none
+    , update = \msg model -> ( update msg model, Cmd.none )
+    , title = "Nicky"
+    , body = view
+    , description = description
+    }

@@ -1,8 +1,7 @@
-module Matrix exposing (main)
+module Day19.Main exposing (Model, Msg, page)
 
 import Browser exposing (document)
 import Day19.Trail as Trail exposing (Trail)
-import Helper exposing (project)
 import Random exposing (generate)
 import Random.Extra exposing (combine)
 import Svg exposing (Svg, g, rect, svg, text, text_)
@@ -127,11 +126,11 @@ and this project is a reimplementation of it. The second one is yet to come.
 """
 
 
-main : Program () Model Msg
-main =
-    document
-        { init = always <| init 500 500
-        , subscriptions = subscriptions
-        , update = update
-        , view = view |> project 19 description
-        }
+page =
+    { init = always <| init 500 500
+    , subscriptions = subscriptions
+    , update = update
+    , title = "Matrix"
+    , body = view
+    , description = description
+    }

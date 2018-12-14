@@ -1,8 +1,8 @@
-module StarSystem exposing (main)
+module Day21.Main exposing (Model, Msg, page)
 
 import Browser exposing (document)
 import Browser.Events
-import Helper exposing (onEnter, project)
+import Helper exposing (onEnter)
 import Random
 import Random.Extra
 import Svg exposing (Svg, circle, g, svg)
@@ -215,11 +215,11 @@ Hit enter to randomize.
 """
 
 
-main : Program () Model Msg
-main =
-    document
-        { init = always <| init 500 500 3 0.2
-        , subscriptions = subscriptions
-        , update = update
-        , view = view |> project 21 description
-        }
+page =
+    { init = always <| init 500 500 3 0.2
+    , subscriptions = subscriptions
+    , update = update
+    , title = "Star System"
+    , body = view
+    , description = description
+    }

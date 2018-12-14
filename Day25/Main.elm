@@ -1,4 +1,4 @@
-module Boids exposing (main)
+module Day25.Main exposing (Model, Msg, page)
 
 import Browser exposing (document)
 import Browser.Events
@@ -6,7 +6,7 @@ import Collage exposing (group, polygon, rotate, shift)
 import Collage.Render
 import Color exposing (Color)
 import Day25.Vector as Vector exposing (..)
-import Helper exposing (filled, project)
+import Helper exposing (filled)
 import Html exposing (Html)
 import Random
 
@@ -223,11 +223,11 @@ I don't know when I first encountered them, but they sure are cool.
 """
 
 
-main : Program () Model Msg
-main =
-    document
-        { init = always <| init 0.001 500 500
-        , subscriptions = subscriptions
-        , update = \msg model -> ( update msg model, Cmd.none )
-        , view = view |> project 25 description
-        }
+page =
+    { init = always <| init 0.001 500 500
+    , subscriptions = subscriptions
+    , update = \msg model -> ( update msg model, Cmd.none )
+    , title = "Boids"
+    , body = view
+    , description = description
+    }

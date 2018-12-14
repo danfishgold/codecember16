@@ -1,9 +1,8 @@
-module Headache exposing (main)
+module Day17.Main exposing (Model, Msg, page)
 
 import Browser exposing (document)
 import Browser.Events
 import Color exposing (Color)
-import Helper exposing (project)
 import Svg exposing (Svg, g, svg)
 import Svg.Attributes exposing (cx, cy, fill, height, r, transform, width)
 import Time
@@ -132,11 +131,11 @@ It was inspired mostly by optical illusions.
 """
 
 
-main : Program () Model Msg
-main =
-    document
-        { init = always <| init 500 500
-        , subscriptions = subscriptions
-        , update = update
-        , view = view |> project 17 description
-        }
+page =
+    { init = always <| init 500 500
+    , subscriptions = subscriptions
+    , update = update
+    , title = "Headache"
+    , body = view
+    , description = description
+    }

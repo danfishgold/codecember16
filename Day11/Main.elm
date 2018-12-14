@@ -1,11 +1,11 @@
-module Parallax exposing (main)
+module Day11.Main exposing (Model, Msg, page)
 
 import Browser exposing (document)
 import Collage exposing (circle, group)
 import Collage.Render
 import Color exposing (Color)
 import Color.Manipulate exposing (darken, lighten)
-import Day2.Random
+import Day02.Random
 import Helper exposing (filled)
 import Html exposing (Html, div)
 import Pointer
@@ -59,15 +59,6 @@ init count =
 --
 
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.none
-
-
-
---
-
-
 randomRect : Random.Generator Rect
 randomRect =
     let
@@ -88,7 +79,7 @@ randomRect =
         (Random.float 0.1 0.2)
         (Random.float 0.1 0.2)
         (Random.float 0.1 0.2)
-        (Day2.Random.ryb1 1 0.5)
+        (Day02.Random.ryb1 1 0.5)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -212,11 +203,11 @@ Move the mouse ¯\\\\\\_(ツ)\\_/¯
 """
 
 
-main : Program () Model Msg
-main =
-    document
-        { init = always <| init 40
-        , subscriptions = subscriptions
-        , update = update
-        , view = view |> Helper.project 11 description
-        }
+page =
+    { init = always <| init 40
+    , subscriptions = always Sub.none
+    , update = update
+    , title = "Parallax"
+    , body = view
+    , description = description
+    }

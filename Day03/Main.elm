@@ -1,11 +1,11 @@
-module Anatoly exposing (main)
+module Day03.Main exposing (Model, Msg, page)
 
 import Browser exposing (document)
 import Browser.Events
 import Color exposing (Color)
-import Day2.Random exposing (ryb1)
+import Day02.Random exposing (ryb1)
 import Dict exposing (Dict)
-import Helper exposing (onEnterOrSpace, project)
+import Helper exposing (onEnterOrSpace)
 import Html exposing (Html)
 import Json.Decode as Json
 import Random exposing (Generator, generate)
@@ -280,11 +280,11 @@ Hit enter to skip to the final result.
 """
 
 
-main : Program () Model Msg
-main =
-    document
-        { init = always ( init 100, Cmd.none )
-        , update = update
-        , view = view 5 |> project 3 description
-        , subscriptions = subscriptions
-        }
+page =
+    { init = always ( init 100, Cmd.none )
+    , update = update
+    , title = "Anatoly"
+    , body = view 5
+    , description = description
+    , subscriptions = subscriptions
+    }

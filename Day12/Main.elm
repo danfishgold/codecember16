@@ -1,4 +1,4 @@
-module UrlParallax exposing (main)
+module Day12.Main exposing (Model, Msg, page)
 
 import Browser exposing (document)
 import Browser.Dom exposing (getViewport)
@@ -151,11 +151,11 @@ Move the mouse ¯\\\\\\_(ツ)\\_/¯
 """
 
 
-main : Program () Model Msg
-main =
-    document
-        { init = always init
-        , subscriptions = subscriptions
-        , update = \msg model -> ( update msg model, Cmd.none )
-        , view = view |> Helper.project 12 description
-        }
+page =
+    { init = always init
+    , subscriptions = subscriptions
+    , update = \msg model -> ( update msg model, Cmd.none )
+    , title = "ASCII Parallax"
+    , body = view
+    , description = description
+    }

@@ -1,10 +1,10 @@
-module RotatingPolygon exposing (main)
+module Day18.Main exposing (Model, Msg, page)
 
 import Browser exposing (document)
 import Browser.Events
 import Color exposing (Color)
 import Day18.Gradient exposing (gradient, gradientStroke)
-import Helper exposing (onEnter, project)
+import Helper exposing (onEnter)
 import Random
 import Random.Extra
 import Svg exposing (Svg, circle, defs, g, line, svg)
@@ -209,11 +209,11 @@ spirographs (more on that later) and Monument Valley.
 """
 
 
-main : Program () Model Msg
-main =
-    document
-        { init = always <| init 500 500
-        , subscriptions = subscriptions
-        , update = update
-        , view = view |> project 18 description
-        }
+page =
+    { init = always <| init 500 500
+    , subscriptions = subscriptions
+    , update = update
+    , title = "Rotating Polygon"
+    , body = view
+    , description = description
+    }

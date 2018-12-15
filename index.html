@@ -46,6 +46,39 @@
 
         app.ports.getLoops.send(loops);
       });
+
+      function download() {
+        // https://stackoverflow.com/questions/23218174/how-do-i-save-export-an-svg-file-after-creating-an-svg-with-d3-js-ie-safari-an
+        var svgData = document.getElementsByTagName("svg")[0].outerHTML;
+        if (
+          !svgData.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)
+        ) {
+          svgData = svgData.replace(
+            /^<svg/,
+            '<svg xmlns="http://www.w3.org/2000/svg"'
+          );
+        }
+        if (!svgData.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)) {
+          svgData = svgData.replace(
+            /^<svg/,
+            '<svg xmlns:xlink="http://www.w3.org/1999/xlink"'
+          );
+        }
+
+        //add xml declaration
+        svgData = '<?xml version="1.0" standalone="no"?>\r\n' + svgData;
+
+        var svgBlob = new Blob([svgData], {
+          type: "image/svg+xml;charset=utf-8"
+        });
+        var svgUrl = URL.createObjectURL(svgBlob);
+        var downloadLink = document.createElement("a");
+        downloadLink.href = svgUrl;
+        downloadLink.download = "newesttree.svg";
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+      }
     </script>
   </body>
 </html>

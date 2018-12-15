@@ -1,4 +1,4 @@
-module ViewHelper exposing (centeredDiv, contentDiv, header, link, stringFromDay, titles)
+module ViewHelper exposing (centeredDiv, contentDiv, header, images, link, stringFromDay, titles)
 
 import Array exposing (Array)
 import Day01.Main as D01
@@ -125,4 +125,40 @@ titles =
         , D28.page.title
         , D29.page.title
         , D30.page.title
+        ]
+
+
+images : Array String
+images =
+    Array.fromList
+        [ "img/day01.svg"
+        , "img/day02.svg"
+        , "img/day03.svg"
+        , "img/day04.png"
+        , "img/day05.svg"
+        , "img/day06.svg"
+        , "img/day07.svg"
+        , "img/day08.svg"
+        , "img/day09.svg"
+        , "img/day10.svg"
+        , "img/day11.svg"
+        , "img/day12.png"
+        , "img/day13.svg"
+        , "img/day14.svg"
+        , "img/day15.svg"
+        , "img/day16.svg"
+        , "img/day17.svg"
+        , "img/day18.svg"
+        , "img/day19.svg"
+        , "img/day20.svg"
+        , "img/day21.svg"
+        , "img/day22.svg"
+        , "img/day23.png"
+        , "img/day24.svg"
+        , "img/day25.svg"
+        , "img/day26.svg"
+        , "img/day27.svg"
+        , "img/day28.svg"
+        , "img/day29.svg"
+        , "img/day30.svg"
         ]

@@ -34,11 +34,13 @@ import Day27.Main as D27
 import Day28.Main as D28
 import Day29.Main as D29
 import Day30.Main as D30
-import Html exposing (Html, a, div, h1, h2, li, ol, text)
-import Html.Attributes exposing (href, style)
+import Html exposing (Html, div, h2, text)
+import Html.Attributes exposing (style)
+import Intro
 import Markdown
 import Task
 import Url exposing (Url)
+import ViewHelper exposing (centeredDiv, contentDiv, header, link, titles)
 
 
 type Msg
@@ -691,7 +693,7 @@ view model =
             mapView Msg30 D30.page model_ 30
 
         Intro _ ->
-            introView
+            Intro.view
 
 
 subscriptions : Model -> Sub Msg
@@ -791,42 +793,6 @@ subscriptions model =
             Sub.none
 
 
-titles : Array String
-titles =
-    Array.fromList
-        [ D01.page.title
-        , D02.page.title
-        , D03.page.title
-        , D04.page.title
-        , D05.page.title
-        , D06.page.title
-        , D07.page.title
-        , D08.page.title
-        , D09.page.title
-        , D10.page.title
-        , D11.page.title
-        , D12.page.title
-        , D13.page.title
-        , D14.page.title
-        , D15.page.title
-        , D16.page.title
-        , D17.page.title
-        , D18.page.title
-        , D19.page.title
-        , D20.page.title
-        , D21.page.title
-        , D22.page.title
-        , D23.page.title
-        , D24.page.title
-        , D25.page.title
-        , D26.page.title
-        , D27.page.title
-        , D28.page.title
-        , D29.page.title
-        , D30.page.title
-        ]
-
-
 projectView : Int -> String -> Html Msg -> Browser.Document Msg
 projectView idx description project_ =
     let
@@ -864,86 +830,6 @@ projectView idx description project_ =
         ]
     , title = title
     }
-
-
-introView : Browser.Document msg
-introView =
-    let
-        projectItem idx =
-            li [] [ link False idx ]
-    in
-    { body =
-        [ div [ style "font-family" "sans-serif" ]
-            [ centeredDiv [] [ header ]
-            , contentDiv []
-                [ Markdown.toHtml []
-                    "Here are thirty projects I did during December 2016. I think they're cool."
-                , titles
-                    |> Array.toList
-                    |> List.indexedMap (\idx _ -> projectItem (idx + 1))
-                    |> ol []
-                ]
-            ]
-        ]
-    , title = "Codecember 2016"
-    }
-
-
-centeredDiv attrs children =
-    div
-        ([ style "display" "flex"
-         , style "flex-direction" "column"
-         , style "align-items" "center"
-         ]
-            ++ attrs
-        )
-        children
-
-
-contentDiv attrs children =
-    div
-        ([ style "margin" "0 auto"
-         , style "width" "70vw"
-         , style "max-width" "800px"
-         , style "padding-bottom" "50px"
-         ]
-            ++ attrs
-        )
-        children
-
-
-header : Html msg
-header =
-    h1 []
-        [ a [ href "#", style "text-decoration" "none" ]
-            [ text "Codecember 2016" ]
-        ]
-
-
-link : Bool -> Int -> Html msg
-link numbered day =
-    case Array.get (day - 1) titles of
-        Nothing ->
-            text ""
-
-        Just title ->
-            a
-                [ href <| "#day" ++ stringFromDay day ]
-                [ if numbered then
-                    text <| "Day " ++ String.fromInt day ++ ": " ++ title
-
-                  else
-                    text title
-                ]
-
-
-stringFromDay : Int -> String
-stringFromDay day =
-    if day < 10 then
-        "0" ++ String.fromInt day
-
-    else
-        String.fromInt day
 
 
 main : Program () Model Msg

@@ -1,4 +1,4 @@
-module Day25.Vector exposing (Vector, add, arg, capMagnitude, dist2, mul, neg, norm2, normalizeOrZero, onZero, polar, sub, sum, vecMul)
+module Day25.Vector exposing (Vector, add, arg, capMagnitude, dist2, mul, normalizeOrZero, polar, sub, sum, vecMul)
 
 
 type alias Vector =

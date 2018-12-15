@@ -866,6 +866,29 @@ projectView idx description project_ =
     }
 
 
+introView : Browser.Document msg
+introView =
+    let
+        projectItem idx =
+            li [] [ link False idx ]
+    in
+    { body =
+        [ div [ style "font-family" "sans-serif" ]
+            [ centeredDiv [] [ header ]
+            , contentDiv []
+                [ Markdown.toHtml []
+                    "Here are thirty projects I did during December 2016. I think they're cool."
+                , titles
+                    |> Array.toList
+                    |> List.indexedMap (\idx _ -> projectItem (idx + 1))
+                    |> ol []
+                ]
+            ]
+        ]
+    , title = "Codecember 2016"
+    }
+
+
 centeredDiv attrs children =
     div
         ([ style "display" "flex"
@@ -895,29 +918,6 @@ header =
         [ a [ href "#", style "text-decoration" "none" ]
             [ text "Codecember 2016" ]
         ]
-
-
-introView : Browser.Document msg
-introView =
-    let
-        projectItem idx =
-            li [] [ link False idx ]
-    in
-    { body =
-        [ div [ style "font-family" "sans-serif" ]
-            [ centeredDiv [] [ header ]
-            , contentDiv []
-                [ Markdown.toHtml []
-                    "Here are thirty projects I did during December 2016. I think they're cool."
-                , titles
-                    |> Array.toList
-                    |> List.indexedMap (\idx _ -> projectItem (idx + 1))
-                    |> ol []
-                ]
-            ]
-        ]
-    , title = "Codecember 2016"
-    }
 
 
 link : Bool -> Int -> Html msg

@@ -2,8 +2,8 @@ module Day28.Main exposing (Model, Msg, page)
 
 import Browser exposing (document)
 import Color exposing (Color)
-import Day27.Area as Area exposing (..)
-import Day28.Border as Border exposing (..)
+import Day27.Area as Area exposing (Area, Center, Shape(..))
+import Day28.Border as Border
 import Html exposing (Html, button, div, text)
 import Html.Events exposing (onClick)
 import Pointer
@@ -78,7 +78,7 @@ update : Msg -> Model -> Model
 update msg model =
     case msg of
         Add area ->
-            { model | areas = addToAreas model.areas area }
+            { model | areas = Area.addToAreas model.areas area }
 
         MouseMove center ->
             if center /= model.mouseCenter then
@@ -91,7 +91,7 @@ update msg model =
             case model.mouseCenter of
                 Just center ->
                     center
-                        |> shapeAround Color.black model.mouseShape
+                        |> Area.shapeAround Color.black model.mouseShape
                         |> Add
                         |> (\b a -> update a b)
                             { model | mouseDown = True }
@@ -122,7 +122,8 @@ view { size, areas, mouseShape, mouseCenter } =
         mouseAreaView =
             case mouseCenter of
                 Just center ->
-                    shapeAround Color.black mouseShape center |> areaView (Color.rgba 0 0 0 0)
+                    Area.shapeAround Color.black mouseShape center
+                        |> areaView (Color.rgba 0 0 0 0)
 
                 Nothing ->
                     Svg.text ""

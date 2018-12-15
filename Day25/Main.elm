@@ -5,7 +5,7 @@ import Browser.Events
 import Collage exposing (group, polygon, rotate, shift)
 import Collage.Render
 import Color exposing (Color)
-import Day25.Vector as Vector exposing (..)
+import Day25.Vector as Vector exposing (Vector)
 import Helper exposing (filled)
 import Html exposing (Html)
 import Random
@@ -119,7 +119,7 @@ updateBoids dt maxSpeed boids =
                 |> (\v -> { boid | v = Vector.add boid.v v |> Vector.capMagnitude maxSpeed })
 
         updateLocation dt_ boid =
-            { boid | r = add boid.r (mul dt_ boid.v) }
+            { boid | r = Vector.add boid.r (Vector.mul dt_ boid.v) }
     in
     boids |> List.map applyRules |> List.map (updateLocation dt) |> List.map modPosition
 
@@ -202,7 +202,7 @@ view { width, height, boids } =
         boidPolygon { r, v, c } =
             polygon [ ( -4, -4 ), ( 4, -4 ), ( 0, 8 ) ]
                 |> filled c
-                |> shift (vecMul r ( width, height ))
+                |> shift (Vector.vecMul r ( width, height ))
                 |> rotate (Vector.arg v)
     in
     boids

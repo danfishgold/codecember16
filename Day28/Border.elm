@@ -1,4 +1,4 @@
-module Day28.Border exposing (BorderDict, Corner, Direction(..), DirectionNum, border, borderEdges, borderStep, borders, directionFromInt, directionToInt, edgeFromCenter, either, innerBorder, possibleDirections, unitVector, view)
+module Day28.Border exposing (view)
 
 import Color
 import Day27.Area as Area exposing (Area, Center)
@@ -55,11 +55,10 @@ directionFromInt i =
         2 ->
             Down
 
-        3 ->
-            Left
-
+        -- This should be 3, but since this is an internal function, I know it
+        -- won't ever be anything other than 0,1,2,3
         _ ->
-            Debug.todo "wrong direction encoding"
+            Left
 
 
 unitVector : DirectionNum -> ( Int, Int )

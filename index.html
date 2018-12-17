@@ -3,6 +3,58 @@
   <head>
     <meta charset="utf-8" />
     <title>Looops</title>
+
+    <style>
+      .project-grid {
+        display: grid;
+        grid-row-gap: 40px;
+        grid-column-gap: 40px;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      }
+
+      .project-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        position: relative;
+      }
+
+      .project-box img {
+        width: 100%;
+      }
+
+      .project-box > div {
+        position: absolute;
+        left: 0;
+        top: 0;
+        padding: 10px;
+        margin: 15px;
+        font-size: 1rem;
+      }
+
+      .project-box {
+        box-shadow: 0 3px 5px #999;
+      }
+
+      .project-box.light > div {
+        background: black;
+        color: white;
+      }
+      .project-box.dark > div {
+        background: white;
+        color: black;
+      }
+
+      .project-box > div {
+        transition: all 0.15s ease-in-out;
+      }
+
+      .project-box:hover > div {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+    </style>
   </head>
 
   <body>

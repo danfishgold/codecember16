@@ -40,7 +40,7 @@ import Intro
 import Markdown
 import Task
 import Url exposing (Url)
-import ViewHelper exposing (centeredDiv, contentDiv, header, link, titles)
+import ViewHelper exposing (centeredDiv, contentDiv, header, link, title)
 
 
 type Msg
@@ -794,15 +794,11 @@ subscriptions model =
 
 
 projectView : Int -> String -> Html Msg -> Browser.Document Msg
-projectView idx description project_ =
+projectView day description project_ =
     let
-        title =
-            case Array.get (idx - 1) titles of
-                Nothing ->
-                    "No day like the present"
-
-                Just ttl ->
-                    ttl
+        ttl =
+            title True day
+                |> Maybe.withDefault "No day like the present"
 
         projectTitle =
             div
@@ -811,11 +807,12 @@ projectView idx description project_ =
                 , style "align-items" "baseline"
                 , style "justify-content" "center"
                 ]
-                [ link True (idx - 1)
+                [ Maybe.withDefault (text "") <| link True (day - 1)
                 , h2
                     [ style "padding" "5px 30px" ]
-                    [ text <| "Day " ++ String.fromInt idx ++ ": " ++ title ]
-                , link True (idx + 1)
+                    [ text <| ttl
+                    ]
+                , Maybe.withDefault (text "") <| link True (day + 1)
                 ]
     in
     { body =
@@ -828,7 +825,7 @@ projectView idx description project_ =
             , contentDiv [] [ Markdown.toHtml [] description ]
             ]
         ]
-    , title = title
+    , title = ttl
     }
 
 

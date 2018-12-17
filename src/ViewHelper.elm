@@ -1,4 +1,4 @@
-module ViewHelper exposing (centeredDiv, contentDiv, header, images, link, stringFromDay, titles)
+module ViewHelper exposing (Shade(..), centeredDiv, contentDiv, header, images, link, stringFromDay, title, url)
 
 import Array exposing (Array)
 import Day01.Main as D01
@@ -66,21 +66,33 @@ header =
         ]
 
 
-link : Bool -> Int -> Html msg
-link numbered day =
+url : Int -> String
+url day =
+    "#day" ++ stringFromDay day
+
+
+title : Bool -> Int -> Maybe String
+title numbered day =
     case Array.get (day - 1) titles of
+        Just ttl ->
+            if numbered then
+                Just <| "Day " ++ String.fromInt day ++ ": " ++ ttl
+
+            else
+                Just ttl
+
         Nothing ->
-            text ""
+            Nothing
 
-        Just title ->
-            a
-                [ href <| "#day" ++ stringFromDay day ]
-                [ if numbered then
-                    text <| "Day " ++ String.fromInt day ++ ": " ++ title
 
-                  else
-                    text title
-                ]
+link : Bool -> Int -> Maybe (Html msg)
+link numbered day =
+    case title numbered day of
+        Nothing ->
+            Nothing
+
+        Just ttl ->
+            Just <| a [ href <| url day ] [ text ttl ]
 
 
 stringFromDay : Int -> String
@@ -128,37 +140,42 @@ titles =
         ]
 
 
-images : Array String
+type Shade
+    = Dark
+    | Light
+
+
+images : Array ( String, Shade )
 images =
     Array.fromList
-        [ "img/day01.svg"
-        , "img/day02.svg"
-        , "img/day03.svg"
-        , "img/day04.png"
-        , "img/day05.svg"
-        , "img/day06.svg"
-        , "img/day07.svg"
-        , "img/day08.svg"
-        , "img/day09.svg"
-        , "img/day10.svg"
-        , "img/day11.svg"
-        , "img/day12.png"
-        , "img/day13.svg"
-        , "img/day14.svg"
-        , "img/day15.svg"
-        , "img/day16.svg"
-        , "img/day17.svg"
-        , "img/day18.svg"
-        , "img/day19.svg"
-        , "img/day20.svg"
-        , "img/day21.svg"
-        , "img/day22.svg"
-        , "img/day23.png"
-        , "img/day24.svg"
-        , "img/day25.svg"
-        , "img/day26.svg"
-        , "img/day27.svg"
-        , "img/day28.svg"
-        , "img/day29.svg"
-        , "img/day30.svg"
+        [ ( "img/day01.svg", Light )
+        , ( "img/day02.svg", Light )
+        , ( "img/day03.svg", Dark )
+        , ( "img/day04.png", Light )
+        , ( "img/day05.png", Light )
+        , ( "img/day06.svg", Light )
+        , ( "img/day07.svg", Light )
+        , ( "img/day08.svg", Light )
+        , ( "img/day09.svg", Dark )
+        , ( "img/day10.svg", Dark )
+        , ( "img/day11.svg", Light )
+        , ( "img/day12.png", Light )
+        , ( "img/day13.svg", Dark )
+        , ( "img/day14.svg", Light )
+        , ( "img/day15.svg", Light )
+        , ( "img/day16.svg", Light )
+        , ( "img/day17.svg", Light )
+        , ( "img/day18.svg", Light )
+        , ( "img/day19.svg", Dark )
+        , ( "img/day20.svg", Light )
+        , ( "img/day21.svg", Light )
+        , ( "img/day22.svg", Light )
+        , ( "img/day23.png", Light )
+        , ( "img/day24.svg", Light )
+        , ( "img/day25.svg", Light )
+        , ( "img/day26.svg", Light )
+        , ( "img/day27.svg", Light )
+        , ( "img/day28.svg", Light )
+        , ( "img/day29.svg", Light )
+        , ( "img/day30.svg", Dark )
         ]

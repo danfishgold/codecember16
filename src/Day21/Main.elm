@@ -2,7 +2,7 @@ module Day21.Main exposing (Model, Msg, page)
 
 import Browser exposing (document)
 import Browser.Events
-import Helper exposing (onEnter)
+import Helper exposing (onEnter, projectSvg)
 import Random
 import Random.Extra
 import Svg exposing (Svg, circle, g, svg)
@@ -194,7 +194,7 @@ view ({ time, planets, sunRadius } as model) =
             g [] [ circ "#888" px py p.props.r, List.map moon p.moons |> g [] ]
     in
     [ bg, sun, tracks, List.map planet planets |> g [] ]
-        |> svg [ width <| String.fromFloat model.width, height <| String.fromFloat model.height ]
+        |> projectSvg ( model.width, model.height ) []
 
 
 

@@ -4,7 +4,7 @@ import Browser exposing (document)
 import Browser.Events
 import Color exposing (Color)
 import Day02.Ryb exposing (ryba)
-import Helper exposing (onEnter)
+import Helper exposing (onEnter, projectSvg)
 import Json.Decode as Json
 import Json.Encode exposing (Value)
 import String
@@ -183,4 +183,4 @@ view res model =
     in
     model.loops
         |> List.map loopPath
-        |> svg [ width <| String.fromFloat wd, height <| String.fromFloat ht ]
+        |> projectSvg ( wd, ht ) []

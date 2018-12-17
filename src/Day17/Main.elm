@@ -3,6 +3,7 @@ module Day17.Main exposing (Model, Msg, page)
 import Browser exposing (document)
 import Browser.Events
 import Color exposing (Color)
+import Helper exposing (projectSvg)
 import Svg exposing (Svg, g, svg)
 import Svg.Attributes exposing (cx, cy, fill, height, r, transform, width)
 import Time
@@ -114,7 +115,7 @@ view model =
                     ++ String.fromFloat (model.height / 2)
                     ++ ")"
             ]
-        |> (\g -> svg [ width <| String.fromFloat model.width, height <| String.fromFloat model.height ] [ g ])
+        |> (\g -> projectSvg ( model.width, model.height ) [] [ g ])
 
 
 

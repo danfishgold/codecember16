@@ -6,7 +6,7 @@ import Collage exposing (group, polygon, rotate, shift)
 import Collage.Render
 import Color exposing (Color)
 import Day25.Vector as Vector exposing (Vector)
-import Helper exposing (filled)
+import Helper exposing (filled, projectCollage)
 import Html exposing (Html)
 import Random
 
@@ -208,7 +208,7 @@ view { width, height, boids } =
     boids
         |> List.map boidPolygon
         |> group
-        |> Collage.Render.svgBox ( width, height )
+        |> projectCollage ( width, height )
 
 
 

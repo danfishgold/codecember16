@@ -5,7 +5,7 @@ import Browser.Events
 import Color exposing (Color, white)
 import Day15.Polyomino as Poly exposing (Letter(..), Point)
 import Day15.View exposing (polygon)
-import Helper exposing (onEnter)
+import Helper exposing (onEnter, projectSvg)
 import Random
 import Svg exposing (Svg, g, svg)
 import Svg.Attributes exposing (height, transform, width)
@@ -155,7 +155,7 @@ view scale model =
                 |> List.concatMap row
     in
     grid
-        |> svg [ width <| String.fromFloat model.width, height <| String.fromFloat model.height ]
+        |> projectSvg ( model.width, model.height ) []
 
 
 

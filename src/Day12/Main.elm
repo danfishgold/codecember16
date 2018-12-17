@@ -3,7 +3,6 @@ module Day12.Main exposing (Model, Msg, page)
 import Browser exposing (document)
 import Browser.Dom exposing (getViewport)
 import Browser.Events as Events
-import Helper
 import Html exposing (Html, div, text)
 import Json.Decode as Json
 import Task

@@ -2,6 +2,7 @@ module Day19.Main exposing (Model, Msg, page)
 
 import Browser exposing (document)
 import Day19.Trail as Trail exposing (Trail)
+import Helper exposing (projectSvg)
 import Random exposing (generate)
 import Random.Extra exposing (combine)
 import Svg exposing (Svg, g, rect, svg, text, text_)
@@ -105,7 +106,7 @@ view model =
         |> List.map (Trail.view model.fontFamily model.fontSize)
         |> g []
     ]
-        |> svg [ width <| String.fromFloat model.width, height <| String.fromFloat model.height ]
+        |> projectSvg ( model.width, model.height ) []
 
 
 

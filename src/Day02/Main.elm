@@ -4,6 +4,7 @@ import Browser exposing (document)
 import Color exposing (Color)
 import Color.Convert exposing (colorToHex)
 import Day02.Random exposing (ryb1, ryb1v1, ryb1v2, ryb1v3, ryb2v2)
+import Helper exposing (projectSvg)
 import Html exposing (Html, button, div, text)
 import Html.Events exposing (onClick)
 import Random exposing (generate, map)
@@ -111,10 +112,7 @@ view colors =
     div []
         [ colors
             |> List.indexedMap (\i c -> square (properties i) c)
-            |> svg
-                [ width <| String.fromFloat <| d * 2
-                , height <| String.fromFloat <| d * 2
-                ]
+            |> projectSvg ( 2 * d, 2 * d ) []
         , div []
             [ button [ onClick One ] [ Html.text "1" ]
             , button [ onClick OneVOne ] [ Html.text "1:1" ]

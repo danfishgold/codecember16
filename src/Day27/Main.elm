@@ -3,6 +3,7 @@ module Day27.Main exposing (Model, Msg, page)
 import Browser exposing (document)
 import Color exposing (Color)
 import Day27.Area as Area exposing (..)
+import Helper exposing (projectSvg)
 import Html exposing (Html, button, div, text)
 import Html.Events exposing (onClick)
 import Pointer
@@ -129,10 +130,11 @@ view { size, areas, mouseShape, mouseCenter } =
 
         svg =
             (areaViews ++ [ mouseAreaView ])
-                |> Svg.svg
-                    [ width <| String.fromInt <| scale * columns
-                    , height <| String.fromInt <| scale * rows
-                    , Pointer.move (centerFromMouse size >> MouseMove)
+                |> projectSvg
+                    ( toFloat <| scale * columns
+                    , toFloat <| scale * rows
+                    )
+                    [ Pointer.move (centerFromMouse size >> MouseMove)
                     , Pointer.down <| always <| MouseDown True
                     , Pointer.up <| always <| MouseDown False
                     ]

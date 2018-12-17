@@ -5,7 +5,7 @@ import Browser.Events
 import Collage exposing (circle, group, rectangle, shift)
 import Collage.Render
 import Color exposing (black, white)
-import Helper exposing (filled)
+import Helper exposing (filled, projectCollage)
 import Html exposing (Html)
 import Random
 import Random.Float
@@ -125,7 +125,7 @@ view { width, height, points } =
     , rectangle width height |> filled black
     ]
         |> group
-        |> Collage.Render.svgBox ( width, height )
+        |> projectCollage ( width, height )
 
 
 

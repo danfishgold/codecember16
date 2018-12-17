@@ -4,6 +4,7 @@ import Browser exposing (document)
 import Browser.Events
 import Color exposing (Color)
 import Day14.Clip exposing (clip, clipPath)
+import Helper exposing (projectSvg)
 import Html exposing (Html)
 import Svg exposing (Svg, circle, g, svg)
 import Svg.Attributes as Attrs exposing (cx, cy, fill, r, transform)
@@ -114,10 +115,8 @@ view { width, height, dx, dy } =
         circles2 =
             circles width height 10 2.5 Color.red
     in
-    svg
-        [ Attrs.width <| String.fromFloat width
-        , Attrs.height <| String.fromFloat height
-        ]
+    projectSvg ( width, height )
+        []
         [ clip "circles1" circles1
         , g
             [ clipPath "circles1" ]

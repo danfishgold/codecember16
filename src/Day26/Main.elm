@@ -2,6 +2,7 @@ module Day26.Main exposing (Model, Msg, page)
 
 import Browser exposing (document)
 import Browser.Events
+import Helper exposing (projectSvg)
 import Svg exposing (Svg, g, svg)
 import Svg.Attributes exposing (cx, cy, fill, height, r, stroke, strokeWidth, width)
 import Svg.Events exposing (onMouseOut, onMouseOver)
@@ -245,4 +246,4 @@ view model =
             Svg.text ""
         ]
     ]
-        |> svg [ width <| String.fromFloat model.width, height <| String.fromFloat model.height ]
+        |> projectSvg ( model.width, model.height ) []

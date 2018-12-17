@@ -4,8 +4,9 @@ import Array exposing (Array)
 import Color exposing (Color)
 import Color.Gradient exposing (linearGradient)
 import Color.Interpolate as Space
+import Helper exposing (projectSvg)
 import Html exposing (Html, div)
-import Html.Attributes exposing (style)
+import Html.Attributes exposing (class, style)
 import Svg exposing (Svg, g, line, svg)
 import Svg.Attributes exposing (height, stroke, strokeLinecap, strokeWidth, width, x1, x2, y1, y2)
 
@@ -248,11 +249,7 @@ view braidWidth stepHeight ({ count, transitions } as model) =
                     ++ List.map diagonal segs
            )
     )
-        |> svg
-            [ width <| String.fromFloat wd
-            , height <| String.fromFloat ht
-            , style "padding" "20px"
-            ]
+        |> projectSvg ( wd, ht ) [ style "padding" "20px" ]
 
 
 

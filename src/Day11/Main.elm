@@ -6,7 +6,7 @@ import Collage.Render
 import Color exposing (Color)
 import Color.Manipulate exposing (darken, lighten)
 import Day02.Random
-import Helper exposing (filled)
+import Helper exposing (filled, projectCollage)
 import Html exposing (Html, div)
 import Pointer
 import Random
@@ -171,7 +171,7 @@ view { eye, width, height, rects } =
         |> List.concatMap (faces eye)
         |> List.map polygon
         |> group
-        |> Collage.Render.svgBox ( width, height )
+        |> projectCollage ( width, height )
         |> (\canvas -> div [ Pointer.move Mouse ] [ canvas ])
 
 

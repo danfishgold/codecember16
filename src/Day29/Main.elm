@@ -6,7 +6,7 @@ import Collage exposing (circle, group, rectangle, shift, solid)
 import Collage.Render
 import Color
 import Color.Manipulate exposing (fadeOut)
-import Helper exposing (filled, outlined)
+import Helper exposing (filled, outlined, projectCollage)
 import Html exposing (Html)
 import Pointer exposing (Position)
 
@@ -214,7 +214,7 @@ view model =
         [ Pointer.down MouseDown
         , Pointer.up MouseUp
         ]
-        [ Collage.Render.svgBox
+        [ projectCollage
             ( model.width, model.height )
           <|
             group <|

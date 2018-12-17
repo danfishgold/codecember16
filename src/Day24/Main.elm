@@ -4,6 +4,7 @@ import Browser exposing (document)
 import Color exposing (Color)
 import Day02.Random exposing (ryb1, ryb2v2)
 import Day24.Tree as Tree exposing (Tree(..))
+import Helper exposing (projectSvg)
 import Random
 import Random.Extra exposing (sample)
 import Svg exposing (Svg, rect, svg)
@@ -139,7 +140,7 @@ view model =
     in
     model.tree
         |> Tree.indexedMap nodeRect
-        |> svg [ width <| String.fromFloat model.width, height <| String.fromFloat model.height ]
+        |> projectSvg ( model.width, model.height ) []
 
 
 

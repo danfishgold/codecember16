@@ -2,6 +2,7 @@ module Day22.Main exposing (Model, Msg, page)
 
 import Browser exposing (document)
 import Browser.Events
+import Helper exposing (projectSvg)
 import Html exposing (Html, button, div, input, text)
 import Html.Attributes as Attrs exposing (style, type_, value)
 import Html.Events exposing (onClick, onInput)
@@ -220,7 +221,7 @@ svgView ({ time, bigR, smallR } as model) =
                 []
 
         svg_ =
-            svg [ width <| String.fromFloat model.width, height <| String.fromFloat model.height ]
+            projectSvg ( model.width, model.height ) []
     in
     case velocity model.speed of
         Just v ->

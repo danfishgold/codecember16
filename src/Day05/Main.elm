@@ -3,6 +3,7 @@ module Day05.Main exposing (Model, Msg, page)
 import Browser exposing (document)
 import Color exposing (Color)
 import Dict exposing (Dict)
+import Helper exposing (projectSvg)
 import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (style)
 import Svg exposing (Svg, g, rect, svg)
@@ -171,10 +172,11 @@ pyramid res model =
         |> List.reverse
         |> List.indexedMap row
         |> List.map (g [])
-        |> svg
-            [ width <| String.fromFloat <| res * toFloat (2 * model.levelCount + 1)
-            , height <| String.fromFloat <| res * toFloat model.levelCount
-            ]
+        |> projectSvg
+            ( res * toFloat (2 * model.levelCount + 1)
+            , res * toFloat model.levelCount
+            )
+            []
 
 
 rules : Float -> Model -> Html Msg

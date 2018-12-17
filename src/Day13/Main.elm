@@ -4,6 +4,7 @@ import Browser exposing (document)
 import Browser.Events
 import Color exposing (Color)
 import Day13.Dvd as Dvd
+import Helper exposing (projectSvg)
 import Random
 import Random.Extra
 import Svg exposing (Svg, g, rect, svg)
@@ -140,7 +141,8 @@ bg model =
 
 view : Model -> Svg Msg
 view model =
-    svg [ width <| String.fromFloat model.width, height <| String.fromFloat model.height ]
+    projectSvg ( model.width, model.height )
+        []
         [ bg model
         , dvd model.x model.y model.color
         ]

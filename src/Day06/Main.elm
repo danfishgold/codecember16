@@ -5,6 +5,7 @@ import Browser exposing (document)
 import Browser.Events
 import Color exposing (Color, black, red)
 import Day06.Array2D as Array2D exposing (Array2D)
+import Helper exposing (projectSvg)
 import Html exposing (Html, div, text)
 import Random exposing (Generator)
 import Random.Extra
@@ -237,10 +238,8 @@ view wd ht model =
                 ]
                 []
     in
-    svg
-        [ width <| String.fromFloat wd
-        , height <| String.fromFloat ht
-        ]
+    projectSvg ( wd, ht )
+        []
         [ model.background
             |> Array.toList
             |> List.map (circle black)

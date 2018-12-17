@@ -5,7 +5,7 @@ import Browser.Events
 import Color exposing (Color)
 import Day02.Random exposing (ryb1)
 import Dict exposing (Dict)
-import Helper exposing (onEnterOrSpace)
+import Helper exposing (onEnterOrSpace, projectSvg)
 import Html exposing (Html)
 import Json.Decode as Json
 import Random exposing (Generator, generate)
@@ -251,10 +251,8 @@ view res { side, current, previous } =
                 ]
                 []
     in
-    svg
-        [ width <| String.fromInt <| side * ceiling res
-        , height <| String.fromInt <| side * ceiling res
-        ]
+    projectSvg ( toFloat side * res, toFloat side * res )
+        []
         [ bg, pts ]
 
 

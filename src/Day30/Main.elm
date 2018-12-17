@@ -3,7 +3,7 @@ module Day30.Main exposing (Model, Msg, page)
 import Browser exposing (document)
 import Browser.Events
 import Color exposing (Color)
-import Helper exposing (onEnter)
+import Helper exposing (onEnter, projectSvg)
 import Random exposing (constant)
 import Random.Extra exposing (combine, rangeLengthList, sample)
 import Svg exposing (Svg, polyline, rect, svg)
@@ -276,7 +276,7 @@ view model =
                 []
     in
     (bg :: List.map lightning model.lightnings)
-        |> svg [ width <| String.fromFloat model.width, height <| String.fromFloat model.height ]
+        |> projectSvg ( model.width, model.height ) []
 
 
 color : Level -> Color

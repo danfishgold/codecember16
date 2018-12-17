@@ -4,6 +4,7 @@ import Browser exposing (document)
 import Browser.Events
 import Color exposing (Color)
 import Day02.Random exposing (ryb1)
+import Helper exposing (projectSvgAttrs)
 import Html exposing (Html)
 import Pointer
 import Random
@@ -156,10 +157,7 @@ view model =
     in
     List.map ball model.balls
         |> node "svg"
-            [ width <| String.fromFloat model.width
-            , height <| String.fromFloat model.height
-            , Pointer.move Mouse
-            ]
+            (Pointer.move Mouse :: projectSvgAttrs False ( model.width, model.height ))
 
 
 

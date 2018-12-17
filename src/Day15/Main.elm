@@ -6,7 +6,7 @@ import Color exposing (Color)
 import Day02.Random exposing (ryb1)
 import Day15.Polyomino as Poly
 import Day15.View as View
-import Helper exposing (onEnter)
+import Helper exposing (onEnter, projectSvg)
 import Random
 import Svg exposing (Svg, g, svg)
 import Svg.Attributes exposing (height, transform, width)
@@ -87,8 +87,7 @@ view scale model =
     in
     model.polyominos
         |> List.indexedMap poly
-        |> svg
-            [ width <| String.fromFloat model.width, height <| String.fromFloat model.height ]
+        |> projectSvg ( model.width, model.height ) []
 
 
 

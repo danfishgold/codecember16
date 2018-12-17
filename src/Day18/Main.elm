@@ -4,7 +4,7 @@ import Browser exposing (document)
 import Browser.Events
 import Color exposing (Color)
 import Day18.Gradient exposing (gradient, gradientStroke)
-import Helper exposing (onEnter)
+import Helper exposing (onEnter, projectSvg)
 import Random
 import Random.Extra
 import Svg exposing (Svg, circle, defs, g, line, svg)
@@ -192,7 +192,7 @@ view model =
     , edges |> List.indexedMap line |> g []
     , vertices |> List.map point |> g []
     ]
-        |> svg [ width <| String.fromFloat model.width, height <| String.fromFloat model.height ]
+        |> projectSvg ( model.width, model.height ) []
 
 
 

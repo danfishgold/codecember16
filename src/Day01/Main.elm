@@ -3,7 +3,7 @@ module Day01.Main exposing (Model, Msg, page)
 import Browser exposing (document)
 import Browser.Events
 import Color exposing (Color)
-import Helper exposing (onEnter)
+import Helper exposing (onEnter, projectSvg)
 import Html
 import Json.Decode as Json
 import Random
@@ -235,10 +235,8 @@ view width height ({ shapeWidth, aspectRatio } as model) =
                 |> List.concatMap (row shape)
                 |> g []
     in
-    svg
-        [ Svg.Attributes.width <| String.fromFloat <| width
-        , Svg.Attributes.height <| String.fromFloat <| height
-        ]
+    projectSvg ( width, height )
+        []
         [ g []
             [ repeat (parallelogram width height)
             , repeat (lineGroup width height)

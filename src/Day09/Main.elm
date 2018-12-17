@@ -3,7 +3,7 @@ module Day09.Main exposing (Model, Msg, page)
 import Collage exposing (defaultLineStyle, group, polygon, uniform)
 import Collage.Render
 import Color exposing (Color)
-import Helper exposing (filled, outlined)
+import Helper exposing (filled, outlined, projectCollage)
 import Html exposing (Html, div)
 import Pointer
 
@@ -183,7 +183,7 @@ view { mouse, polygons, frame } =
     , frame |> polygon |> filled Color.black
     ]
         |> Collage.group
-        |> Collage.Render.svgBox ( 500, 500 )
+        |> projectCollage ( 500, 500 )
         |> (\canvas -> div [ Pointer.move Mouse ] [ canvas ])
 
 

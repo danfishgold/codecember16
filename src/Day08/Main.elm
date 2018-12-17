@@ -1,6 +1,7 @@
 module Day08.Main exposing (Model, Msg, page)
 
 import Browser exposing (document)
+import Helper exposing (projectSvg)
 import Pointer
 import Svg exposing (Svg, circle, polyline, svg)
 import Svg.Attributes exposing (cx, cy, fill, height, points, r, stroke, strokeWidth, style, width)
@@ -279,7 +280,8 @@ view model =
                 ]
                 []
     in
-    svg ([ width "500", height "500" ] ++ events model)
+    projectSvg ( 500, 500 )
+        (events model)
         ([ polyline
             [ strokeWidth "2"
             , stroke "black"

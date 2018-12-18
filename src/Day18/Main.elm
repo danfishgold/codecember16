@@ -4,7 +4,9 @@ import Browser exposing (document)
 import Browser.Events
 import Color exposing (Color)
 import Day18.Gradient exposing (gradient, gradientStroke)
-import Helper exposing (onEnter, projectSvg)
+import Helper exposing (projectSvg)
+import Html exposing (Html, button, div, text)
+import Html.Events exposing (onClick)
 import Random
 import Random.Extra
 import Svg exposing (Svg, circle, defs, g, line, svg)
@@ -94,10 +96,7 @@ randomizeVertices wd ht n =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch
-        [ Browser.Events.onAnimationFrame Tick
-        , onEnter Randomize
-        ]
+    Browser.Events.onAnimationFrame Tick
 
 
 
@@ -188,11 +187,15 @@ view model =
                 ]
                 []
     in
-    [ Svg.defs [] gradients
-    , edges |> List.indexedMap line |> g []
-    , vertices |> List.map point |> g []
-    ]
-        |> projectSvg ( model.width, model.height ) []
+    div []
+        [ projectSvg ( model.width, model.height )
+            []
+            [ Svg.defs [] gradients
+            , edges |> List.indexedMap line |> g []
+            , vertices |> List.map point |> g []
+            ]
+        , div [] [ button [ onClick Randomize ] [ text "Randomize" ] ]
+        ]
 
 
 

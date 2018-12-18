@@ -3,8 +3,9 @@ module Day01.Main exposing (Model, Msg, page)
 import Browser exposing (document)
 import Browser.Events
 import Color exposing (Color)
-import Helper exposing (onEnter, projectSvg)
-import Html
+import Helper exposing (projectSvg)
+import Html exposing (Html, button, div, text)
+import Html.Events exposing (onClick)
 import Json.Decode as Json
 import Random
 import String
@@ -110,15 +111,6 @@ randomModel =
 --
 
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    onEnter Randomize
-
-
-
---
-
-
 parallelogramColor : Model -> Int -> Int -> Color
 parallelogramColor model i j =
     case ( modBy 4 i, modBy 2 j ) of
@@ -218,7 +210,7 @@ lineGroup width height ({ shapeWidth, aspectRatio, lineColor } as model) i j =
         ]
 
 
-view : Float -> Float -> Model -> Svg Msg
+view : Float -> Float -> Model -> Html Msg
 view width height ({ shapeWidth, aspectRatio } as model) =
     let
         ( n, m ) =
@@ -235,12 +227,15 @@ view width height ({ shapeWidth, aspectRatio } as model) =
                 |> List.concatMap (row shape)
                 |> g []
     in
-    projectSvg ( width, height )
-        []
-        [ g []
-            [ repeat (parallelogram width height)
-            , repeat (lineGroup width height)
+    div []
+        [ projectSvg ( width, height )
+            []
+            [ g []
+                [ repeat (parallelogram width height)
+                , repeat (lineGroup width height)
+                ]
             ]
+        , div [] [ button [ onClick Randomize ] [ text "Randomize" ] ]
         ]
 
 
@@ -253,9 +248,6 @@ description =
     """
 This was my first project.
 I wanted to make something similar to [this](https://avh4.github.io/codevember-2016/day-3/) by Aaron VonderHar and I like argyle.
-
-## Instructions
-Hit enter to randomize.
 """
 
 
@@ -265,5 +257,5 @@ page =
     , body = view 500 500
     , description = description
     , update = update
-    , subscriptions = subscriptions
+    , subscriptions = always Sub.none
     }

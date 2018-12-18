@@ -5,7 +5,9 @@ import Browser.Events
 import Color exposing (Color, white)
 import Day15.Polyomino as Poly exposing (Letter(..), Point)
 import Day15.View exposing (polygon)
-import Helper exposing (onEnter, projectSvg)
+import Helper exposing (projectSvg)
+import Html exposing (Html, button, div, text)
+import Html.Events exposing (onClick)
 import Random
 import Svg exposing (Svg, g, svg)
 import Svg.Attributes exposing (height, transform, width)
@@ -40,15 +42,6 @@ init width height =
       }
     , randomize
     )
-
-
-
---
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    onEnter Randomize
 
 
 
@@ -112,7 +105,7 @@ ranges wd ht vecs =
         |> (\( i, j ) -> ( rangify i, rangify j ))
 
 
-view : Float -> Model -> Svg Msg
+view : Float -> Model -> Html Msg
 view scale model =
     let
         ( u, v ) =
@@ -154,8 +147,10 @@ view scale model =
             List.range iMin iMax
                 |> List.concatMap row
     in
-    grid
-        |> projectSvg ( model.width, model.height ) []
+    div []
+        [ projectSvg ( model.width, model.height ) [] grid
+        , div [] [ button [ onClick Randomize ] [ text "Randomize" ] ]
+        ]
 
 
 
@@ -168,16 +163,12 @@ description =
 A continuation from the previous day.
 
 I think this is nice.
-
-## Instructions
-
-Hit enter to randomize.
 """
 
 
 page =
     { init = always <| init 500 500
-    , subscriptions = subscriptions
+    , subscriptions = always Sub.none
     , update = update
     , title = "Tiles"
     , body = view 8

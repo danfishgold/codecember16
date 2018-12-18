@@ -7,7 +7,8 @@ import Collage.Render
 import Color
 import Color.Manipulate exposing (fadeOut)
 import Helper exposing (filled, outlined, projectCollage)
-import Html exposing (Html)
+import Html exposing (Html, button, div, text)
+import Html.Events exposing (onClick)
 import Pointer exposing (Position)
 
 
@@ -28,6 +29,7 @@ type Msg
     = MouseDown Position
     | MouseUp Position
     | Tick Float
+    | Reset
 
 
 init : Float -> Float -> ( Model, Cmd Msg )
@@ -160,6 +162,13 @@ update msg model =
                 , waves = newWaves ++ filteredWaves ++ reflectedWaves
             }
 
+        Reset ->
+            { model
+                | reflectors = []
+                , waves = []
+                , mouseSource = Nothing
+            }
+
 
 
 --
@@ -210,17 +219,20 @@ view model =
             rectangle model.width model.height
                 |> filled (Color.rgb 250 250 250)
     in
-    Html.div
-        [ Pointer.down MouseDown
-        , Pointer.up MouseUp
-        ]
-        [ projectCollage
-            ( model.width, model.height )
-          <|
-            group <|
-                List.concat
-                    [ List.map wave model.waves
-                    , List.map reflector model.reflectors
-                    , [ bg ]
-                    ]
+    div []
+        [ div
+            [ Pointer.down MouseDown
+            , Pointer.up MouseUp
+            ]
+            [ projectCollage
+                ( model.width, model.height )
+              <|
+                group <|
+                    List.concat
+                        [ List.map wave model.waves
+                        , List.map reflector model.reflectors
+                        , [ bg ]
+                        ]
+            ]
+        , div [] [ button [ onClick Reset ] [ text "Reset" ] ]
         ]

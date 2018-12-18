@@ -5,8 +5,9 @@ import Browser.Events
 import Color exposing (Color)
 import Day02.Random exposing (ryb1)
 import Dict exposing (Dict)
-import Helper exposing (onEnterOrSpace, projectSvg)
-import Html exposing (Html)
+import Helper exposing (projectSvg)
+import Html exposing (Html, button, div, text)
+import Html.Events exposing (onClick)
 import Json.Decode as Json
 import Random exposing (Generator, generate)
 import Random.Extra
@@ -92,14 +93,11 @@ type Msg
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch
-        [ if model.paused then
-            Sub.none
+    if model.paused then
+        Sub.none
 
-          else
-            every 1 Tick
-        , onEnterOrSpace SkipAnimation ResetPoints
-        ]
+    else
+        every 1 Tick
 
 
 
@@ -251,9 +249,12 @@ view res { side, current, previous } =
                 ]
                 []
     in
-    projectSvg ( toFloat side * res, toFloat side * res )
-        []
-        [ bg, pts ]
+    div []
+        [ projectSvg ( toFloat side * res, toFloat side * res )
+            []
+            [ bg, pts ]
+        , div [] [ button [ onClick SkipAnimation ] [ text "Randomize" ] ]
+        ]
 
 
 
@@ -271,10 +272,6 @@ and it really stuck with me.
 
 This is a little different from what Anatoly made (8-way symmetry instead of 4-)
 but credit goes to him.
-
-## Instructions
-Hit space to restart the process.
-Hit enter to skip to the final result.
 """
 
 

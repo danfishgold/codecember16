@@ -2,7 +2,9 @@ module Day21.Main exposing (Model, Msg, page)
 
 import Browser exposing (document)
 import Browser.Events
-import Helper exposing (onEnter, projectSvg)
+import Helper exposing (projectSvg)
+import Html exposing (Html, button, div, text)
+import Html.Events exposing (onClick)
 import Random
 import Random.Extra
 import Svg exposing (Svg, circle, g, svg)
@@ -58,10 +60,7 @@ init width height count sunRadius =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch
-        [ Browser.Events.onAnimationFrameDelta Tick
-        , onEnter Randomize
-        ]
+    Browser.Events.onAnimationFrameDelta Tick
 
 
 
@@ -193,8 +192,12 @@ view ({ time, planets, sunRadius } as model) =
             in
             g [] [ circ "#888" px py p.props.r, List.map moon p.moons |> g [] ]
     in
-    [ bg, sun, tracks, List.map planet planets |> g [] ]
-        |> projectSvg ( model.width, model.height ) []
+    div []
+        [ projectSvg ( model.width, model.height )
+            []
+            [ bg, sun, tracks, List.map planet planets |> g [] ]
+        , div [] [ button [ onClick Randomize ] [ text "Randomize" ] ]
+        ]
 
 
 
@@ -208,10 +211,6 @@ description =
 
 I think I saw something similar to this on [bl.ocks.org](https://bl.ocks.org)
 and wanted to make this. Space is nice, but this isn't physically accurate at all.
-
-## Instructions
-
-Hit enter to randomize.
 """
 
 

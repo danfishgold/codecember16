@@ -3,9 +3,12 @@ module Day26.Main exposing (Model, Msg, page)
 import Browser exposing (document)
 import Browser.Events
 import Helper exposing (projectSvg)
+import Html exposing (Html, button, div, text)
+import Html.Attributes exposing (style)
+import Html.Events exposing (on, onMouseDown, onMouseUp)
+import Json.Decode
 import Svg exposing (Svg, g, svg)
 import Svg.Attributes exposing (cx, cy, fill, height, r, stroke, strokeWidth, width)
-import Svg.Events exposing (onMouseOut, onMouseOver)
 
 
 type alias Car =
@@ -76,17 +79,13 @@ description =
 I like systems where local changes cause a global trend.
 Among all these projects, four are examples of such systems, including this one.
 
-At first I tried to come up with a model for trafic, but that proved to be much
+At first I tried to come up with a model for traffic, but that proved to be much
 harder than I expected. I did some googling and found
 [this beautiful project](https://github.com/volkhin/RoadTrafficSimulator)
 which uses the
 [Intelligent Driver Model](https://en.wikipedia.org/wiki/Intelligent_driver_model).
 
 This was a lot of fun.
-
-## Instructions
-
-Hover over the ring road to create a trafic jam.
 """
 
 
@@ -236,14 +235,27 @@ view model =
         obstacle =
             circle ringRad 0 3 "red" "none" 0
     in
-    [ g [ onMouseOver AddObstacle, onMouseOut RemoveObstacle ]
-        [ ring
-        , model.cars |> List.map car |> g []
-        , if model.obstacle then
-            obstacle
+    div []
+        [ projectSvg ( model.width, model.height )
+            []
+            [ g []
+                [ ring
+                , model.cars |> List.map car |> g []
+                , if model.obstacle then
+                    obstacle
 
-          else
-            Svg.text ""
+                  else
+                    Svg.text ""
+                ]
+            ]
+        , div []
+            [ button
+                [ style "-webkit-user-select" "none"
+                , on "touchstart" (Json.Decode.succeed AddObstacle)
+                , on "touchend" (Json.Decode.succeed RemoveObstacle)
+                , onMouseDown AddObstacle
+                , onMouseUp RemoveObstacle
+                ]
+                [ text "Hold for red light" ]
+            ]
         ]
-    ]
-        |> projectSvg ( model.width, model.height ) []

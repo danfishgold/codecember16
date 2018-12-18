@@ -141,8 +141,10 @@ view { size, areas, mouseShape, mouseCenter } =
     in
     div []
         [ svg
-        , button [ onClick <| MouseShape Square ] [ text "Square" ]
-        , button [ onClick <| MouseShape Cross ] [ text "Cross" ]
+        , div []
+            [ button [ onClick <| MouseShape Square ] [ text "Square" ]
+            , button [ onClick <| MouseShape Cross ] [ text "Cross" ]
+            ]
         ]
 
 

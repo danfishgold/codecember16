@@ -4,7 +4,9 @@ import Browser exposing (document)
 import Browser.Events
 import Color exposing (Color)
 import Day02.Ryb exposing (ryba)
-import Helper exposing (onEnter, projectSvg)
+import Helper exposing (projectSvg)
+import Html exposing (Html, button, div, text)
+import Html.Events exposing (onClick)
 import Json.Decode as Json
 import Json.Encode exposing (Value)
 import String
@@ -71,10 +73,6 @@ to define the syntax and a perl script translates it to OCaml code.
 I made a BNF parser in Python, which generated beautiful, disgusting, lazy JS code.
 For some reason I decided to make a [random walk example](http://fishgold.co/BNF/paths).
 The result was very pretty, so I wanted to reimplement it in a way that wasn't super weird.
-
-## Instructions
-
-Hit enter to randomize.
 """
 
 
@@ -121,10 +119,7 @@ parseLoop ( deltas, center, hue ) =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch
-        [ getLoops (List.map parseLoop >> SetLoops)
-        , onEnter RequestLoops
-        ]
+    getLoops (List.map parseLoop >> SetLoops)
 
 
 
@@ -181,6 +176,9 @@ view res model =
                 ]
                 []
     in
-    model.loops
-        |> List.map loopPath
-        |> projectSvg ( wd, ht ) []
+    div []
+        [ model.loops
+            |> List.map loopPath
+            |> projectSvg ( wd, ht ) []
+        , div [] [ button [ onClick RequestLoops ] [ text "Randomize" ] ]
+        ]

@@ -3,7 +3,9 @@ module Day30.Main exposing (Model, Msg, page)
 import Browser exposing (document)
 import Browser.Events
 import Color exposing (Color)
-import Helper exposing (onEnter, projectSvg)
+import Helper exposing (projectSvg)
+import Html exposing (Html, button, div, text)
+import Html.Events exposing (onClick)
 import Random exposing (constant)
 import Random.Extra exposing (combine, rangeLengthList, sample)
 import Svg exposing (Svg, polyline, rect, svg)
@@ -81,21 +83,12 @@ which was one of the reasons I wanted a degree in Math.
 
 page =
     { init = always <| init 500 500
-    , subscriptions = subscriptions
+    , subscriptions = always Sub.none
     , update = update
     , title = "Lightning"
     , body = view
     , description = description
     }
-
-
-
---
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    onEnter Randomize
 
 
 
@@ -275,8 +268,12 @@ view model =
                 ]
                 []
     in
-    (bg :: List.map lightning model.lightnings)
-        |> projectSvg ( model.width, model.height ) []
+    div []
+        [ projectSvg ( model.width, model.height )
+            []
+            (bg :: List.map lightning model.lightnings)
+        , div [] [ button [ onClick Randomize ] [ text "Randomize" ] ]
+        ]
 
 
 color : Level -> Color

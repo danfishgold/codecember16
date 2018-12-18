@@ -1,4 +1,4 @@
-module Helper exposing (filled, onEnter, onEnterOrSpace, outlined, projectCollage, projectSvg, projectSvgAttrs)
+module Helper exposing (filled, outlined, projectCollage, projectSvg, projectSvgAttrs)
 
 import Array exposing (Array)
 import Browser
@@ -82,39 +82,3 @@ projectCollage size collage =
 projectSvg : ( Float, Float ) -> List (Html.Attribute msg) -> List (Svg msg) -> Html msg
 projectSvg size attrs children =
     svg (projectSvgAttrs False size ++ attrs) children
-
-
-
--- KEYBOARD EVENTS
-
-
-onEnter toMsg =
-    Browser.Events.onKeyUp
-        (Json.field "key" Json.string
-            |> Json.andThen
-                (\key ->
-                    if key == "Enter" then
-                        Json.succeed toMsg
-
-                    else
-                        Json.fail "Other key"
-                )
-        )
-
-
-onEnterOrSpace enterMsg spaceMsg =
-    Browser.Events.onKeyUp
-        (Json.field "key" Json.string
-            |> Json.andThen
-                (\key ->
-                    case key of
-                        "Enter" ->
-                            Json.succeed enterMsg
-
-                        " " ->
-                            Json.succeed spaceMsg
-
-                        _ ->
-                            Json.fail "Other key pressed"
-                )
-        )

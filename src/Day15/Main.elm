@@ -6,7 +6,9 @@ import Color exposing (Color)
 import Day02.Random exposing (ryb1)
 import Day15.Polyomino as Poly
 import Day15.View as View
-import Helper exposing (onEnter, projectSvg)
+import Helper exposing (projectSvg)
+import Html exposing (Html, button, div, text)
+import Html.Events exposing (onClick)
 import Random
 import Svg exposing (Svg, g, svg)
 import Svg.Attributes exposing (height, transform, width)
@@ -32,15 +34,6 @@ init width height =
       }
     , randomize
     )
-
-
-
---
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    onEnter Randomize
 
 
 
@@ -85,9 +78,12 @@ view scale model =
         poly i ( color, word ) =
             g [ transform <| translate i ] [ View.polygon scale color ( 0, 0 ) word ]
     in
-    model.polyominos
-        |> List.indexedMap poly
-        |> projectSvg ( model.width, model.height ) []
+    div []
+        [ model.polyominos
+            |> List.indexedMap poly
+            |> projectSvg ( model.width, model.height ) []
+        , div [] [ button [ onClick Randomize ] [ text "Randomize" ] ]
+        ]
 
 
 
@@ -114,16 +110,12 @@ Here's [something helpful maybe](http://www.crm.umontreal.ca/Words07/pdf/provenc
 about the topic.
 
 I'm very disappointed in myself for not writing down my sources.
-
-## Instructions
-
-Hit enter to randomize.
 """
 
 
 page =
     { init = always <| init 500 500
-    , subscriptions = subscriptions
+    , subscriptions = always Sub.none
     , update = update
     , title = "Polyomino"
     , body = view 8

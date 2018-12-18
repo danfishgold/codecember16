@@ -2,6 +2,8 @@ module Day08.Main exposing (Model, Msg, page)
 
 import Browser exposing (document)
 import Helper exposing (projectSvg)
+import Html exposing (Html, button, div, text)
+import Html.Events exposing (onClick)
 import Pointer
 import Svg exposing (Svg, circle, polyline, svg)
 import Svg.Attributes exposing (cx, cy, fill, height, points, r, stroke, strokeWidth, style, width)
@@ -32,6 +34,7 @@ type alias Model =
 
 type Msg
     = ChangedState MouseState
+    | Reset
 
 
 init : ( Model, Cmd Msg )
@@ -259,6 +262,9 @@ update msg model =
         ChangedState state ->
             model |> updateOnState state |> setMouse state
 
+        Reset ->
+            Tuple.first init
+
 
 setMouse mouse model =
     { model | mouse = mouse }
@@ -280,22 +286,25 @@ view model =
                 ]
                 []
     in
-    projectSvg ( 500, 500 )
-        (events model)
-        ([ polyline
-            [ strokeWidth "2"
-            , stroke "black"
-            , fill "none"
-            , model.line
-                |> List.map (\( x, y ) -> String.fromFloat x ++ "," ++ String.fromFloat y)
-                |> String.join " "
-                |> points
-            ]
-            []
-         , mousePosition model.mouse |> marker "red"
-         ]
-            ++ (model.line |> List.map (marker "black"))
-        )
+    div []
+        [ projectSvg ( 500, 500 )
+            (events model)
+            ([ polyline
+                [ strokeWidth "2"
+                , stroke "black"
+                , fill "none"
+                , model.line
+                    |> List.map (\( x, y ) -> String.fromFloat x ++ "," ++ String.fromFloat y)
+                    |> String.join " "
+                    |> points
+                ]
+                []
+             , mousePosition model.mouse |> marker "red"
+             ]
+                ++ (model.line |> List.map (marker "black"))
+            )
+        , div [] [ button [ onClick Reset ] [ text "Reset" ] ]
+        ]
 
 
 

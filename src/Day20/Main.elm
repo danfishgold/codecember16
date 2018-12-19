@@ -119,7 +119,7 @@ update msg model =
             ( { model
                 | balls =
                     model.balls
-                        |> List.filterMap (updateBall model.g dt)
+                        |> List.filterMap (updateBall model.g <| min 100 dt)
               }
             , Cmd.none
             )

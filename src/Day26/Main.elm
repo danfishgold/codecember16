@@ -115,10 +115,13 @@ subscriptions model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Tick dt ->
+        Tick delta ->
             ( { model
                 | cars =
                     let
+                        dt =
+                            min 100 delta
+
                         carSortValue { x, v, reactionTime } =
                             if x + v * reactionTime > 1 then
                                 x - 1

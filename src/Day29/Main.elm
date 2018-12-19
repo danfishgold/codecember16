@@ -124,7 +124,7 @@ update msg model =
         Tick dt ->
             let
                 newTime =
-                    model.time + dt
+                    model.time + min 100 dt
 
                 filteredWaves =
                     model.waves |> List.filter (\( _, t0, lifetime ) -> newTime - t0 <= lifetime)

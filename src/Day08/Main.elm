@@ -1,12 +1,17 @@
 module Day08.Main exposing (Model, Msg, page)
 
 import Browser exposing (document)
+import Browser.Dom as Dom
+import Browser.Events
 import Helper exposing (projectSvg)
 import Html exposing (Html, button, div, text)
+import Html.Attributes exposing (id)
 import Html.Events exposing (onClick)
+import Html.Events.Extra.Pointer as Pointer
 import Pointer
 import Svg exposing (Svg, circle, polyline, svg)
 import Svg.Attributes exposing (cx, cy, fill, height, points, r, stroke, strokeWidth, style, width)
+import Task
 
 
 type alias Point =
@@ -29,37 +34,68 @@ type alias Model =
     { line : List Point
     , previousClose : Closeness
     , mouse : MouseState
+    , size : { width : Float, height : Float }
     }
 
 
 type Msg
     = ChangedState MouseState
     | Reset
+    | SetSize { width : Float, height : Float }
+    | GetViewport
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { line = [ ( 50, 250 ), ( 450, 250 ) ]
+    ( { line = [ ( 0.1, 0.5 ), ( 0.9, 0.5 ) ]
       , previousClose = None
       , mouse = Up ( 0, 0 )
+      , size = { width = 500, height = 500 }
       }
-    , Cmd.none
+    , getSvgViewport
     )
+
+
+getSvgViewport =
+    Dom.getViewportOf "day08"
+        |> Task.map (\{ viewport } -> Debug.log "viewport" { width = viewport.width, height = viewport.height })
+        |> Task.attempt
+            (\res ->
+                case res of
+                    Ok sz ->
+                        SetSize sz
+
+                    Err error ->
+                        Reset
+            )
 
 
 
 --
 
 
+normalizeEventPoint : Model -> Point -> Point
+normalizeEventPoint { size } ( x, y ) =
+    ( x / size.width, y / size.height )
+
+
 events : Model -> List (Svg.Attribute Msg)
 events model =
+    let
+        toMsg : (Point -> MouseState) -> Pointer.Event -> Msg
+        toMsg change event =
+            event.pointer.offsetPos
+                |> normalizeEventPoint model
+                |> change
+                |> ChangedState
+    in
     case model.mouse of
         Down _ ->
-            [ Pointer.up (ChangedState << Up) ]
+            [ Pointer.onUp (toMsg Up) ]
 
         _ ->
-            [ Pointer.down (ChangedState << Down)
-            , Pointer.move (ChangedState << Moved (mousePosition model.mouse))
+            [ Pointer.onDown (toMsg Down)
+            , Pointer.onMove (toMsg (Moved (mousePosition model.mouse)))
             ]
 
 
@@ -174,7 +210,7 @@ minimumBy fn xs =
 
 parametersToLocation : ( Int, ( Float, Float ) ) -> ( Float, Closeness )
 parametersToLocation ( i, ( t, d2 ) ) =
-    if d2 <= 30 then
+    if d2 <= 0.001 then
         if abs t <= 0.2 then
             ( d2, Edge i )
 
@@ -256,14 +292,20 @@ updateOnState state model =
                     newModel
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ChangedState state ->
-            model |> updateOnState state |> setMouse state
+            ( model |> updateOnState state |> setMouse state, Cmd.none )
 
         Reset ->
-            Tuple.first init
+            ( Tuple.first init, Cmd.none )
+
+        SetSize sz ->
+            ( { model | size = sz }, Cmd.none )
+
+        GetViewport ->
+            ( model, getSvgViewport )
 
 
 setMouse mouse model =
@@ -279,22 +321,27 @@ view model =
     let
         marker color ( x, y ) =
             circle
-                [ cx <| String.fromFloat x
-                , cy <| String.fromFloat y
+                [ cx <| String.fromFloat (x * model.size.width)
+                , cy <| String.fromFloat (y * model.size.height)
                 , r "2"
                 , fill color
                 ]
                 []
     in
     div []
-        [ projectSvg ( 500, 500 )
-            (events model)
+        [ projectSvg ( model.size.width, model.size.height )
+            (id "day08" :: events model)
             ([ polyline
                 [ strokeWidth "2"
                 , stroke "black"
                 , fill "none"
                 , model.line
-                    |> List.map (\( x, y ) -> String.fromFloat x ++ "," ++ String.fromFloat y)
+                    |> List.map
+                        (\( x, y ) ->
+                            String.fromFloat (x * model.size.width)
+                                ++ ","
+                                ++ String.fromFloat (y * model.size.height)
+                        )
                     |> String.join " "
                     |> points
                 ]
@@ -346,9 +393,13 @@ Use the mouse
 
 page =
     { init = always <| init
-    , subscriptions = always Sub.none
-    , update = \msg model -> ( update msg model, Cmd.none )
+    , subscriptions = subscriptions
+    , update = update
     , title = "Cradle"
     , body = view
     , description = description
     }
+
+
+subscriptions model =
+    Browser.Events.onResize (\_ _ -> GetViewport)

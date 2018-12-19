@@ -128,7 +128,7 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div [] [ text <| url 70 model.objects model.fraction ]
+    div [] [ text <| url (floor <| model.width / 15) model.objects model.fraction ]
 
 
 

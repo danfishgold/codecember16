@@ -157,7 +157,7 @@ view model =
     in
     List.map ball model.balls
         |> node "svg"
-            (Pointer.move Mouse :: projectSvgAttrs False ( model.width, model.height ))
+            (Pointer.onMove Mouse :: projectSvgAttrs False ( model.width, model.height ))
 
 
 

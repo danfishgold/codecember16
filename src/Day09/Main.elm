@@ -184,7 +184,7 @@ view { mouse, polygons, frame } =
     ]
         |> Collage.group
         |> projectCollage ( 500, 500 )
-        |> (\canvas -> div [ Pointer.move Mouse ] [ canvas ])
+        |> (\canvas -> div [ Pointer.onMove Mouse ] [ canvas ])
 
 
 

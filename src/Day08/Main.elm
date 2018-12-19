@@ -7,7 +7,6 @@ import Helper exposing (projectSvg)
 import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (id)
 import Html.Events exposing (onClick)
-import Html.Events.Extra.Pointer as Pointer
 import Pointer
 import Svg exposing (Svg, circle, polyline, svg)
 import Svg.Attributes exposing (cx, cy, fill, height, points, r, stroke, strokeWidth, style, width)
@@ -82,9 +81,9 @@ normalizeEventPoint { size } ( x, y ) =
 events : Model -> List (Svg.Attribute Msg)
 events model =
     let
-        toMsg : (Point -> MouseState) -> Pointer.Event -> Msg
-        toMsg change event =
-            event.pointer.offsetPos
+        toMsg : (Point -> MouseState) -> Point -> Msg
+        toMsg change pt =
+            pt
                 |> normalizeEventPoint model
                 |> change
                 |> ChangedState

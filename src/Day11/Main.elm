@@ -172,7 +172,7 @@ view { eye, width, height, rects } =
         |> List.map polygon
         |> group
         |> projectCollage ( width, height )
-        |> (\canvas -> div [ Pointer.move Mouse ] [ canvas ])
+        |> (\canvas -> div [ Pointer.onMove Mouse ] [ canvas ])
 
 
 

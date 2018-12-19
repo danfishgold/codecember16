@@ -1,7 +1,8 @@
-module Pointer exposing (Position, click, down, move, up)
+module Pointer exposing (Position, onDown, onMove, onUp)
 
 import Html exposing (Attribute, Html)
 import Html.Events exposing (on)
+import Html.Events.Extra.Pointer as P
 import Json.Decode as Json
 
 
@@ -13,28 +14,23 @@ type alias Position =
     ( Float, Float )
 
 
-position : Json.Decoder Position
-position =
-    Json.map2 (\a b -> ( a, b ))
-        (Json.field "offsetX" Json.float)
-        (Json.field "offsetY" Json.float)
+on : String -> (Position -> msg) -> Attribute msg
+on event positionToMsg =
+    P.onWithOptions event
+        { stopPropagation = True, preventDefault = True }
+        (\e -> positionToMsg e.pointer.offsetPos)
 
 
-click : (Position -> msg) -> Attribute msg
-click msg =
-    on "click" (position |> Json.map msg)
+onDown : (Position -> msg) -> Attribute msg
+onDown toMsg =
+    on "pointerdown" toMsg
 
 
-down : (Position -> msg) -> Attribute msg
-down msg =
-    on "mousedown" (position |> Json.map msg)
+onUp : (Position -> msg) -> Attribute msg
+onUp toMsg =
+    on "pointerup" toMsg
 
 
-up : (Position -> msg) -> Attribute msg
-up msg =
-    on "mouseup" (position |> Json.map msg)
-
-
-move : (Position -> msg) -> Attribute msg
-move msg =
-    on "mousemove" (position |> Json.map msg)
+onMove : (Position -> msg) -> Attribute msg
+onMove toMsg =
+    on "pointermove" toMsg

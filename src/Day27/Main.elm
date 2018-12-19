@@ -134,9 +134,9 @@ view { size, areas, mouseShape, mouseCenter } =
                     ( toFloat <| scale * columns
                     , toFloat <| scale * rows
                     )
-                    [ Pointer.move (centerFromMouse size >> MouseMove)
-                    , Pointer.down <| always <| MouseDown True
-                    , Pointer.up <| always <| MouseDown False
+                    [ Pointer.onMove (centerFromMouse size >> MouseMove)
+                    , Pointer.onDown <| always <| MouseDown True
+                    , Pointer.onUp <| always <| MouseDown False
                     ]
     in
     div []

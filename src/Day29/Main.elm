@@ -221,8 +221,8 @@ view model =
     in
     div []
         [ div
-            [ Pointer.down MouseDown
-            , Pointer.up MouseUp
+            [ Pointer.onDown MouseDown
+            , Pointer.onUp MouseUp
             ]
             [ projectCollage
                 ( model.width, model.height )

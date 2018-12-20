@@ -298,7 +298,12 @@ update msg model =
             ( model |> updateOnState state |> setMouse state, Cmd.none )
 
         Reset ->
-            ( Tuple.first init, Cmd.none )
+            ( { model
+                | line = [ ( 0.1, 0.5 ), ( 0.9, 0.5 ) ]
+                , previousClose = None
+              }
+            , Cmd.none
+            )
 
         SetSize sz ->
             ( { model | size = sz }, Cmd.none )

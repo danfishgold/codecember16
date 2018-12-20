@@ -9,7 +9,7 @@ import Html.Attributes exposing (id)
 import Html.Events exposing (onClick)
 import Pointer
 import Svg exposing (Svg, circle, polyline, svg)
-import Svg.Attributes exposing (cx, cy, fill, height, points, r, stroke, strokeWidth, style, width)
+import Svg.Attributes exposing (cx, cy, fill, height, points, r, stroke, strokeWidth, width)
 import Task
 
 
@@ -89,11 +89,11 @@ events model =
                 |> ChangedState
     in
     case model.mouse of
-        Down _ ->
-            [ Pointer.onUp (toMsg Up) ]
+        Up _ ->
+            [ Pointer.onDown (toMsg Down) ]
 
         _ ->
-            [ Pointer.onDown (toMsg Down)
+            [ Pointer.onUp (toMsg Up)
             , Pointer.onMove (toMsg (Moved (mousePosition model.mouse)))
             ]
 

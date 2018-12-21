@@ -57,7 +57,12 @@ init =
 
 getSvgViewport =
     Dom.getViewportOf "day08"
-        |> Task.map (\{ viewport } -> Debug.log "viewport" { width = viewport.width, height = viewport.height })
+        |> Task.map
+            (\{ viewport } ->
+                { width = viewport.width
+                , height = viewport.height
+                }
+            )
         |> Task.attempt
             (\res ->
                 case res of
@@ -335,7 +340,7 @@ view model =
     div []
         [ projectSvg ( model.size.width, model.size.height )
             (id "day08" :: events model)
-            ([ polyline
+            (polyline
                 [ strokeWidth "2"
                 , stroke "black"
                 , fill "none"
@@ -350,9 +355,7 @@ view model =
                     |> points
                 ]
                 []
-             , mousePosition model.mouse |> marker "red"
-             ]
-                ++ (model.line |> List.map (marker "black"))
+                :: (model.line |> List.map (marker "black"))
             )
         , div [] [ button [ onClick Reset ] [ text "Reset" ] ]
         ]

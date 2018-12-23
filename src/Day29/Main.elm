@@ -8,6 +8,7 @@ import Color
 import Color.Manipulate exposing (fadeOut)
 import Helper exposing (filled, outlined, projectCollage)
 import Html exposing (Html, button, div, text)
+import Html.Attributes exposing (class, id)
 import Html.Events exposing (onClick)
 import Pointer exposing (Position)
 
@@ -220,19 +221,18 @@ view model =
                 |> filled (Color.rgb 250 250 250)
     in
     div []
-        [ div
-            [ Pointer.onDown MouseDown
+        [ projectCollage
+            ( model.width, model.height )
+            [ id "day29"
+            , Pointer.onDown MouseDown
             , Pointer.onUp MouseUp
             ]
-            [ projectCollage
-                ( model.width, model.height )
-              <|
-                group <|
-                    List.concat
-                        [ List.map wave model.waves
-                        , List.map reflector model.reflectors
-                        , [ bg ]
-                        ]
-            ]
+          <|
+            group <|
+                List.concat
+                    [ List.map wave model.waves
+                    , List.map reflector model.reflectors
+                    , [ bg ]
+                    ]
         , div [] [ button [ onClick Reset ] [ text "Reset" ] ]
         ]

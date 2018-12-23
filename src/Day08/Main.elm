@@ -3,7 +3,7 @@ module Day08.Main exposing (Model, Msg, page)
 import Browser exposing (document)
 import Browser.Dom as Dom
 import Browser.Events
-import Helper exposing (projectSvg)
+import Helper exposing (Size, getViewport, projectSvg)
 import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (id)
 import Html.Events exposing (onClick)
@@ -33,14 +33,14 @@ type alias Model =
     { line : List Point
     , previousClose : Closeness
     , mouse : MouseState
-    , size : { width : Float, height : Float }
+    , size : Size
     }
 
 
 type Msg
     = ChangedState MouseState
     | Reset
-    | SetSize { width : Float, height : Float }
+    | SetSize Size
     | GetViewport
 
 
@@ -56,22 +56,7 @@ init =
 
 
 getSvgViewport =
-    Dom.getViewportOf "day08"
-        |> Task.map
-            (\{ viewport } ->
-                { width = viewport.width
-                , height = viewport.height
-                }
-            )
-        |> Task.attempt
-            (\res ->
-                case res of
-                    Ok sz ->
-                        SetSize sz
-
-                    Err error ->
-                        Reset
-            )
+    getViewport SetSize Reset "day08"
 
 
 

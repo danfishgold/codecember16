@@ -1,13 +1,15 @@
 module Day11.Main exposing (Model, Msg, page)
 
 import Browser exposing (document)
+import Browser.Events
 import Collage exposing (circle, group)
 import Collage.Render
 import Color exposing (Color)
 import Color.Manipulate exposing (darken, lighten)
 import Day02.Random
-import Helper exposing (filled, projectCollage)
+import Helper exposing (Size, filled, getViewport, projectCollage)
 import Html exposing (Html, div)
+import Html.Attributes exposing (id)
 import Pointer
 import Random
 
@@ -41,6 +43,9 @@ type alias Rect =
 type Msg
     = SetRects (List Rect)
     | Mouse Pointer.Position
+    | GetViewport
+    | SetSize Size
+    | NoOp
 
 
 init : Int -> ( Model, Cmd Msg )
@@ -51,8 +56,15 @@ init count =
       , height = 500
       , eye = ( 0, 0 )
       }
-    , Random.generate SetRects (Random.list count randomRect)
+    , Cmd.batch
+        [ Random.generate SetRects (Random.list count randomRect)
+        , getSvgViewport
+        ]
     )
+
+
+getSvgViewport =
+    getViewport SetSize NoOp "day11"
 
 
 
@@ -84,7 +96,7 @@ randomRect =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
+    case Debug.log "msg" msg of
         SetRects rects ->
             ( { model | rects = rects }, Cmd.none )
 
@@ -96,6 +108,15 @@ update msg model =
                     )
             in
             ( { model | eye = eye }, Cmd.none )
+
+        GetViewport ->
+            ( model, getSvgViewport )
+
+        SetSize { width, height } ->
+            ( { model | width = width, height = height }, Cmd.none )
+
+        NoOp ->
+            ( model, Cmd.none )
 
 
 
@@ -172,7 +193,9 @@ view { eye, width, height, rects } =
         |> List.map polygon
         |> group
         |> projectCollage ( width, height )
-        |> (\canvas -> div [ Pointer.onMove Mouse ] [ canvas ])
+            [ id "day11"
+            , Pointer.onMove Mouse
+            ]
 
 
 
@@ -205,9 +228,14 @@ Move the mouse ¯\\\\\\_(ツ)\\_/¯
 
 page =
     { init = always <| init 40
-    , subscriptions = always Sub.none
+    , subscriptions = subscriptions
     , update = update
     , title = "Parallax"
     , body = view
     , description = description
     }
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Browser.Events.onResize (\_ _ -> GetViewport)

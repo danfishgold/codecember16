@@ -1,10 +1,12 @@
 module Day09.Main exposing (Model, Msg, page)
 
+import Browser.Events
 import Collage exposing (defaultLineStyle, group, polygon, uniform)
 import Collage.Render
 import Color exposing (Color)
-import Helper exposing (filled, outlined, projectCollage)
+import Helper exposing (Size, filled, getViewport, outlined, projectCollage)
 import Html exposing (Html, div)
+import Html.Attributes exposing (class, id)
 import Pointer
 
 
@@ -16,27 +18,37 @@ type alias Model =
     { polygons : List (List Point)
     , frame : List Point
     , mouse : Maybe Point
+    , size : Size
     }
 
 
 type Msg
     = Mouse Point
+    | MouseUp
+    | SetSize Size
+    | GetViewport
+    | NoOp
 
 
 init : ( Model, Cmd Msg )
 init =
     ( { polygons =
-            [ [ ( -150, -130 ), ( -150, -80 ), ( -50, -50 ), ( -50, -150 ) ]
-            , [ ( 80, 220 ), ( -50, 180 ), ( -40, 100 ), ( 50, 140 ) ]
-            , [ ( 90, -80 ), ( 160, -150 ), ( 150, -60 ) ]
-            , [ ( -60, -190 ), ( -70, -210 ), ( -190, -170 ), ( -160, -160 ) ]
-            , [ ( 50, 50 ), ( 70, 90 ), ( 130, 20 ) ]
+            [ [ ( -0.3, -0.26 ), ( -0.3, -0.16 ), ( -0.1, -0.1 ), ( -0.1, -0.3 ) ]
+            , [ ( 0.16, 0.44 ), ( -0.1, 0.36 ), ( -0.08, 0.2 ), ( 0.1, 0.28 ) ]
+            , [ ( 0.18, -0.16 ), ( 0.32, -0.3 ), ( 0.3, -0.12 ) ]
+            , [ ( -0.12, -0.38 ), ( -0.14, -0.42 ), ( -0.38, -0.34 ), ( -0.32, -0.32 ) ]
+            , [ ( 0.1, 0.1 ), ( 0.14, 0.18 ), ( 0.26, 0.04 ) ]
             ]
-      , frame = [ ( -250, -250 ), ( -250, 250 ), ( 250, 250 ), ( 250, -250 ) ]
+      , frame = [ ( -0.5, -0.5 ), ( -0.5, 0.5 ), ( 0.5, 0.5 ), ( 0.5, -0.5 ) ]
       , mouse = Nothing
+      , size = { width = 500, height = 500 }
       }
-    , Cmd.none
+    , getSvgViewport
     )
+
+
+getSvgViewport =
+    getViewport SetSize NoOp "day09"
 
 
 
@@ -135,13 +147,23 @@ destinations mouse polygons =
         |> List.map (cartesian mouse)
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Mouse mouse ->
-            { model
-                | mouse = Just mouse
-            }
+            ( { model | mouse = Just mouse }, Cmd.none )
+
+        MouseUp ->
+            ( { model | mouse = Nothing }, Cmd.none )
+
+        SetSize sz ->
+            ( { model | size = sz }, Cmd.none )
+
+        GetViewport ->
+            ( model, getSvgViewport )
+
+        NoOp ->
+            ( model, Cmd.none )
 
 
 
@@ -149,17 +171,22 @@ update msg model =
 
 
 view : Model -> Html Msg
-view { mouse, polygons, frame } =
+view { size, mouse, polygons, frame } =
     let
+        polygon_ pts =
+            pts
+                |> List.map (\( x, y ) -> ( x * size.width, y * size.height ))
+                |> polygon
+
         actualMouse ( x, y ) =
-            ( x - 250, 250 - y )
+            ( x / size.width - 0.5, 0.5 - y / size.height )
 
         lightAreas source =
             (frame :: polygons)
                 |> destinations source
                 |> pairs
                 |> List.map (\( p1, p2 ) -> [ source, p1, p2 ])
-                |> List.map polygon
+                |> List.map polygon_
                 |> List.map (filled <| Color.rgba 1 1 1 0.15)
 
         sources dist n =
@@ -175,16 +202,19 @@ view { mouse, polygons, frame } =
                         |> List.map (cartesian (actualMouse mouse_))
 
         shapes =
-            polygons |> List.map polygon
+            polygons |> List.map polygon_
     in
     [ shapes |> List.map (Helper.outlined 1 Color.black Collage.Clipped) |> group
-    , sources 5 10 |> List.concatMap lightAreas |> group
+    , sources 0.01 10 |> List.concatMap lightAreas |> group
     , shapes |> List.map (filled Color.lightGray) |> group
-    , frame |> polygon |> filled Color.black
+    , frame |> polygon_ |> filled Color.black
     ]
         |> Collage.group
-        |> projectCollage ( 500, 500 )
-        |> (\canvas -> div [ Pointer.onMove Mouse ] [ canvas ])
+        |> projectCollage ( size.width, size.height )
+            [ id "day09"
+            , Pointer.onMove Mouse
+            , Pointer.onTouchUp MouseUp
+            ]
 
 
 
@@ -205,9 +235,14 @@ Here's a link to [Bret Victor](http://worrydream.com), because why not.
 
 page =
     { init = always init
-    , subscriptions = always Sub.none
-    , update = \msg model -> ( update msg model, Cmd.none )
+    , subscriptions = subscriptions
+    , update = update
     , title = "Nicky"
     , body = view
     , description = description
     }
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Browser.Events.onResize (\_ _ -> GetViewport)

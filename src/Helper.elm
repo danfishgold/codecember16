@@ -1,7 +1,8 @@
-module Helper exposing (filled, outlined, projectCollage, projectSvg, projectSvgAttrs)
+module Helper exposing (Size, filled, getViewport, outlined, projectCollage, projectSvg, projectSvgAttrs)
 
 import Array exposing (Array)
 import Browser
+import Browser.Dom
 import Browser.Events
 import Collage exposing (Collage, LineJoin, Shape, defaultLineStyle)
 import Collage.Render
@@ -12,6 +13,7 @@ import Json.Decode as Json
 import Markdown
 import Svg exposing (Svg, svg)
 import Svg.Attributes
+import Task
 
 
 
@@ -74,11 +76,39 @@ projectSvgAttrs isCentered ( width, height ) =
     ]
 
 
-projectCollage : ( Float, Float ) -> Collage msg -> Html msg
-projectCollage size collage =
-    Collage.Render.svgExplicit (projectSvgAttrs True size) collage
+projectCollage : ( Float, Float ) -> List (Html.Attribute msg) -> Collage msg -> Html msg
+projectCollage size attrs collage =
+    Collage.Render.svgExplicit (projectSvgAttrs True size ++ attrs) collage
 
 
 projectSvg : ( Float, Float ) -> List (Html.Attribute msg) -> List (Svg msg) -> Html msg
 projectSvg size attrs children =
     svg (projectSvgAttrs False size ++ attrs) children
+
+
+
+-- SVG Size
+
+
+type alias Size =
+    { width : Float, height : Float }
+
+
+getViewport : (Size -> msg) -> msg -> String -> Cmd msg
+getViewport toMsg onError id =
+    Browser.Dom.getViewportOf id
+        |> Task.map
+            (\{ viewport } ->
+                { width = viewport.width
+                , height = viewport.height
+                }
+            )
+        |> Task.attempt
+            (\res ->
+                case res of
+                    Ok sz ->
+                        toMsg sz
+
+                    Err error ->
+                        onError
+            )

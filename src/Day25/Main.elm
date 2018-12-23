@@ -208,7 +208,7 @@ view { width, height, boids } =
     boids
         |> List.map boidPolygon
         |> group
-        |> projectCollage ( width, height )
+        |> projectCollage ( width, height ) []
 
 
 

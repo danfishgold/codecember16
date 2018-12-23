@@ -4,8 +4,9 @@ import Browser exposing (document)
 import Browser.Events
 import Color exposing (Color)
 import Day02.Random exposing (ryb1)
-import Helper exposing (projectSvgAttrs)
+import Helper exposing (Size, getViewport, projectSvgAttrs)
 import Html exposing (Html)
+import Html.Attributes exposing (id)
 import Pointer
 import Random
 import Svg exposing (Svg, circle, svg)
@@ -38,6 +39,9 @@ type Msg
     = Tick Float
     | Add Ball
     | Mouse ( Float, Float )
+    | SetSize Size
+    | GetViewport
+    | NoOp
 
 
 init : Float -> Float -> ( Model, Cmd Msg )
@@ -48,8 +52,12 @@ init width height =
       , balls = []
       , id = 0
       }
-    , Cmd.none
+    , getSvgViewport
     )
+
+
+getSvgViewport =
+    getViewport SetSize NoOp "day20"
 
 
 
@@ -71,6 +79,7 @@ subscriptions model =
                     , model.height / 2 + model.height / 6 * sin (t / 300)
                     )
             )
+        , Browser.Events.onResize (\_ _ -> GetViewport)
         ]
 
 
@@ -136,6 +145,15 @@ update msg model =
         Add ball ->
             ( { model | balls = ball :: model.balls }, Cmd.none )
 
+        SetSize { width, height } ->
+            ( { model | width = width, height = height }, Cmd.none )
+
+        GetViewport ->
+            ( model, getSvgViewport )
+
+        NoOp ->
+            ( model, Cmd.none )
+
 
 
 --
@@ -157,7 +175,7 @@ view model =
     in
     List.map ball model.balls
         |> node "svg"
-            (Pointer.onMove Mouse :: projectSvgAttrs False ( model.width, model.height ))
+            (Pointer.onMove Mouse :: id "day20" :: projectSvgAttrs False ( model.width, model.height ))
 
 
 

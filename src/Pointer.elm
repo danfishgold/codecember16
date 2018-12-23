@@ -1,8 +1,9 @@
-module Pointer exposing (Position, onDown, onMove, onUp)
+module Pointer exposing (Position, onDown, onMove, onTouchUp, onUp)
 
 import Html exposing (Attribute, Html)
 import Html.Events exposing (on)
 import Html.Events.Extra.Pointer as P
+import Html.Events.Extra.Touch as T
 import Json.Decode as Json
 
 
@@ -34,3 +35,8 @@ onUp toMsg =
 onMove : (Position -> msg) -> Attribute msg
 onMove toMsg =
     on "pointermove" toMsg
+
+
+onTouchUp : msg -> Attribute msg
+onTouchUp toMsg =
+    T.onEnd (always toMsg)

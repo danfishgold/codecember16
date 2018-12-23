@@ -125,7 +125,7 @@ view { width, height, points } =
     , rectangle width height |> filled black
     ]
         |> group
-        |> projectCollage ( width, height )
+        |> projectCollage ( width, height ) []
 
 
 

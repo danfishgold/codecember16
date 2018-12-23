@@ -6,7 +6,7 @@ import Collage exposing (circle, group, rectangle, shift, solid)
 import Collage.Render
 import Color
 import Color.Manipulate exposing (fadeOut)
-import Helper exposing (filled, outlined, projectCollage)
+import Helper exposing (Size, filled, getViewport, outlined, projectCollage)
 import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (class, id)
 import Html.Events exposing (onClick)
@@ -31,6 +31,8 @@ type Msg
     | MouseUp Position
     | Tick Float
     | Reset
+    | SetSize Size
+    | GetViewport
 
 
 init : Float -> Float -> ( Model, Cmd Msg )
@@ -45,8 +47,12 @@ init width height =
       , waveSpeed = 100 / second
       , waveLifetime = 4 * second
       }
-    , Cmd.none
+    , getSvgViewport
     )
+
+
+getSvgViewport =
+    getViewport SetSize Reset "day29"
 
 
 second =
@@ -72,7 +78,7 @@ When it hits a reflector, a secondary wave will be emitted from it.
 page =
     { init = always <| init 500 500
     , subscriptions = subscriptions
-    , update = \msg model -> ( update msg model, Cmd.none )
+    , update = update
     , title = "Waves"
     , body = view
     , description = description
@@ -85,14 +91,17 @@ page =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Browser.Events.onAnimationFrameDelta Tick
+    Sub.batch
+        [ Browser.Events.onAnimationFrameDelta Tick
+        , Browser.Events.onResize (\_ _ -> GetViewport)
+        ]
 
 
 
 --
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         MouseDown ( x, y ) ->
@@ -100,7 +109,7 @@ update msg model =
                 pos =
                     ( x - model.width / 2, -y + model.height * 0.5 )
             in
-            { model | mouseSource = Just ( pos, model.time ) }
+            ( { model | mouseSource = Just ( pos, model.time ) }, Cmd.none )
 
         MouseUp ( x, y ) ->
             let
@@ -113,14 +122,14 @@ update msg model =
             case model.mouseSource of
                 Nothing ->
                     -- This is also probably a bug because that makes absolutely no sense
-                    newModel
+                    ( newModel, Cmd.none )
 
                 Just ( startPos, startTime ) ->
                     if model.time - startTime < model.generatorFrequency then
-                        { newModel | reflectors = startPos :: model.reflectors }
+                        ( { newModel | reflectors = startPos :: model.reflectors }, Cmd.none )
 
                     else
-                        newModel
+                        ( newModel, Cmd.none )
 
         Tick dt ->
             let
@@ -158,17 +167,27 @@ update msg model =
                             else
                                 []
             in
-            { model
+            ( { model
                 | time = newTime
                 , waves = newWaves ++ filteredWaves ++ reflectedWaves
-            }
+              }
+            , Cmd.none
+            )
 
         Reset ->
-            { model
+            ( { model
                 | reflectors = []
                 , waves = []
                 , mouseSource = Nothing
-            }
+              }
+            , Cmd.none
+            )
+
+        SetSize { width, height } ->
+            ( { model | width = width, height = height }, Cmd.none )
+
+        GetViewport ->
+            ( model, getSvgViewport )
 
 
 

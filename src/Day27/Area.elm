@@ -35,28 +35,28 @@ type Shape
     | Cross
 
 
-shapeAround : Color -> Shape -> Center -> Area
-shapeAround color shape ( x, y ) =
-    let
-        points =
-            case shape of
-                Square ->
-                    [ ( x, y ) ]
+shapeAround : Shape -> Center -> Set Center
+shapeAround shape ( x, y ) =
+    case shape of
+        Square ->
+            Set.fromList [ ( x, y ) ]
 
-                Cross ->
-                    [ ( x, y ), ( x - 1, y ), ( x + 1, y ), ( x, y - 1 ), ( x, y + 1 ) ]
-    in
-    { points = Set.fromList points
-    , color = color
-    }
+        Cross ->
+            Set.fromList
+                [ ( x, y )
+                , ( x - 1, y )
+                , ( x + 1, y )
+                , ( x, y - 1 )
+                , ( x, y + 1 )
+                ]
 
 
 
 -- MERGING
 
 
-addToAreas : List Area -> Area -> List Area
-addToAreas areas newArea =
+addToAreas : List Area -> Set Center -> List Area
+addToAreas areas points =
     let
         existingColors =
             areas |> List.map .color
@@ -65,7 +65,13 @@ addToAreas areas newArea =
             modBy (Array.length colors) (List.length areas)
 
         color =
-            colors |> Array.filter (\c -> List.member c existingColors |> not) |> Array.get 0 |> Maybe.withDefault (Array.get colorI colors |> Maybe.withDefault newArea.color)
+            colors
+                |> Array.filter (\c -> List.member c existingColors |> not)
+                |> Array.get 0
+                |> Maybe.withDefault
+                    (Array.get colorI colors
+                        |> Maybe.withDefault Color.black
+                    )
 
         tryMerging existing area =
             case existing of
@@ -80,7 +86,7 @@ addToAreas areas newArea =
                         Nothing ->
                             first :: tryMerging rest area
     in
-    tryMerging areas { newArea | color = color }
+    tryMerging areas { points = points, color = color }
 
 
 merge : Area -> Area -> Maybe Area

@@ -33,13 +33,13 @@ type Msg
 init : ( Model, Cmd Msg )
 init =
     ( { polygons =
-            [ [ ( -0.3, -0.26 ), ( -0.3, -0.16 ), ( -0.1, -0.1 ), ( -0.1, -0.3 ) ]
-            , [ ( 0.16, 0.44 ), ( -0.1, 0.36 ), ( -0.08, 0.2 ), ( 0.1, 0.28 ) ]
-            , [ ( 0.18, -0.16 ), ( 0.32, -0.3 ), ( 0.3, -0.12 ) ]
-            , [ ( -0.12, -0.38 ), ( -0.14, -0.42 ), ( -0.38, -0.34 ), ( -0.32, -0.32 ) ]
-            , [ ( 0.1, 0.1 ), ( 0.14, 0.18 ), ( 0.26, 0.04 ) ]
+            [ [ ( -100 * 0.3, -100 * 0.26 ), ( -100 * 0.3, -100 * 0.16 ), ( -100 * 0.1, -100 * 0.1 ), ( -100 * 0.1, -100 * 0.3 ) ]
+            , [ ( 100 * 0.16, 100 * 0.44 ), ( -100 * 0.1, 100 * 0.36 ), ( -100 * 0.08, 100 * 0.2 ), ( 100 * 0.1, 100 * 0.28 ) ]
+            , [ ( 100 * 0.18, -100 * 0.16 ), ( 100 * 0.32, -100 * 0.3 ), ( 100 * 0.3, -100 * 0.12 ) ]
+            , [ ( -100 * 0.12, -100 * 0.38 ), ( -100 * 0.14, -100 * 0.42 ), ( -100 * 0.38, -100 * 0.34 ), ( -100 * 0.32, -100 * 0.32 ) ]
+            , [ ( 100 * 0.1, 100 * 0.1 ), ( 100 * 0.14, 100 * 0.18 ), ( 100 * 0.26, 100 * 0.04 ) ]
             ]
-      , frame = [ ( -0.5, -0.5 ), ( -0.5, 0.5 ), ( 0.5, 0.5 ), ( 0.5, -0.5 ) ]
+      , frame = [ ( -100 * 0.5, -100 * 0.5 ), ( -100 * 0.5, 100 * 0.5 ), ( 100 * 0.5, 100 * 0.5 ), ( 100 * 0.5, -100 * 0.5 ) ]
       , mouse = Nothing
       , size = { width = 500, height = 500 }
       }
@@ -150,8 +150,16 @@ destinations mouse polygons =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Mouse mouse ->
-            ( { model | mouse = Just mouse }, Cmd.none )
+        Mouse ( x, y ) ->
+            ( { model
+                | mouse =
+                    Just
+                        ( (x / model.size.width - 0.5) * 100
+                        , (0.5 - y / model.size.height) * 100
+                        )
+              }
+            , Cmd.none
+            )
 
         MouseUp ->
             ( { model | mouse = Nothing }, Cmd.none )
@@ -175,11 +183,8 @@ view { size, mouse, polygons, frame } =
     let
         polygon_ pts =
             pts
-                |> List.map (\( x, y ) -> ( x * size.width, y * size.height ))
+                |> List.map (\( x, y ) -> ( x * size.width / 100, y * size.height / 100 ))
                 |> polygon
-
-        actualMouse ( x, y ) =
-            ( x / size.width - 0.5, 0.5 - y / size.height )
 
         lightAreas source =
             (frame :: polygons)
@@ -199,13 +204,13 @@ view { size, mouse, polygons, frame } =
                         |> List.map (\i -> degrees <| toFloat i / toFloat n * 360)
                         |> List.map (\ang -> ( dist, ang ))
                         |> (\pts -> ( 0, 0 ) :: pts)
-                        |> List.map (cartesian (actualMouse mouse_))
+                        |> List.map (cartesian mouse_)
 
         shapes =
             polygons |> List.map polygon_
     in
     [ shapes |> List.map (Helper.outlined 1 Color.black Collage.Clipped) |> group
-    , sources 0.01 10 |> List.concatMap lightAreas |> group
+    , sources 1 10 |> List.concatMap lightAreas |> group
     , shapes |> List.map (filled Color.lightGray) |> group
     , frame |> polygon_ |> filled Color.black
     ]

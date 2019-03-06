@@ -1,4 +1,4 @@
-module ViewHelper exposing (Shade(..), centeredDiv, contentDiv, header, images, link, stringFromDay, title, url)
+module ViewHelper exposing (Shade(..), centeredDiv, contentDiv, images, link, stringFromDay, title, url)
 
 import Array exposing (Array)
 import Day01.Main as D01
@@ -56,14 +56,6 @@ contentDiv attrs children =
             ++ attrs
         )
         children
-
-
-header : Html msg
-header =
-    h1 []
-        [ a [ href "#", style "text-decoration" "none" ]
-            [ text "Codecember 2016" ]
-        ]
 
 
 url : Int -> String

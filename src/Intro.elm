@@ -2,17 +2,18 @@ module Intro exposing (view)
 
 import Array
 import Browser
-import Html exposing (Html, a, div, img, text)
+import Html exposing (Html, a, div, h1, img, text)
 import Html.Attributes exposing (class, href, id, src, style)
 import Markdown
-import ViewHelper exposing (Shade(..), centeredDiv, contentDiv, header, images, link, title, url)
+import Title
+import ViewHelper exposing (Shade(..), centeredDiv, contentDiv, images, link, title, url)
 
 
 view : Browser.Document msg
 view =
     { body =
         [ div [ style "font-family" "sans-serif" ]
-            [ centeredDiv [] [ header ]
+            [ centeredDiv [] [ Title.view ]
             , contentDiv []
                 [ Markdown.toHtml []
                     "Here are thirty projects I did during December 2016. I think they're cool."

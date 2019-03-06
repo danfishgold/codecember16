@@ -39,8 +39,9 @@ import Html.Attributes exposing (style)
 import Intro
 import Markdown
 import Task
+import Title
 import Url exposing (Url)
-import ViewHelper exposing (centeredDiv, contentDiv, header, link, title)
+import ViewHelper exposing (centeredDiv, contentDiv, link, title)
 
 
 type Msg
@@ -818,7 +819,7 @@ projectView day description project_ =
     { body =
         [ div [ style "font-family" "sans-serif" ]
             [ centeredDiv []
-                [ header
+                [ Title.view
                 , projectTitle
                 , div [ style "padding" "0 0 50px 0" ] [ project_ ]
                 ]

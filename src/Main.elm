@@ -488,23 +488,22 @@ update msg model =
             ( model, Cmd.none )
 
         ( UrlChange url, _ ) ->
-            ( model, Cmd.none )
-
-        ( UrlRequest (Browser.Internal url), _ ) ->
             let
                 ( newModel, cmd ) =
                     init () url model.key
             in
             ( newModel
             , Cmd.batch
-                [ cmd
-                , Browser.Navigation.pushUrl model.key (Url.toString url)
-                , Task.perform (always NoOp) <| Browser.Dom.setViewport 0 0
-                ]
+                [ cmd, Task.perform (always NoOp) <| Browser.Dom.setViewport 0 0 ]
             )
 
-        ( UrlRequest (Browser.External url), _ ) ->
-            ( model, Browser.Navigation.load url )
+        ( UrlRequest urlRequest, _ ) ->
+            case urlRequest of
+                Browser.Internal url ->
+                    ( model, Browser.Navigation.pushUrl model.key (Url.toString url) )
+
+                Browser.External href ->
+                    ( model, Browser.Navigation.load href )
 
         ( Msg01 msg_, Project (Model01 model_) ) ->
             mapUpdate Msg01 (Project << Model01) D01.page.update msg_ model_ model
